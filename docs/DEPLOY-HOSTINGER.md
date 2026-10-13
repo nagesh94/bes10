@@ -241,17 +241,33 @@ Check it has propagated before calling Certbot, or issuance fails:
 dig +short crm.bes247.tech      # must print 187.126.125.193
 ```
 
-Then:
+**Two stages, and the order matters.** `deploy/nginx.conf` names a certificate
+that does not exist yet, so installing it first makes `nginx -t` fail with
+`cannot load certificate ... No such file or directory`. Start with the
+HTTP-only config:
 
 ```bash
-cp deploy/nginx.conf /etc/nginx/sites-available/bhim-crm
-# (nginx.conf already carries the real hostname — nothing to substitute)
+mkdir -p /var/www/html
+cp deploy/nginx-bootstrap.conf /etc/nginx/sites-available/bhim-crm
 ln -sf /etc/nginx/sites-available/bhim-crm /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
+```
 
-apt install -y certbot python3-certbot-nginx
-certbot --nginx -d crm.bes247.tech
+Get the certificate — `certonly`, so Certbot does not rewrite the config and
+discard the tuned upload limits:
+
+```bash
+apt install -y certbot
+certbot certonly --webroot -w /var/www/html -d crm.bes247.tech
+```
+
+Now the certificate exists, so the real config loads:
+
+```bash
+cp deploy/nginx.conf /etc/nginx/sites-available/bhim-crm
+nginx -t && systemctl reload nginx
+systemctl restart bhim-crm
 ```
 
 Certbot installs its own renewal timer, so TLS renews itself. Don't buy an
