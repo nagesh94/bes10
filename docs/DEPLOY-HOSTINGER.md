@@ -152,45 +152,41 @@ sudo -u bhim git clone <repo-url> /srv/bhim-crm/current
 
 ---
 
-## 4. The .env file — copied, not edited
+## 4. The .env file — copy it, then flip one block
 
-There is **one** `.env` and it is identical on both machines. Nothing in it
-changes when you deploy.
+There is one `.env`, and it is the same file on both machines. Everything that
+genuinely differs is collected into a single block near the bottom with two
+halves, **LOCAL** and **SERVER**. Exactly one is active.
 
-That works because the addresses inside it are loopback ones, and both machines
-run the same `docker-compose.yml` on the same ports — so
-`postgresql://...@127.0.0.1:5432/bhim_crm` is correct in both places. The one
-value that genuinely cannot match, `AUTH_URL`, is derived in code instead:
-the file holds the production URL, and `next dev` uses localhost on its own
-because NODE_ENV differs.
-
-So the whole of this step is:
+Copy it up as it is:
 
 ```bash
 mv /root/bhim.env /srv/bhim-crm/current/.env
 chown bhim:bhim /srv/bhim-crm/current/.env
 chmod 600 /srv/bhim-crm/current/.env
+nano /srv/bhim-crm/current/.env
 ```
 
-The `.env` you copied up already holds the final values — the local Postgres
-and MinIO credentials, `AUTH_URL="https://crm.bes247.tech"`, and the
-`FIELD_ENCRYPTION_KEY` you have been using. Verify it arrived intact and move
-on:
+Scroll to the banner that reads **THE ONLY BLOCK THAT CHANGES BETWEEN
+MACHINES** and do two things:
+
+1. Comment out the ten lines under `LOCAL (active)` — add `#` to each
+2. Uncomment the sixteen lines under `SERVER (commented)` — remove the `# `
+
+Nothing above that banner is touched. `AUTH_URL` in particular needs no
+change: it holds the production URL in both places, and `src/lib/env.ts`
+derives `http://localhost:3000` from `NODE_ENV` when running `npm run dev`.
+
+Check the flip took:
 
 ```bash
-grep -c . /srv/bhim-crm/current/.env     # non-empty line count, ~40
+cd /srv/bhim-crm/current
+grep -E '^(DATABASE_URL|S3_ENDPOINT|POSTGRES_USER)=' .env
 ```
 
-> **Working on your laptop against the same data.** Open a tunnel and the same
-> `.env` points at the server's containers rather than your own:
->
-> ```bash
-> ssh -L 5432:127.0.0.1:5432 -L 9000:127.0.0.1:9000 bhim@187.126.125.193
-> ```
->
-> Leave that running, then `npm run dev` locally. Same file, same database,
-> same documents, and nothing exposed to the internet. Close the tunnel and
-> your local containers serve instead.
+All three must print, and `DATABASE_URL` must contain `127.0.0.1`, not
+`neon.tech`. If `POSTGRES_USER` is missing, the SERVER half is still
+commented and `docker compose` will refuse to start.
 
 ## 5. Start the services
 
