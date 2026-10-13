@@ -4,15 +4,7 @@ node_modules/
 out/
 build/
 
-.env
-.env.local
-.env*.local
-# Real production secrets, if one is ever written here by mistake. The
-# committed file is .env.production.example, which holds only placeholders.
-.env.production
-.env.production.local
-# A database CA bundle, for a provider that signs with its own root. Neon
-# does not need one; RDS and Azure do.
+
 *.pem
 
 *.tsbuildinfo
