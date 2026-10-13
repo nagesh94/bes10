@@ -3,19 +3,15 @@
  *
  *   node --env-file-if-exists=.env scripts/backup.mjs [--db-only|--files-only] [--dry-run]
  *
- * Running everything on one VPS buys speed and keeps customer documents in
- * India, but it means a single disk holds the only copy of both the database
- * and every scanned Aadhaar card, electricity bill and signed agreement. If
- * that disk goes, the business loses its records. Hostinger's own snapshots
- * help, but a backup you cannot restore from somewhere else is not a backup.
+ * Neon holds both the database and the documents, and its free plan gives
+ * point-in-time restore over a short window rather than weeks of retained
+ * backups. That is thin cover for signed agreements and scanned Aadhaar
+ * cards, so this takes an independent copy that does not depend on Neon still
+ * having it: a gzipped pg_dump that restores anywhere, and the documents
+ * copied as plain objects under their own keys.
  *
- * So this pushes both to a second provider. The free Neon bucket is an ideal
- * destination: 5 GB, a different company, a different country, and already
- * paid for.
- *
- * It is deliberately not clever. A gzipped pg_dump restores with psql on any
- * machine with Postgres, and the documents are copied as plain objects under
- * the same keys, so a restore is a copy back rather than a bespoke tool.
+ * Both go to a DEDICATED bucket. Never the app's temp bucket —
+ * scripts/cleanup-temp.mjs deletes anything older than a day in there.
  *
  * Install as a daily cron job (see docs/DEPLOY-HOSTINGER.md).
  */
@@ -40,9 +36,20 @@ const dbOnly = args.includes("--db-only");
 const filesOnly = args.includes("--files-only");
 
 const RETENTION_DAYS = Number(process.env.BACKUP_RETENTION_DAYS ?? 14);
-const CONTAINER = process.env.POSTGRES_CONTAINER ?? "bhim-postgres";
-const PG_USER = process.env.POSTGRES_USER ?? "bhim";
-const PG_DB = process.env.POSTGRES_DB ?? "bhim_crm";
+
+/** Must be at least the server's major version, or pg_dump refuses to run. */
+const PG_IMAGE = process.env.PG_DUMP_IMAGE ?? "postgres:18-alpine";
+
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  console.error("DATABASE_URL is not set.");
+  process.exit(1);
+}
+
+/** Neon requires TLS; without this libpq falls back to its own default. */
+const DUMP_URL = DATABASE_URL.includes("sslmode=")
+  ? DATABASE_URL
+  : `${DATABASE_URL}${DATABASE_URL.includes("?") ? "&" : "?"}sslmode=require`;
 
 const DEST_BUCKET = process.env.BACKUP_S3_BUCKET;
 if (!DEST_BUCKET) {
@@ -90,26 +97,35 @@ async function backupDatabase() {
   const local = path.join(tmpdir(), `bhim-${stamp}.sql.gz`);
   const key = `db/bhim-${stamp}.sql.gz`;
 
-  console.log(`  dumping ${PG_DB} from container ${CONTAINER}…`);
+  const host = new URL(DATABASE_URL.replace(/^postgresql:/, "https:")).hostname;
+  console.log(`  dumping from ${host} via ${PG_IMAGE}…`);
 
   if (dryRun) {
     console.log(`  [dry run] would dump and upload ${key}`);
     return;
   }
 
-  // Through docker exec rather than a local pg_dump, so the host needs no
-  // postgres-client installed and the dump always matches the server version.
-  const dump = spawn("docker", [
-    "exec",
-    CONTAINER,
-    "pg_dump",
-    "-U",
-    PG_USER,
-    "-d",
-    PG_DB,
-    "--no-owner",
-    "--no-privileges",
-  ]);
+  // pg_dump runs in a throwaway container rather than from a host package:
+  // Neon is on PostgreSQL 18 and pg_dump refuses a server newer than itself,
+  // so pinning the image guarantees the versions match and leaves nothing to
+  // install or patch on the host.
+  //
+  // The connection string is passed as an environment variable, not an
+  // argument, so it does not appear in `ps` while the dump runs.
+  const dump = spawn(
+    "docker",
+    [
+      "run",
+      "--rm",
+      "-e",
+      "PGCONN",
+      PG_IMAGE,
+      "sh",
+      "-c",
+      'pg_dump "$PGCONN" --no-owner --no-privileges',
+    ],
+    { env: { ...process.env, PGCONN: DUMP_URL } },
+  );
 
   let stderr = "";
   dump.stderr.on("data", (d) => (stderr += d.toString()));

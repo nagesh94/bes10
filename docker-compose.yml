@@ -1,84 +1,18 @@
-# The services this app needs, for development and the server alike.
+# The one service this app needs locally: the document converter.
 #
 #   docker compose up -d
 #
-# One file, deliberately, to match the single .env. Both machines run the same
-# containers on the same loopback ports, so DATABASE_URL and S3_ENDPOINT mean
-# the same thing in both places and nothing has to be edited when deploying.
+# Postgres and MinIO used to live here. They are gone because the database and
+# the object store are both Neon now, in development and on the server alike —
+# which is also why there is a single .env with nothing to switch.
 #
-# Postgres, MinIO and Gotenberg all run here, beside the app. That is the whole
-# point of choosing a VPS: queries are sub-millisecond instead of the 68 ms
-# measured to a database in Singapore, and customer documents — including
-# scanned Aadhaar cards — stay on Indian soil.
-#
-# Two rules this file follows, both of which matter on a box with a public IP:
-#
-#   1. Every port is bound to 127.0.0.1. Nothing here should ever be reachable
-#      from outside — the app talks to all three over loopback, and nginx is
-#      the only public listener. An earlier version published on 0.0.0.0,
-#      which is harmless on a laptop behind NAT and would have exposed
-#      Postgres and MinIO to the whole internet on the server.
-#   2. Credentials come from the environment. `docker compose` reads the same
-#      .env the app does, so there is no second place to keep them in step and
-#      no development password that can be deployed by accident.
-#
-# Mailpit is gone: nothing in the app sends email yet.
+# Gotenberg stays a container because it is LibreOffice behind an HTTP API, and
+# nobody wants LibreOffice installed on the host.
 
 name: bhim-crm
 
 services:
-  postgres:
-    image: postgres:17-alpine
-    container_name: bhim-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-bhim_crm}
-    ports:
-      # If you already run Postgres on 5432 locally, stop it rather than
-      # changing this — the whole point is that the port is identical in both
-      # places so one .env serves both.
-      - "127.0.0.1:5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-bhim_crm}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    # Postgres is the one service whose death loses data in flight.
-    stop_grace_period: 30s
-
-  # MinIO, packaged by Bitnami.
-  #
-  # MinIO Inc. withdrew the community images in 2025, so this is a frozen tag
-  # that will not receive updates. That is an accepted risk rather than an
-  # oversight: the port is bound to loopback, so nothing outside this box can
-  # reach it, and the app is the only client. If you would rather not run an
-  # unmaintained image at all, point the S3_* variables at Neon Object Storage
-  # instead — the code is identical either way — and accept that document
-  # scans then live in Singapore rather than India.
-  minio:
-    image: bitnamilegacy/minio:2025.7.23-debian-12-r5
-    container_name: bhim-minio
-    restart: unless-stopped
-    environment:
-      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:?set S3_ACCESS_KEY_ID in .env}
-      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY:?set S3_SECRET_ACCESS_KEY in .env}
-      MINIO_DEFAULT_BUCKETS: ${S3_BUCKET_DOCUMENTS:-bhim-documents},${S3_BUCKET_TEMP:-bhim-temp}
-      MINIO_SCHEME: http
-    ports:
-      - "127.0.0.1:9000:9000" # S3 API
-      # The web console stays off in production. Re-publish it on loopback and
-      # reach it through an SSH tunnel if you ever need to browse objects:
-      #   ssh -L 9001:127.0.0.1:9001 bhim@<server>
-      # - "127.0.0.1:9001:9001"
-    volumes:
-      - minio-data:/bitnami/minio/data
-
-  # Converts the generated DOCX into PDF for the submission pack. LibreOffice
-  # behind an HTTP API, so the app never shells out to a binary.
+  # Converts the generated DOCX into PDF for the submission pack.
   gotenberg:
     image: gotenberg/gotenberg:8
     container_name: bhim-gotenberg
@@ -89,13 +23,9 @@ services:
       - "--api-timeout=60s"
     ports:
       # Loopback only. Gotenberg has no authentication of its own — anything
-      # that can reach this port can convert arbitrary files on this box.
+      # that can reach this port can convert arbitrary files on this machine,
+      # so it must never be published on 0.0.0.0 on a box with a public IP.
       - "127.0.0.1:3001:3000"
     # LibreOffice is memory-hungry and a stuck conversion must not take the
-    # app down with it. 768 MB leaves room on a 4 GB box for Next, Postgres
-    # and MinIO together.
+    # app down with it.
     mem_limit: 768m
-
-volumes:
-  postgres-data:
-  minio-data:
