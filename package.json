@@ -20,7 +20,10 @@
     "deploy:release": "npm run db:migrate:prod && npm run db:seed",
     "storage:cleanup": "node --env-file-if-exists=.env scripts/cleanup-temp.mjs",
     "smoke:storage": "tsx --env-file-if-exists=.env scripts/smoke-storage.mjs",
-    "db:backup": "node --env-file-if-exists=.env scripts/backup.mjs"
+    "db:backup": "node --env-file-if-exists=.env scripts/backup.mjs",
+    "env:local": "node scripts/env-mode.mjs local",
+    "env:server": "node scripts/env-mode.mjs server",
+    "env:which": "node scripts/env-mode.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",

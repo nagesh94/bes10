@@ -167,26 +167,34 @@ chmod 600 /srv/bhim-crm/current/.env
 nano /srv/bhim-crm/current/.env
 ```
 
-Scroll to the banner that reads **THE ONLY BLOCK THAT CHANGES BETWEEN
-MACHINES** and do two things:
-
-1. Comment out the ten lines under `LOCAL (active)` — add `#` to each
-2. Uncomment the sixteen lines under `SERVER (commented)` — remove the `# `
-
-Nothing above that banner is touched. `AUTH_URL` in particular needs no
-change: it holds the production URL in both places, and `src/lib/env.ts`
-derives `http://localhost:3000` from `NODE_ENV` when running `npm run dev`.
-
-Check the flip took:
+Then flip the block with the script rather than by hand:
 
 ```bash
 cd /srv/bhim-crm/current
-grep -E '^(DATABASE_URL|S3_ENDPOINT|POSTGRES_USER)=' .env
+sudo -u bhim npm run env:server
 ```
 
-All three must print, and `DATABASE_URL` must contain `127.0.0.1`, not
-`neon.tech`. If `POSTGRES_USER` is missing, the SERVER half is still
-commented and `docker compose` will refuse to start.
+It prints the keys it activated. On your laptop the reverse is
+`npm run env:local`, and `npm run env:which` reports the current mode without
+changing anything.
+
+Do not edit the block manually. A half-applied flip is the worst outcome:
+`docker compose` fails with `required variable POSTGRES_PASSWORD is missing`,
+or the app silently runs against the wrong database. The script cannot leave
+the file in that state, and `env:which` detects it if something else does.
+
+Confirm:
+
+```bash
+sudo -u bhim npm run env:which
+grep -E '^(DATABASE_URL|POSTGRES_USER|S3_ENDPOINT)=' .env
+```
+
+`DATABASE_URL` must contain `127.0.0.1`, not `neon.tech`, and `POSTGRES_USER`
+must be present — `docker compose` reads it to create the database.
+
+> `.env` is gitignored, so `git pull` never updates it. When it changes on your
+> laptop, copy it up again and re-run `npm run env:server`.
 
 ## 5. Start the services
 
