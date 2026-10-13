@@ -1,0 +1,77 @@
+name: bhim-crm
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: bhim-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bhim
+      POSTGRES_PASSWORD: bhim_local_dev
+      POSTGRES_DB: bhim_crm
+    ports:
+      # 5433 on the host, not 5432: a locally installed Postgres commonly
+      # already holds 5432 on IPv4, and Node resolves localhost to IPv4 first,
+      # so the app would silently connect to the wrong server.
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bhim -d bhim_crm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # MinIO, packaged by Bitnami.
+  #
+  # MinIO Inc. withdrew the community images in 2025: minio/minio is gone from
+  # Docker Hub and quay.io/minio/minio is private. This is the same MinIO
+  # server with a public image. Bitnami froze this namespace, so the tag is
+  # pinned and will not move — fine for a local dependency, since production
+  # points at real S3 or Cloudflare R2 and the app code is identical either way.
+  #
+  # MINIO_DEFAULT_BUCKETS creates the buckets on first boot, which is why
+  # there is no separate init container. Versioning is turned on by the app's
+  # storage bootstrap.
+  minio:
+    image: bitnamilegacy/minio:2025.7.23-debian-12-r5
+    container_name: bhim-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: bhim_minio
+      MINIO_ROOT_PASSWORD: bhim_minio_local_dev
+      MINIO_DEFAULT_BUCKETS: bhim-documents,bhim-temp
+      MINIO_SCHEME: http
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # web console
+    volumes:
+      - minio-data:/bitnami/minio/data
+
+  # Converts the DOCX templates to PDF. LibreOffice behind an HTTP API, so the
+  # app never shells out to a binary and the same service works in production.
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: bhim-gotenberg
+    restart: unless-stopped
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--api-timeout=60s"
+    ports:
+      - "3001:3000"
+
+  # Catches every outgoing email so nothing reaches a real inbox during the POC.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: bhim-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # web inbox
+    environment:
+      MP_MAX_MESSAGES: 500
+
+volumes:
+  postgres-data:
+  minio-data:

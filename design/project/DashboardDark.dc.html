@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pipeline dashboard in dark mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #0A1626; }
+    a { color: #7FA8DC; }
+    a:hover { color: #A8C5EA; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #0A1626; font-family: Archivo, system-ui, sans-serif; color: #E9EFF8; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #11203A; border-bottom: 1px solid #223A61; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; min-height: 64px">
+    <span style="background: #FFFFFF; border-radius: 8px; padding: 5px 9px; display: flex; align-items: center; flex-shrink: 0">
+      <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 28px; width: auto; display: block">
+    </span>
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1">
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #FFFFFF; background: #1B2F52">Pipeline</a>
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #91A6C5">Leads</a>
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #91A6C5">Projects</a>
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #91A6C5">Documents</a>
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #91A6C5">Admin</a>
+    </nav>
+    <label style="display: flex; align-items: center; gap: 8px; background: #0A1626; border: 1px solid #223A61; border-radius: 8px; padding: 0 12px; height: 40px; min-width: 220px">
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search projects</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#91A6C5" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <input type="search" placeholder="Code, name, consumer no." style="border: 0; background: transparent; outline: none; font-family: inherit; font-size: 14px; color: #E9EFF8; width: 100%">
+    </label>
+    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #A8C5EA; background: #1B2F52; border: 1px solid #2B4679; border-radius: 999px; padding: 5px 10px">Admin</span>
+      <span style="width: 36px; height: 36px; border-radius: 999px; background: #FF7A00; color: #0A1626; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">AK</span>
+    </div>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 28px 24px 56px">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 24px">
+      <div style="flex-grow: 1; min-width: 260px">
+        <h1 style="margin: 0 0 4px; font-size: 28px; font-weight: 700; letter-spacing: -0.02em">Pipeline</h1>
+        <p style="margin: 0; font-size: 14px; color: #91A6C5">14 active residential projects &middot; PM Surya Ghar</p>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 14px; font-weight: 700; color: #0A1626; background: #FF7A00; border: 0; border-radius: 8px; padding: 0 18px; height: 44px; cursor: pointer; display: flex; align-items: center; gap: 8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A1626" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        New lead
+      </button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-bottom: 24px">
+      <sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+        <div style="{{k.card}}">
+          <div style="{{k.label}}">{{k.title}}</div>
+          <div style="{{k.value}}">{{k.n}}</div>
+          <div style="{{k.subStyle}}">{{k.sub}}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <section style="background: #11203A; border: 1px solid #223A61; border-radius: 12px; padding: 18px 20px; margin-bottom: 24px">
+      <h2 style="margin: 0 0 14px; font-size: 13px; font-weight: 600; color: #91A6C5; letter-spacing: 0.04em; text-transform: uppercase">Projects by stage</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{stages}}" as="st" hint-placeholder-count="9">
+          <button type="button" style="font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px 0 8px; border-radius: 999px; background: #0A1626; border: 1px solid #223A61; color: #E9EFF8">
+            <span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 999px; background: #1B2F52; color: #A8C5EA; font-size: 12px; font-weight: 700; font-family: 'IBM Plex Mono', monospace">{{st.n}}</span>
+            <span style="font-size: 13px; font-weight: 600">{{st.name}}</span>
+            <span style="font-size: 12px; font-weight: 700; color: #91A6C5; background: #1B2F52; border-radius: 999px; padding: 2px 8px">{{st.c}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="background: #11203A; border: 1px solid #223A61; border-radius: 12px; overflow: hidden">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #223A61">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 600; flex-grow: 1">All projects</h2>
+        <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 600; color: #E9EFF8; background: #0A1626; border: 1px solid #223A61; border-radius: 8px; height: 36px; padding: 0 14px; cursor: pointer">Filter</button>
+        <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 600; color: #E9EFF8; background: #0A1626; border: 1px solid #223A61; border-radius: 8px; height: 36px; padding: 0 14px; cursor: pointer">Export</button>
+      </div>
+
+      <div style="overflow-x: auto">
+        <table style="width: 100%; border-collapse: collapse; min-width: 980px">
+          <thead>
+            <tr style="background: #0D1B30">
+              <sc-for list="{{heads}}" as="h" hint-placeholder-count="7">
+                <th style="{{h.style}}">{{h.t}}</th>
+              </sc-for>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+              <tr style="border-bottom: 1px solid #1A2C4A">
+                <td style="padding: 14px 20px; vertical-align: middle">
+                  <a href="#" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: #7FA8DC; text-decoration: none">{{r.code}}</a>
+                  <div style="{{r.lifeStyle}}">{{r.life}}</div>
+                </td>
+                <td style="padding: 14px 12px; font-size: 14px; font-weight: 500; vertical-align: middle">{{r.name}}</td>
+                <td style="padding: 14px 12px; font-size: 14px; color: #91A6C5; vertical-align: middle; white-space: nowrap">{{r.plant}}</td>
+                <td style="padding: 14px 12px; vertical-align: middle">
+                  <div style="display: flex; gap: 3px; margin-bottom: 6px">
+                    <sc-for list="{{r.dots}}" as="d" hint-placeholder-count="9">
+                      <span style="{{d.s}}"></span>
+                    </sc-for>
+                  </div>
+                  <div style="font-size: 12.5px; font-weight: 600; color: #C7D8EF">{{r.stage}}</div>
+                </td>
+                <td style="padding: 14px 12px; vertical-align: middle"><span style="{{r.flagStyle}}">{{r.flag}}</span></td>
+                <td style="padding: 14px 12px; font-size: 13.5px; color: #91A6C5; vertical-align: middle; white-space: nowrap">{{r.owner}}</td>
+                <td style="padding: 14px 20px; font-size: 13px; color: #91A6C5; vertical-align: middle; white-space: nowrap">{{r.updated}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="padding: 14px 20px; font-size: 13px; color: #91A6C5; border-top: 1px solid #1A2C4A">Showing 7 of 14 &middot; <a href="#" style="font-weight: 600">View all</a></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var GREEN = '#35B55A', ORANGE = '#FF7A00', GREY = '#2F486F';
+
+    function dots(stage) {
+      var out = [];
+      for (var i = 1; i <= 9; i++) {
+        var bg = i < stage ? GREEN : (i === stage ? ORANGE : GREY);
+        var w = i === stage ? 20 : 12;
+        out.push({ s: 'display:block;width:' + w + 'px;height:6px;border-radius:3px;background:' + bg });
+      }
+      return out;
+    }
+
+    var cardBase = 'background:#11203A;border-radius:12px;padding:18px 20px;border:1px solid ';
+    var kpis = [
+      { title: 'Active projects', n: '14', sub: '', border: '#223A61', tone: '#E9EFF8', labelTone: '#91A6C5' },
+      { title: 'Open flags', n: '3', sub: '2 name change · 1 load increase', border: '#5A4517', tone: '#FBBF24', labelTone: '#FBBF24' },
+      { title: 'Awaiting portal upload', n: '2', sub: 'Packs ready to send', border: '#223A61', tone: '#E9EFF8', labelTone: '#91A6C5' },
+      { title: 'Outstanding', n: '₹8,42,000', sub: 'Across 6 customers', border: '#223A61', tone: '#E9EFF8', labelTone: '#91A6C5', mono: true }
+    ].map(function (k) {
+      return {
+        title: k.title, n: k.n, sub: k.sub,
+        card: cardBase + k.border,
+        label: 'font-size:12px;font-weight:600;letter-spacing:0.02em;color:' + k.labelTone,
+        value: 'font-size:32px;font-weight:700;letter-spacing:-0.02em;margin-top:6px;color:' + k.tone +
+          (k.mono ? ';font-family:"IBM Plex Mono",monospace' : ''),
+        subStyle: k.sub ? 'font-size:12px;color:#91A6C5;margin-top:4px' : 'display:none'
+      };
+    });
+
+    var stages = [
+      ['Onboarding', 3], ['Agreement', 2], ['Installation', 1], ['Evidence', 2], ['DCR', 1],
+      ['Meter', 1], ['Documents', 2], ['Commissioning', 1], ['Settlement', 1]
+    ].map(function (d, i) {
+      return { n: String(i + 1), name: d[0], c: String(d[1]) };
+    });
+
+    var th = 'text-align:left;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#91A6C5;border-bottom:1px solid #223A61;';
+    var heads = [
+      ['Project', 'padding:11px 20px'], ['Customer', 'padding:11px 12px'], ['Plant', 'padding:11px 12px'],
+      ['Stage', 'padding:11px 12px;width:260px'], ['Attention', 'padding:11px 12px'],
+      ['Owner', 'padding:11px 12px'], ['Updated', 'padding:11px 20px']
+    ].map(function (h) { return { t: h[0], style: th + h[1] }; });
+
+    var pill = 'display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap;';
+    var amber = pill + 'background:#3A2A08;color:#FBBF24';
+    var green = pill + 'background:#10361C;color:#5BD77C';
+    var none = 'font-size:14px;color:#44618F';
+    var lifeChip = 'display:inline-block;margin-top:5px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-radius:4px;padding:2px 6px;';
+
+    var defs = [
+      ['BHIM-2026-0014', 'Prospect', 'Ramesh Chauhan', '3 kW', 1, 'Onboarding', 'Load increase', amber, 'Priya S.', '2 hours ago'],
+      ['BHIM-2026-0012', 'Prospect', 'Sunita Devi', '5 kW', 2, 'Agreement', 'Name mismatch', amber, 'Amit K.', '5 hours ago'],
+      ['BHIM-2026-0011', 'Customer', 'Mohd Irfan', '3 kW', 4, 'Evidence', '—', none, 'Priya S.', 'Yesterday'],
+      ['BHIM-2026-0009', 'Customer', 'Kavita Sharma', '10 kW', 5, 'DCR certificate', '—', none, 'Amit K.', 'Yesterday'],
+      ['BHIM-2026-0007', 'Customer', 'Rajesh Kumar', '5 kW', 7, 'Documents', 'Pack ready', green, 'Priya S.', '2 days ago'],
+      ['BHIM-2026-0005', 'Customer', 'Anand Patel', '4 kW', 8, 'Commissioning', '—', none, 'Amit K.', '3 days ago'],
+      ['BHIM-2026-0002', 'Customer', 'Neha Gupta', '3 kW', 9, 'Settlement', 'Subsidy received', green, 'Priya S.', '4 days ago']
+    ];
+
+    var rows = defs.map(function (d) {
+      return {
+        code: d[0], life: d[1], name: d[2], plant: d[3],
+        dots: dots(d[4]), stage: 'Stage ' + d[4] + ' · ' + d[5],
+        flag: d[6], flagStyle: d[7], owner: d[8], updated: d[9],
+        lifeStyle: lifeChip + (d[1] === 'Customer'
+          ? 'background:#1B2F52;color:#A8C5EA'
+          : 'background:#3A2308;color:#FF9A3C')
+      };
+    });
+
+    return { kpis: kpis, stages: stages, heads: heads, rows: rows };
+  }
+}
+</script>
+</body>
+</html>

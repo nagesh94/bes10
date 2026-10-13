@@ -1,0 +1,107 @@
+/**
+ * Storage smoke test, against the real MinIO.
+ *
+ * Builds a large synthetic photo, runs it through the variant pipeline, puts
+ * all three variants in the bucket, reads one back through a presigned URL,
+ * and checks the portal copy actually came in under the cap.
+ *
+ *   npx tsx scripts/smoke-storage.mjs
+ */
+import sharp from "sharp";
+import { buildVariants, stampGeo } from "../src/lib/storage/variants.ts";
+import { PORTAL_MAX_KB, documentKey } from "../src/lib/storage/client.ts";
+import {
+  ensureBuckets,
+  presignDownload,
+  putDocument,
+} from "../src/lib/storage/operations.ts";
+
+const pass = (m) => console.log(`  ✓ ${m}`);
+const fail = (m) => {
+  console.error(`  ✗ ${m}`);
+  process.exitCode = 1;
+};
+const kb = (n) => `${Math.round(n / 1024)} KB`;
+
+try {
+  await ensureBuckets();
+  pass("buckets exist and documents is versioned");
+
+  // A 4000×3000 photo with real detail — a flat colour would compress to
+  // nothing and prove the pipeline works when it would not.
+  const noise = await sharp({
+    create: { width: 4000, height: 3000, channels: 3, noise: { type: "gaussian", mean: 140, sigma: 70 } },
+  })
+    .jpeg({ quality: 96 })
+    .toBuffer();
+
+  console.log(`\n  source photo: ${kb(noise.byteLength)}\n`);
+  noise.byteLength > 1_000_000
+    ? pass("source is over 1 MB, like a real phone photo")
+    : fail(`source only ${kb(noise.byteLength)} — not a fair test`);
+
+  const variants = await buildVariants(noise, "image/jpeg");
+
+  variants.original.bytes === noise.byteLength
+    ? pass(`original untouched at ${kb(variants.original.bytes)} — this is what prints`)
+    : fail("original was modified");
+
+  if (!variants.portal) fail("no portal variant was produced");
+  else {
+    const portalKb = Math.round(variants.portal.bytes / 1024);
+    portalKb <= PORTAL_MAX_KB
+      ? pass(`portal variant ${portalKb} KB, under the ${PORTAL_MAX_KB} KB cap`)
+      : fail(`portal variant ${portalKb} KB exceeds the ${PORTAL_MAX_KB} KB cap`);
+    variants.portal.bytes < variants.original.bytes / 5
+      ? pass("portal copy is a fraction of the original")
+      : fail("portal copy barely shrank");
+  }
+
+  variants.thumb ? pass(`thumb ${kb(variants.thumb.bytes)}`) : fail("no thumb");
+
+  // A PDF must pass through untouched — rasterising one belongs in phase 4.
+  const fakePdf = Buffer.from("%PDF-1.7\n% test\n");
+  const pdfVariants = await buildVariants(fakePdf, "application/pdf");
+  pdfVariants.portal === null && pdfVariants.original.bytes === fakePdf.byteLength
+    ? pass("a PDF passes through with no portal variant")
+    : fail("PDF was altered");
+
+  // Put all three in the bucket and read one back.
+  const projectId = "prj_smoke";
+  const keyO = documentKey(projectId, "ELECTRICITY_BILL", "original", "bill.jpg");
+  const keyP = documentKey(projectId, "ELECTRICITY_BILL", "portal", "bill.jpg");
+  const keyT = documentKey(projectId, "ELECTRICITY_BILL", "thumb", "bill.jpg");
+
+  await putDocument(keyO, variants.original.body, "image/jpeg");
+  await putDocument(keyP, variants.portal.body, "image/jpeg");
+  await putDocument(keyT, variants.thumb.body, "image/jpeg");
+  pass("all three variants written to MinIO");
+
+  const url = await presignDownload(keyP, 120);
+  const res = await fetch(url);
+  const back = Buffer.from(await res.arrayBuffer());
+  res.ok && back.byteLength === variants.portal.bytes
+    ? pass("portal variant reads back byte-for-byte through a presigned URL")
+    : fail(`read back ${res.status}, ${back.byteLength} bytes`);
+
+  // Aadhaar goes under its own prefix so a bucket policy can gate it.
+  documentKey(projectId, "AADHAAR", "original", "a.jpg").startsWith("restricted/")
+    ? pass("Aadhaar keys sit under restricted/")
+    : fail("Aadhaar key is not restricted");
+
+  // Geo stamp.
+  const stamped = await stampGeo(variants.portal.body, {
+    latitude: 21.8840185,
+    longitude: 77.9016424,
+    capturedAt: new Date("2026-09-28T11:42:00"),
+  });
+  const stampedMeta = await sharp(stamped).metadata();
+  stamped.byteLength > 0 && stampedMeta.width
+    ? pass(`geo stamp burned in (${stampedMeta.width}×${stampedMeta.height})`)
+    : fail("geo stamp failed");
+
+  console.log("");
+} catch (err) {
+  console.error("\nStorage smoke test failed:\n", err);
+  process.exitCode = 1;
+}

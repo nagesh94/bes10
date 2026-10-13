@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#081E36" />
+    <title>No connection — BHIM CRM</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: #081e36;
+        color: #f3f7fd;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .card {
+        width: 100%;
+        max-width: 380px;
+        text-align: center;
+      }
+      .seam {
+        height: 3px;
+        border-radius: 2px;
+        margin-bottom: 28px;
+        background: linear-gradient(90deg, #157f33 0%, #f0a500 38%, #f59008 52%, #0e4c8a 100%);
+      }
+      img {
+        width: 76px;
+        height: 76px;
+        margin-bottom: 20px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 21px;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 0 0 24px;
+        font-size: 14.5px;
+        line-height: 1.6;
+        color: #9fb6d1;
+      }
+      button {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        min-height: 48px;
+        width: 100%;
+        border-radius: 8px;
+        background: #f59008;
+        color: #0a1a2f;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+      }
+      button:focus-visible {
+        outline: 2px solid #f0a500;
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="seam"></div>
+      <img src="/icons/icon-192.png" alt="" />
+      <h1>You're offline</h1>
+      <p>
+        Nothing you had open is lost. Find signal and try again — anything you were typing is
+        still on this device.
+      </p>
+      <button type="button" onclick="location.reload()">Try again</button>
+    </div>
+  </body>
+</html>

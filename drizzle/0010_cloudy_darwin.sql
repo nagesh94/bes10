@@ -1,0 +1,1 @@
+ALTER TABLE "company_branches" ADD COLUMN "company_name" text DEFAULT 'BHIM ENERGY SOLUTIONS' NOT NULL;

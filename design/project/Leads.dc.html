@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Leads</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; min-height: 64px">
+    <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 38px; width: auto; display: block; flex-shrink: 0">
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1">
+      <a href="Main.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Pipeline</a>
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #042A5E; background: #EAF0F8">Leads</a>
+      <a href="Project.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Projects</a>
+      <a href="Documents.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Documents</a>
+      <a href="AdminUsers.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Admin</a>
+    </nav>
+    <span style="width: 36px; height: 36px; border-radius: 999px; background: #042A5E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0">PS</span>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 28px 24px 56px">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 18px">
+      <div style="flex-grow: 1; min-width: 240px">
+        <h1 style="margin: 0 0 4px; font-size: 26px; font-weight: 700; letter-spacing: -0.02em">Leads</h1>
+        <p style="margin: 0; font-size: 14px; color: #54657E">9 open &middot; 2 ready to convert</p>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 14px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 44px; padding: 0 18px; cursor: pointer; display: flex; align-items: center; gap: 8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#042A5E" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        New lead
+      </button>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px">
+      <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+        <button type="button" style="{{f.style}}">{{f.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+
+      <section style="flex: 999 1 620px; min-width: 0; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; overflow: hidden">
+        <div style="overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse; min-width: 740px">
+            <thead>
+              <tr style="background: #F8FAFC">
+                <th style="text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #54657E; padding: 11px 20px; border-bottom: 1px solid #DDE3EC">Name</th>
+                <th style="text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #54657E; padding: 11px 12px; border-bottom: 1px solid #DDE3EC">Location</th>
+                <th style="text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #54657E; padding: 11px 12px; border-bottom: 1px solid #DDE3EC">Interest</th>
+                <th style="text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #54657E; padding: 11px 12px; border-bottom: 1px solid #DDE3EC">Source</th>
+                <th style="text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #54657E; padding: 11px 20px; border-bottom: 1px solid #DDE3EC">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{leads}}" as="l" hint-placeholder-count="7">
+                <tr style="{{l.row}}">
+                  <td style="padding: 13px 20px; vertical-align: middle">
+                    <div style="font-size: 14px; font-weight: 600">{{l.name}}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #54657E; margin-top: 2px">{{l.phone}}</div>
+                  </td>
+                  <td style="padding: 13px 12px; font-size: 13.5px; color: #54657E; vertical-align: middle">{{l.place}}</td>
+                  <td style="padding: 13px 12px; font-size: 13.5px; vertical-align: middle; white-space: nowrap">{{l.plant}}</td>
+                  <td style="padding: 13px 12px; font-size: 13.5px; color: #54657E; vertical-align: middle">{{l.source}}</td>
+                  <td style="padding: 13px 20px; vertical-align: middle"><span style="{{l.chip}}">{{l.status}}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside style="flex: 1 1 330px; min-width: 300px; background: #FFFFFF; border: 1px solid #FFD3A8; border-radius: 12px; overflow: hidden">
+        <div style="background: #FFF6EC; border-bottom: 1px solid #FFD3A8; padding: 15px 20px">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #C2410C; margin-bottom: 3px">Selected lead</div>
+          <div style="font-size: 17px; font-weight: 700">Ramesh Chauhan</div>
+          <div style="font-size: 12.5px; color: #6B4A12; margin-top: 2px">Indira Nagar, Lucknow &middot; 3 kW</div>
+        </div>
+        <div style="padding: 16px 20px 20px">
+          <h2 style="margin: 0 0 4px; font-size: 14px; font-weight: 700">Convert to prospect</h2>
+          <p style="margin: 0 0 14px; font-size: 12.5px; color: #54657E; line-height: 1.5">A lead becomes a prospect once the application exists on the national portal and the opening details are in.</p>
+
+          <sc-for list="{{gate}}" as="g" hint-placeholder-count="3">
+            <div style="display: flex; align-items: flex-start; gap: 10px; padding: 11px 0; border-top: 1px solid #EDF1F6">
+              <span style="{{g.icon}}">{{g.tick}}</span>
+              <div style="flex-grow: 1; min-width: 0">
+                <div style="font-size: 13.5px; font-weight: 600">{{g.title}}</div>
+                <div style="{{g.subStyle}}">{{g.sub}}</div>
+              </div>
+            </div>
+          </sc-for>
+
+          <label for="npid" style="display: block; font-size: 12px; font-weight: 600; color: #54657E; margin: 14px 0 6px">National Portal ID</label>
+          <input id="npid" type="text" placeholder="UP/2026/0000000" style="width: 100%; box-sizing: border-box; font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #0F1B2D; background: #FFFFFF; border: 1.5px solid #FF7A00; border-radius: 8px; height: 46px; padding: 0 12px; margin-bottom: 16px">
+
+          <button type="button" style="width: 100%; font-family: inherit; font-size: 14px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 46px; cursor: pointer">Convert to prospect</button>
+          <p style="margin: 10px 0 0; font-size: 11.5px; color: #54657E; line-height: 1.5">Converting opens stage 1 and keeps the same record, so nothing is retyped and the history stays intact.</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var fb = 'font-family:inherit;cursor:pointer;height:36px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;';
+    var filters = [
+      ['All', true], ['New', false], ['Contacted', false], ['Survey done', false], ['Ready to convert', false]
+    ].map(function (f) {
+      return {
+        label: f[0],
+        style: fb + (f[1]
+          ? 'background:#042A5E;border:1px solid #042A5E;color:#FFFFFF'
+          : 'background:#FFFFFF;border:1px solid #DDE3EC;color:#54657E')
+      };
+    });
+
+    var pill = 'display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap;';
+    var ready = pill + 'background:#FFF1E3;color:#C2410C';
+    var survey = pill + 'background:#EAF0F8;color:#042A5E';
+    var contacted = pill + 'background:#F1F5F9;color:#475569';
+    var fresh = pill + 'background:#DCFCE7;color:#15803D';
+
+    var defs = [
+      ['Ramesh Chauhan', '+91 98390 11204', 'Indira Nagar, Lucknow', '3 kW', 'Walk-in', 'Ready to convert', ready, true],
+      ['Shalini Verma', '+91 93350 77821', 'Aliganj, Lucknow', '5 kW', 'Referral', 'Ready to convert', ready, false],
+      ['Imran Qureshi', '+91 70070 45512', 'Chinhat, Lucknow', '3 kW', 'Website', 'Survey done', survey, false],
+      ['Devendra Singh', '+91 88590 23410', 'Gomti Nagar, Lucknow', '10 kW', 'Referral', 'Survey done', survey, false],
+      ['Pooja Mishra', '+91 97940 88123', 'Rajajipuram, Lucknow', '4 kW', 'Walk-in', 'Contacted', contacted, false],
+      ['Arun Tiwari', '+91 91230 55409', 'Jankipuram, Lucknow', '3 kW', 'Website', 'Contacted', contacted, false],
+      ['Fatima Sheikh', '+91 90050 71188', 'Hazratganj, Lucknow', '5 kW', 'Campaign', 'New', fresh, false]
+    ];
+
+    var leads = defs.map(function (d) {
+      return {
+        name: d[0], phone: d[1], place: d[2], plant: d[3], source: d[4],
+        status: d[5], chip: d[6],
+        row: d[7]
+          ? 'border-bottom:1px solid #EDF1F6;background:#FFF9F2;box-shadow:inset 3px 0 0 #FF7A00'
+          : 'border-bottom:1px solid #EDF1F6'
+      };
+    });
+
+    var tickOk = 'display:flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:999px;background:#DCFCE7;color:#15803D;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px';
+    var tickWait = 'display:flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:999px;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px';
+    var subOk = 'font-size:12px;color:#54657E;margin-top:2px';
+    var subWait = 'font-size:12px;color:#92400E;font-weight:600;margin-top:2px';
+
+    var gate = [
+      { title: 'Name, phone and address', sub: 'Captured 3 Oct', icon: tickOk, tick: '✓', subStyle: subOk },
+      { title: 'Site survey done', sub: 'Roof measured 7 Oct by Vikram Yadav', icon: tickOk, tick: '✓', subStyle: subOk },
+      { title: 'Application on PM Surya Ghar', sub: 'Create it on the portal, then paste the ID below', icon: tickWait, tick: '·', subStyle: subWait }
+    ];
+
+    return { filters: filters, leads: leads, gate: gate };
+  }
+}
+</script>
+</body>
+</html>

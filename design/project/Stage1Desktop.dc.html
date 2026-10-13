@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stage 1 prospect form</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; min-height: 64px">
+    <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 38px; width: auto; display: block; flex-shrink: 0">
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1">
+      <a href="Main.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Pipeline</a>
+      <a href="Leads.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Leads</a>
+      <a href="Project.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #042A5E; background: #EAF0F8">Projects</a>
+      <a href="Documents.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Documents</a>
+      <a href="AdminUsers.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Admin</a>
+    </nav>
+    <span style="width: 36px; height: 36px; border-radius: 999px; background: #042A5E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0">PS</span>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 20px 24px 56px">
+
+    <nav aria-label="Breadcrumb" style="font-size: 13px; color: #54657E; margin-bottom: 14px">
+      <a href="Main.dc.html" style="text-decoration: none">Pipeline</a>
+      <span style="margin: 0 6px; color: #94A3B8">/</span>
+      <a href="Project.dc.html" style="text-decoration: none; font-family: 'IBM Plex Mono', monospace">BHIM-2026-0014</a>
+      <span style="margin: 0 6px; color: #94A3B8">/</span>
+      <span>Stage 1</span>
+    </nav>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 18px">
+      <div style="flex-grow: 1; min-width: 240px">
+        <h1 style="margin: 0 0 4px; font-size: 25px; font-weight: 700; letter-spacing: -0.02em">Onboarding &amp; documentation</h1>
+        <p style="margin: 0; font-size: 14px; color: #54657E">Ramesh Chauhan &middot; 3 kW &middot; stage 1 of 9</p>
+      </div>
+      <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #15803D; background: #DCFCE7; border-radius: 999px; padding: 7px 13px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+        Saved just now
+      </span>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+
+      <aside style="flex: 1 1 250px; min-width: 230px; max-width: 300px; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 10px">
+        <sc-for list="{{sections}}" as="s" hint-placeholder-count="8">
+          <button type="button" style="{{s.btn}}">
+            <span style="{{s.badge}}">{{s.mark}}</span>
+            <span style="flex-grow: 1; min-width: 0; text-align: left">
+              <span style="display: block; font-size: 13.5px; font-weight: 600">{{s.name}}</span>
+              <span style="{{s.sub}}">{{s.state}}</span>
+            </span>
+          </button>
+        </sc-for>
+      </aside>
+
+      <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+        <div style="background: #FFF8EC; border: 1px solid #F0C98A; border-radius: 12px; padding: 13px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9L1.8 18.4A2 2 0 003.5 21.4h17A2 2 0 0022.2 18.4L13.7 3.9a2 2 0 00-3.4 0z"></path></svg>
+          <span style="flex-grow: 1; min-width: 200px; font-size: 13.5px; color: #6B4A12"><strong style="color: #92400E">2 flags open.</strong> Stage 1 cannot close until a name change and a load enhancement are resolved.</span>
+          <a href="Flags.dc.html" style="font-size: 13px; font-weight: 700; color: #042A5E; background: #FF7A00; border-radius: 8px; height: 40px; padding: 0 15px; display: inline-flex; align-items: center; text-decoration: none">Resolve flags</a>
+        </div>
+
+        <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 22px 24px">
+          <h2 style="margin: 0 0 3px; font-size: 18px; font-weight: 700">User details</h2>
+          <p style="margin: 0 0 20px; font-size: 13px; color: #54657E">Section 1 of 8 &middot; as it appears on the PM Surya Ghar application.</p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 16px">
+            <sc-for list="{{fields}}" as="f" hint-placeholder-count="12">
+              <div style="{{f.wrap}}">
+                <label for="{{f.id}}" style="display: block; font-size: 12px; font-weight: 600; color: #54657E; margin-bottom: 6px">{{f.label}}</label>
+                <input id="{{f.id}}" type="text" value="{{f.value}}" style="{{f.input}}">
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 26px; margin-top: 22px; padding-top: 18px; border-top: 1px solid #EDF1F6">
+            <sc-for list="{{toggles}}" as="t" hint-placeholder-count="2">
+              <div>
+                <div style="font-size: 12px; font-weight: 600; color: #54657E; margin-bottom: 7px">{{t.label}}</div>
+                <div style="display: inline-flex; background: #EDF1F6; border-radius: 8px; padding: 3px">
+                  <button type="button" style="{{t.yes}}">Yes</button>
+                  <button type="button" style="{{t.no}}">No</button>
+                </div>
+                <div style="font-size: 11.5px; color: #54657E; margin-top: 6px; max-width: 260px">{{t.hint}}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end">
+          <button type="button" style="font-family: inherit; font-size: 14px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 46px; padding: 0 18px; cursor: pointer">Save draft</button>
+          <button type="button" style="font-family: inherit; font-size: 14px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 46px; padding: 0 20px; cursor: pointer">Next &mdash; rooftop details</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var btnBase = 'width:100%;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:9px;border:0;margin-bottom:2px;';
+    var defs = [
+      ['User details', 'now', '14 fields'],
+      ['Rooftop details', 'todo', 'Plant size, coordinates'],
+      ['Aadhaar details', 'done', 'Complete'],
+      ['PAN details', 'done', 'Complete'],
+      ['Bank details', 'done', 'Complete'],
+      ['Electricity bill', 'flag', 'Load flag raised'],
+      ['Other details', 'todo', 'Panel, meter type'],
+      ['Site survey', 'todo', 'Cable and earthing runs']
+    ];
+
+    var sections = defs.map(function (d, i) {
+      var st = d[1];
+      var badgeBase = 'display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:999px;font-size:11.5px;font-weight:700;font-family:"IBM Plex Mono",monospace;flex-shrink:0;';
+      return {
+        name: d[0],
+        state: d[2],
+        mark: st === 'done' ? '✓' : String(i + 1),
+        btn: btnBase + (st === 'now'
+          ? 'background:#FFF6EC;box-shadow:inset 0 0 0 1.5px #FF7A00'
+          : 'background:transparent'),
+        badge: badgeBase + (st === 'done'
+          ? 'background:#1E7A2E;color:#FFFFFF'
+          : st === 'now' ? 'background:#FF7A00;color:#042A5E'
+          : st === 'flag' ? 'background:#FEF3C7;color:#92400E'
+          : 'background:#F1F5F9;color:#94A3B8'),
+        sub: 'display:block;font-size:11.5px;margin-top:1px;color:' + (st === 'flag' ? '#92400E' : '#54657E')
+      };
+    });
+
+    var input = 'width:100%;box-sizing:border-box;font-family:inherit;font-size:14px;color:#0F1B2D;background:#FFFFFF;border:1px solid #DDE3EC;border-radius:8px;height:44px;padding:0 12px';
+    var inputMono = input.replace('font-family:inherit', 'font-family:"IBM Plex Mono",monospace');
+    var wide = 'grid-column:1 / -1';
+
+    var fieldDefs = [
+      ['fn', 'First name', 'Ramesh', input, ''],
+      ['ln', 'Last name', 'Chauhan', input, ''],
+      ['gd', 'Gender', 'Male', input, ''],
+      ['ph', 'Contact number', '+91 98390 11204', inputMono, ''],
+      ['em', 'Email address', 'ramesh.chauhan@gmail.com', input, ''],
+      ['npid', 'National Portal ID', 'UP/2026/0463112', inputMono, ''],
+      ['ad', 'Address', 'H. No. 88, Sector 14, Indira Nagar, Lucknow', input, wide],
+      ['pin', 'PIN code', '226016', inputMono, ''],
+      ['cir', 'Circle name', 'Lucknow Central', input, ''],
+      ['div', 'Division name', 'Gomti Nagar', input, ''],
+      ['sub', 'Subdivision name', 'Indira Nagar II', input, ''],
+      ['dt', 'Application date', '03 Oct 2026', input, '']
+    ];
+
+    var fields = fieldDefs.map(function (f) {
+      return { id: f[0], label: f[1], value: f[2], input: f[3], wrap: f[4] };
+    });
+
+    var segBase = 'font-family:inherit;border:0;border-radius:6px;height:34px;padding:0 16px;cursor:pointer;font-size:13px;font-weight:600;';
+    var on = segBase + 'background:#FF7A00;color:#042A5E;font-weight:700';
+    var off = segBase + 'background:transparent;color:#54657E';
+
+    var toggles = [
+      { label: 'Going with DCR?', yes: on, no: off, hint: 'Domestic content modules. Switches on the stage 5 DCR certificate step.' },
+      { label: 'Applying for subsidy?', yes: on, no: off, hint: 'Opens stage 9 settlement and the post-subsidy payment milestone.' }
+    ];
+
+    return { sections: sections, fields: fields, toggles: toggles };
+  }
+}
+</script>
+</body>
+</html>

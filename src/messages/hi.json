@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "भीम एनर्जी सॉल्यूशंस",
+    "shortName": "भीम CRM"
+  },
+  "auth": {
+    "signIn": "साइन इन करें",
+    "email": "ईमेल पता",
+    "emailPlaceholder": "you@bhimenergy.in",
+    "password": "पासवर्ड",
+    "forgot": "पासवर्ड भूल गए?",
+    "signingIn": "साइन इन हो रहा है…",
+    "signOut": "साइन आउट",
+    "invalid": "यह ईमेल और पासवर्ड किसी खाते से मेल नहीं खाते।",
+    "inactive": "यह खाता निष्क्रिय कर दिया गया है। एडमिन से इसे फिर से चालू करवाएँ।",
+    "adminCreates": "खाते एडमिन बनाते हैं। यदि आप साइन इन नहीं कर पा रहे हैं, तो उनसे पासवर्ड रीसेट करवाएँ।"
+  },
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "leads": "लीड",
+    "projects": "परियोजनाएँ",
+    "quotations": "कोटेशन",
+    "agreements": "अनुबंध",
+    "partners": "पार्टनर",
+    "documents": "दस्तावेज़",
+    "admin": "एडमिन",
+    "settings": "सेटिंग्स",
+    "myJobs": "मेरे कार्य",
+    "myReferrals": "मेरे रेफरल",
+    "more": "और"
+  },
+  "roles": {
+    "ADMIN": "एडमिन",
+    "EMPLOYEE": "कर्मचारी",
+    "INSTALLER": "इंस्टॉलर",
+    "PARTNER": "चैनल पार्टनर"
+  },
+  "stages": {
+    "onboarding": "ऑनबोर्डिंग",
+    "agreement": "अनुबंध",
+    "installation": "स्थापना",
+    "evidence": "साक्ष्य",
+    "dcr": "डीसीआर प्रमाणपत्र",
+    "meter": "मीटर भुगतान",
+    "documents": "दस्तावेज़",
+    "commissioning": "कमीशनिंग",
+    "settlement": "निपटान"
+  },
+  "common": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "back": "वापस",
+    "continue": "आगे बढ़ें",
+    "adminOnly": "केवल एडमिन",
+    "language": "भाषा",
+    "appearance": "रूप",
+    "theme": {
+      "system": "सिस्टम",
+      "light": "लाइट",
+      "dark": "डार्क"
+    }
+  }
+}

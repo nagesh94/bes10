@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Field view in dark mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #0A1626; }
+    a { color: #7FA8DC; }
+    a:hover { color: #A8C5EA; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0A1626; font-family: Archivo, system-ui, sans-serif; color: #E9EFF8; display: flex; flex-direction: column; overflow: hidden; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #11203A; border-bottom: 1px solid #223A61; padding: 9px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+    <span style="background: #FFFFFF; border-radius: 7px; padding: 4px 7px; display: flex; align-items: center; flex-shrink: 0">
+      <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 24px; width: auto; display: block">
+    </span>
+    <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #A8C5EA; background: #1B2F52; border: 1px solid #2B4679; border-radius: 999px; padding: 4px 9px; flex-shrink: 0">Installer</span>
+    <span style="flex-grow: 1"></span>
+    <span style="width: 34px; height: 34px; border-radius: 999px; background: #FF7A00; color: #0A1626; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0">VY</span>
+  </header>
+
+  <div style="background: #2A2008; border-bottom: 1px solid #5A4517; padding: 10px 16px; display: flex; align-items: center; gap: 9px; flex-shrink: 0">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M2 2l20 20"></path><path d="M5 12.5a11 11 0 014.3-2.2"></path><path d="M1.4 8.8a16 16 0 015-2.9"></path><path d="M14.8 10.4A11 11 0 0119 12.5"></path><path d="M9 16.2a6 6 0 016 0"></path><path d="M12 20h.01"></path></svg>
+    <div style="flex-grow: 1; min-width: 0">
+      <div style="font-size: 12.5px; font-weight: 700; color: #FBBF24">No signal &mdash; working offline</div>
+      <div style="font-size: 11.5px; color: #D6BC7A">2 photos and this form are saved on the phone.</div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow-y: auto; padding: 14px 16px 20px">
+
+    <div style="background: #11203A; border: 1px solid #223A61; border-radius: 14px; padding: 16px 17px; margin-bottom: 16px">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 9px">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #91A6C5">BHIM-2026-0011</span>
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; background: #FF7A00; color: #0A1626; border-radius: 4px; padding: 3px 7px">Stage 4</span>
+      </div>
+      <div style="font-size: 19px; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 4px">Mohd Irfan</div>
+      <div style="font-size: 13px; color: #91A6C5; line-height: 1.45; margin-bottom: 13px">H. No. 214, Sector 9, Indira Nagar<br>Lucknow 226016</div>
+      <div style="display: flex; gap: 22px; padding-top: 12px; border-top: 1px solid #223A61">
+        <sc-for list="{{facts}}" as="f" hint-placeholder-count="3">
+          <div>
+            <div style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #6F8BB3">{{f.k}}</div>
+            <div style="font-size: 14px; font-weight: 600; margin-top: 2px">{{f.v}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 11px">
+      <h1 style="margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; flex-grow: 1">Site evidence</h1>
+      <span style="font-size: 12.5px; font-weight: 700; color: #FF9A3C">4 of 6</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px">
+      <sc-for list="{{shots}}" as="p" hint-placeholder-count="6">
+        <div>
+          <div style="{{p.box}}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{p.stroke}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2.2l1.3-2h7l1.3 2H20a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><circle cx="12" cy="12.5" r="3.4"></circle></svg>
+            <span style="{{p.stampWrap}}">{{p.stamp}}</span>
+            <span style="{{p.badge}}">{{p.badgeText}}</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; margin-top: 6px; line-height: 1.3">{{p.label}}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <h2 style="margin: 0 0 10px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em">Material used</h2>
+    <div style="background: #11203A; border: 1px solid #223A61; border-radius: 12px; overflow: hidden; margin-bottom: 18px">
+      <sc-for list="{{material}}" as="m" hint-placeholder-count="4">
+        <div style="padding: 11px 14px; border-bottom: 1px solid #1A2C4A">
+          <div style="display: flex; align-items: baseline; gap: 10px">
+            <span style="flex-grow: 1; min-width: 0; font-size: 13.5px; font-weight: 600">{{m.label}}</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; flex-shrink: 0">{{m.len}}</span>
+          </div>
+          <div style="font-size: 11.5px; color: #91A6C5; margin-top: 3px; line-height: 1.4">{{m.spec}}</div>
+        </div>
+      </sc-for>
+      <button type="button" style="width: 100%; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #FF9A3C; background: transparent; border: 0; height: 48px; cursor: pointer; text-align: left; padding: 0 14px; display: flex; align-items: center; gap: 8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF9A3C" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        Add another run
+      </button>
+    </div>
+  </div>
+
+  <div style="background: #11203A; border-top: 1px solid #223A61; padding: 11px 16px 13px; flex-shrink: 0">
+    <button type="button" disabled style="width: 100%; font-family: inherit; font-size: 15px; font-weight: 700; color: #5A7299; background: #16294A; border: 1px solid #223A61; border-radius: 8px; height: 50px; cursor: not-allowed">Submit stage 4</button>
+    <p style="margin: 8px 0 0; font-size: 11.5px; color: #91A6C5; text-align: center">Two photos still to take. Nothing is sent until you are back on signal.</p>
+  </div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var facts = [
+      { k: 'Plant', v: '3 kW' },
+      { k: 'Panels', v: '6 × 545 W' },
+      { k: 'Installed', v: '28 Sep' }
+    ];
+
+    var boxBase = 'position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:116px;border-radius:10px;overflow:hidden;';
+    var hidden = 'display:none';
+
+    function shot(label, state) {
+      var done = state === 'done', queued = state === 'queued';
+      return {
+        label: label,
+        box: boxBase + (done
+          ? 'background:#16294A;border:1px solid #2B4679'
+          : queued
+            ? 'background:#1E2A3F;border:1px solid #5A4517'
+            : 'background:#0D1B30;border:1.5px dashed #2F486F'),
+        stroke: done || queued ? '#6F8BB3' : '#44618F',
+        stampWrap: (done || queued)
+          ? 'position:absolute;left:0;right:0;bottom:0;background:rgba(2,10,22,0.88);color:#B9CBE4;font-family:"IBM Plex Mono",monospace;font-size:8.5px;line-height:1.35;padding:4px 6px;text-align:left'
+          : hidden,
+        stamp: '26.8512°N 80.9398°E\n28 Sep 11:42',
+        badge: done
+          ? 'position:absolute;top:7px;right:7px;display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:#1E7A2E;color:#FFFFFF;font-size:12px;font-weight:700'
+          : queued
+            ? 'position:absolute;top:7px;right:7px;font-size:9.5px;font-weight:700;background:#3A2A08;color:#FBBF24;border-radius:999px;padding:3px 7px'
+            : 'position:absolute;top:7px;right:7px;font-size:9.5px;font-weight:700;background:#1B2F52;color:#91A6C5;border-radius:999px;padding:3px 7px',
+        badgeText: done ? '✓' : queued ? 'Queued' : 'To do'
+      };
+    }
+
+    var shots = [
+      shot('Customer in front of the panels', 'done'),
+      shot('Customer with the inverter', 'done'),
+      shot('Earthing — AC', 'queued'),
+      shot('Earthing — DC', 'queued'),
+      shot('Earthing pit', 'todo'),
+      shot('Site overview', 'todo')
+    ];
+
+    var material = [
+      { label: 'AC wire', len: '32 m', spec: 'Polycab-AC · 4 sqmm · single core · copper' },
+      { label: 'DC wire', len: '48 m', spec: 'Polycab-DC · 4 sqmm · single core · copper' },
+      { label: 'Lightning arrester', len: '9 m', spec: 'Polycab · 6 sqmm · single core · copper' },
+      { label: 'Earthing wire', len: '14 m', spec: 'Polycab · 6 sqmm · copper and G.I.' }
+    ];
+
+    return { facts: facts, shots: shots, material: material };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+ALTER TABLE "quotations" ADD COLUMN "is_chosen" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "quotations_chosen_idx" ON "quotations" USING btree ("project_id") WHERE "quotations"."is_chosen" and "quotations"."project_id" is not null;

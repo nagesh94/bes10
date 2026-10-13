@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!--
+    App icon. A module seen the way an installer sees it from the ladder:
+    foreshortened, four by three cells, with the sun coming over the top
+    edge. Drawn, not lit with gradients, so it survives being shrunk to
+    48px on a notification and masked to a circle on Android.
+  -->
+  <rect width="512" height="512" rx="0" fill="#081E36"/>
+
+  <!-- sun, clipped by the top edge of the array -->
+  <circle cx="256" cy="150" r="54" fill="#F0A500"/>
+  <g stroke="#F0A500" stroke-width="15" stroke-linecap="round">
+    <path d="M256 60 V34"/>
+    <path d="M330 92 L348 74"/>
+    <path d="M182 92 L164 74"/>
+    <path d="M364 150 H390"/>
+    <path d="M148 150 H122"/>
+  </g>
+
+  <!-- array: trapezoid, lighter glass at the top edge -->
+  <path d="M146 250 H366 L410 420 H102 Z" fill="#0E4C8A"/>
+  <path d="M146 250 H366 L375 284 H137 Z" fill="#1A6AB8"/>
+
+  <!-- cell grid, drawn as gaps in the glass rather than lines on top -->
+  <g stroke="#081E36" stroke-width="9">
+    <path d="M191 250 L170 420"/>
+    <path d="M237 250 L237 420"/>
+    <path d="M283 250 L304 420"/>
+    <path d="M137 284 H375"/>
+    <path d="M125 330 H387"/>
+    <path d="M113 376 H399"/>
+  </g>
+
+  <!-- frame -->
+  <path d="M146 250 H366 L410 420 H102 Z" fill="none" stroke="#C9D4E2" stroke-width="11" stroke-linejoin="round"/>
+</svg>

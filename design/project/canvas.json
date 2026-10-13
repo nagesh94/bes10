@@ -1,0 +1,83 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-10T00:00:00Z" },
+  "title": "BHIM Solar CRM — Screens",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 1400, "w": 1360, "h": 1020, "title": "Pipeline dashboard", "expand": "fill" },
+    "Leads.dc.html": { "x": 1440, "y": 1400, "w": 1360, "h": 960, "title": "Leads", "expand": "fill" },
+    "Project.dc.html": { "x": 2880, "y": 1400, "w": 1360, "h": 1160, "title": "Project detail — stage rail", "expand": "fill" },
+
+    "Login.dc.html": { "x": 0, "y": 0, "w": 1360, "h": 820, "title": "Sign in", "expand": "fill" },
+    "Settings.dc.html": { "x": 1440, "y": 0, "w": 1360, "h": 960, "title": "Settings — theme & language", "expand": "fill" },
+
+    "Stage1Desktop.dc.html": { "x": 0, "y": 2920, "w": 1360, "h": 1080, "title": "Stage 1 — prospect form", "expand": "fill" },
+    "Flags.dc.html": { "x": 1440, "y": 2920, "w": 1360, "h": 1080, "title": "Flag resolution", "expand": "fill" },
+    "Payment.dc.html": { "x": 2880, "y": 2920, "w": 1360, "h": 1080, "title": "Payment & Jan Samarth", "expand": "fill" },
+
+    "Agreement.dc.html": { "x": 0, "y": 4400, "w": 1360, "h": 980, "title": "Stage 2 — agreement", "expand": "fill" },
+    "Installation.dc.html": { "x": 1440, "y": 4400, "w": 1360, "h": 1320, "title": "Stage 3 — installation", "expand": "fill" },
+    "Portals.dc.html": { "x": 2880, "y": 4400, "w": 1360, "h": 920, "title": "Stages 5 & 6 — DCR and meter", "expand": "fill" },
+
+    "Documents.dc.html": { "x": 0, "y": 6120, "w": 1360, "h": 1280, "title": "Stage 7 — documents & packs", "expand": "fill" },
+    "Closeout.dc.html": { "x": 1440, "y": 6120, "w": 1360, "h": 1000, "title": "Stages 8 & 9 — commissioning, settlement", "expand": "fill" },
+    "Referrals.dc.html": { "x": 2880, "y": 6120, "w": 1360, "h": 1000, "title": "Channel partners & payouts", "expand": "fill" },
+
+    "AdminUsers.dc.html": { "x": 0, "y": 7520, "w": 1360, "h": 940, "title": "Admin — users & roles", "expand": "fill" },
+    "AdminMaster.dc.html": { "x": 1440, "y": 7520, "w": 1360, "h": 960, "title": "Admin — master data & templates", "expand": "fill" },
+    "AdminAudit.dc.html": { "x": 2880, "y": 7520, "w": 1360, "h": 880, "title": "Admin — audit log", "expand": "fill" },
+
+    "InstallerJobs.dc.html": { "x": 0, "y": 8880, "w": 390, "h": 844, "title": "Installer — my jobs" },
+    "Installer.dc.html": { "x": 470, "y": 8880, "w": 390, "h": 844, "title": "Stage 4 — site evidence" },
+    "InstallMobile.dc.html": { "x": 940, "y": 8880, "w": 390, "h": 844, "title": "Stage 3 — on site" },
+    "Stage1.dc.html": { "x": 1410, "y": 8880, "w": 390, "h": 844, "title": "Stage 1 — on mobile" },
+    "PartnerPortal.dc.html": { "x": 1880, "y": 8880, "w": 390, "h": 844, "title": "Channel partner — my referrals" },
+
+    "DashboardDark.dc.html": { "x": 0, "y": 10124, "w": 1360, "h": 1020, "title": "Pipeline — dark", "expand": "fill" },
+    "DashboardHindi.dc.html": { "x": 1440, "y": 10124, "w": 1360, "h": 1020, "title": "Pipeline — हिंदी", "expand": "fill" },
+    "InstallerDark.dc.html": { "x": 2880, "y": 10124, "w": 390, "h": 844, "title": "Field — dark" }
+  },
+  "order": [
+    "Main.dc.html", "Leads.dc.html", "Project.dc.html",
+    "Login.dc.html", "Settings.dc.html",
+    "Stage1Desktop.dc.html", "Flags.dc.html", "Payment.dc.html",
+    "Agreement.dc.html", "Installation.dc.html", "Portals.dc.html",
+    "Documents.dc.html", "Closeout.dc.html", "Referrals.dc.html",
+    "AdminUsers.dc.html", "AdminMaster.dc.html", "AdminAudit.dc.html",
+    "InstallerJobs.dc.html", "Installer.dc.html", "InstallMobile.dc.html", "Stage1.dc.html", "PartnerPortal.dc.html",
+    "DashboardDark.dc.html", "DashboardHindi.dc.html", "InstallerDark.dc.html"
+  ],
+  "notes": {
+    "n1": { "x": 0, "y": -260, "text": "Sign in and settings", "kind": "title1", "maxW": 2800 },
+    "n2": { "x": 0, "y": 1140, "text": "Pipeline, leads, project", "kind": "title1", "maxW": 4240 },
+    "n3": { "x": 0, "y": 2660, "text": "Onboarding, flags, money", "kind": "title1", "maxW": 4240 },
+    "n4": { "x": 0, "y": 4140, "text": "Agreement, installation, portals", "kind": "title1", "maxW": 4240 },
+    "n5": { "x": 0, "y": 5860, "text": "Documents, close-out, referrals", "kind": "title1", "maxW": 4240 },
+    "n6": { "x": 0, "y": 7260, "text": "Admin", "kind": "title1", "maxW": 4240 },
+    "n7": { "x": 0, "y": 8620, "text": "Field — mobile", "kind": "title1", "maxW": 2270 },
+    "n8": { "x": 0, "y": 9864, "text": "Dark mode and Hindi", "kind": "title1", "maxW": 4240 },
+    "n9": {
+      "x": 3350,
+      "y": 8880,
+      "w": 420,
+      "fill": "blue",
+      "text": "Palette is taken from the logo.\n\nNavy #042A5E — structure, headers, the stage rail.\nSolar orange #FF7A00 — the one primary action per screen, and the stage you are on. Orange carries navy text, never white: white on orange fails contrast.\nLeaf green #1E7A2E — completed stages and verified documents.\nAmber — open flags. Red — blocked or rejected.\n\nArchivo for UI, IBM Plex Mono for every reference number: project codes, Portal IDs, consumer numbers, serials. Those get read aloud over the phone and typed into government portals, so they need unambiguous digits."
+    },
+    "n10": {
+      "x": 3350,
+      "y": 10124,
+      "w": 420,
+      "fill": "purple",
+      "text": "Dark mode inverts the role of navy: in light mode navy is the accent, in dark mode it becomes the ground (#0A1626) and orange carries more of the weight. Greens and ambers are lightened so they still pass contrast on a dark surface — the light-mode values would fail.\n\nHindi switches UI chrome only. Reference numbers, serials, Portal IDs, IFSC codes and amounts stay in Latin digits and monospace, because they are retyped into government portals exactly as shown. Noto Sans Devanagari pairs with Archivo; Devanagari runs roughly 15% wider, so nothing is sized to fit English exactly."
+    },
+    "n11": {
+      "x": 3350,
+      "y": 6120,
+      "w": 420,
+      "fill": "orange",
+      "text": "Four things the app sends you out to, and takes a result back from:\n\nPM Surya Ghar — the application, and the subsidy claim. There is no subsidy form to generate; it is applied for on the portal directly.\nJan Samarth — the bank loan. Comes back as a sanction letter to upload.\nMPCZ DISCOM — name change and load enhancement, one deep link each.\nDCR portal and the DISCOM vendor login — certificate and meter receipt.\n\nNone of them has an API. What BHIM adds is that the reference number and the file cannot go missing, and the next stage will not open without them."
+    }
+  },
+  "designSystems": []
+}

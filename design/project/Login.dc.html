@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=Noto+Sans+Devanagari:wght@400;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #04203F; }
+    a { color: #9DC0E8; }
+    a:hover { color: #C8DCF2; }
+  </style>
+</helmet>
+
+<div style="min-height: 100vh; background: #04203F; font-family: Archivo, system-ui, sans-serif; color: #FFFFFF; display: flex; align-items: center; justify-content: center; padding: 48px 24px; position: relative; overflow: hidden; -webkit-font-smoothing: antialiased">
+
+  <div aria-hidden="true" style="position: absolute; inset: -28%; transform: rotate(-9deg); background-color: #072F5C; background-image: repeating-linear-gradient(to right, rgba(128,178,238,0.30) 0 2px, transparent 2px 296px), repeating-linear-gradient(to bottom, rgba(128,178,238,0.30) 0 2px, transparent 2px 592px), repeating-linear-gradient(to right, rgba(128,178,238,0.13) 0 1px, transparent 1px 74px), repeating-linear-gradient(to bottom, rgba(128,178,238,0.13) 0 1px, transparent 1px 74px)"></div>
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; background-image: linear-gradient(118deg, rgba(174,214,255,0.10) 0%, rgba(174,214,255,0.02) 32%, transparent 52%, rgba(174,214,255,0.06) 100%)"></div>
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; background-image: radial-gradient(ellipse 820px 600px at 50% 46%, rgba(5,32,66,0.10) 0%, rgba(3,20,44,0.72) 62%, rgba(2,13,30,0.94) 100%)"></div>
+
+  <svg aria-hidden="true" viewBox="0 0 200 200" style="position: absolute; top: -46px; right: -26px; width: 330px; height: 330px; opacity: 0.55">
+    <g stroke="#FF7A00" stroke-linecap="round" fill="none">
+      <path d="M34 128 A66 66 0 0 1 166 128" stroke-width="11"></path>
+      <path d="M100 14 V1" stroke-width="9"></path>
+      <path d="M153 36 L162 27" stroke-width="9"></path>
+      <path d="M47 36 L38 27" stroke-width="9"></path>
+      <path d="M181 90 L194 88" stroke-width="9"></path>
+      <path d="M19 90 L6 88" stroke-width="9"></path>
+    </g>
+  </svg>
+
+  <div style="position: relative; width: 100%; max-width: 408px">
+
+    <div style="background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 30px 70px rgba(1, 10, 26, 0.55)">
+      <div aria-hidden="true" style="display: flex; height: 5px">
+        <span style="flex: 1 1 0; background: #2B9A3E"></span>
+        <span style="flex: 0 0 58px; background: #FF7A00"></span>
+        <span style="flex: 2 1 0; background: #042A5E"></span>
+      </div>
+
+      <div style="padding: 36px 38px 34px; color: #0F1B2D">
+        <img src="/_blob/e2f08932b27f49fd9a2ec720fed1f920" alt="BHIM Energy Solutions" style="width: 132px; height: auto; display: block; margin: 0 auto 28px">
+
+        <label for="email" style="display: block; font-size: 13px; font-weight: 600; color: #44586F; margin-bottom: 7px">Email address</label>
+        <input id="email" type="email" placeholder="you@bhimenergy.in" style="width: 100%; box-sizing: border-box; font-family: inherit; font-size: 15px; color: #0F1B2D; background: #FFFFFF; border: 1px solid #D5DEEA; border-radius: 9px; height: 50px; padding: 0 14px; margin-bottom: 18px">
+
+        <label for="pw" style="display: block; font-size: 13px; font-weight: 600; color: #44586F; margin-bottom: 7px">Password</label>
+        <input id="pw" type="password" value="............" style="width: 100%; box-sizing: border-box; font-family: inherit; font-size: 15px; color: #0F1B2D; background: #FFFFFF; border: 1px solid #D5DEEA; border-radius: 9px; height: 50px; padding: 0 14px; margin-bottom: 24px">
+
+        <button type="button" style="width: 100%; font-family: inherit; font-size: 15px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 9px; height: 50px; cursor: pointer">Sign in</button>
+
+        <div style="margin-top: 18px; text-align: center">
+          <a href="#" style="font-size: 13px; font-weight: 600; color: #0B3C7E; text-decoration: none">Forgot password?</a>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 22px; text-align: center; font-size: 12.5px; color: #9DB7D8">
+      <a href="#" style="font-weight: 600; text-decoration: none">English</a>
+      <span style="margin: 0 8px; opacity: 0.6">&middot;</span>
+      <a href="#" style="font-family: 'Noto Sans Devanagari', Archivo, sans-serif; font-weight: 600; text-decoration: none">&#2361;&#2367;&#2306;&#2342;&#2368;</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

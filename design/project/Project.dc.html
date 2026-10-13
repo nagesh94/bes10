@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Project detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; min-height: 64px">
+    <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 38px; width: auto; display: block; flex-shrink: 0">
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1">
+      <a href="Main.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Pipeline</a>
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Leads</a>
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #042A5E; background: #EAF0F8">Projects</a>
+      <a href="Documents.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Documents</a>
+      <a href="#" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Admin</a>
+    </nav>
+    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #042A5E; background: #EAF0F8; border: 1px solid #C9D8EC; border-radius: 999px; padding: 5px 10px">Admin</span>
+      <span style="width: 36px; height: 36px; border-radius: 999px; background: #042A5E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600">AK</span>
+    </div>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 20px 24px 56px">
+
+    <nav aria-label="Breadcrumb" style="font-size: 13px; color: #54657E; margin-bottom: 14px">
+      <a href="Main.dc.html" style="text-decoration: none">Pipeline</a>
+      <span style="margin: 0 6px; color: #94A3B8">/</span>
+      <span style="font-family: 'IBM Plex Mono', monospace">BHIM-2026-0007</span>
+    </nav>
+
+    <div style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 22px 24px; margin-bottom: 18px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px">
+        <div style="flex-grow: 1; min-width: 280px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 8px">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: #54657E">BHIM-2026-0007</span>
+            <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: #EAF0F8; color: #042A5E; border-radius: 4px; padding: 3px 7px">Customer</span>
+            <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: #DCFCE7; color: #15803D; border-radius: 4px; padding: 3px 7px">DCR</span>
+          </div>
+          <h1 style="margin: 0 0 10px; font-size: 26px; font-weight: 700; letter-spacing: -0.02em">Rajesh Kumar</h1>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 28px">
+            <sc-for list="{{meta}}" as="m" hint-placeholder-count="5">
+              <div>
+                <div style="font-size: 11px; font-weight: 600; color: #54657E; letter-spacing: 0.03em; text-transform: uppercase">{{m.k}}</div>
+                <div style="{{m.vs}}">{{m.v}}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; flex-shrink: 0">
+          <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 44px; padding: 0 16px; cursor: pointer">Edit project</button>
+          <button type="button" style="font-family: inherit; font-size: 14px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 44px; padding: 0 18px; cursor: pointer">Continue stage 7</button>
+        </div>
+      </div>
+    </div>
+
+    <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 22px 24px 18px; margin-bottom: 18px">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin-bottom: 18px">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 600; color: #54657E; letter-spacing: 0.04em; text-transform: uppercase; flex-grow: 1">Pipeline stage</h2>
+        <span style="font-size: 13px; color: #54657E">6 of 9 complete &middot; entered stage 7 on 6 Oct 2026</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 4px">
+        <sc-for list="{{rail}}" as="s" hint-placeholder-count="9">
+          <div style="flex: 1 1 128px; min-width: 112px">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px">
+              <span style="{{s.circle}}">{{s.mark}}</span>
+              <span style="{{s.bar}}"></span>
+            </div>
+            <div style="{{s.label}}">{{s.name}}</div>
+            <div style="font-size: 11px; color: #94A3B8; margin-top: 2px">{{s.sub}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+
+      <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+
+        <section style="background: #FFFFFF; border: 1px solid #FFD3A8; border-radius: 12px; overflow: hidden">
+          <div style="background: #FFF6EC; border-bottom: 1px solid #FFD3A8; padding: 16px 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+            <span style="width: 26px; height: 26px; border-radius: 999px; background: #FF7A00; color: #042A5E; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; font-family: 'IBM Plex Mono', monospace">7</span>
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700; flex-grow: 1">Document generation &amp; portal upload</h2>
+            <span style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #C2410C">In progress</span>
+          </div>
+          <div style="padding: 6px 22px 18px">
+            <sc-for list="{{gate}}" as="g" hint-placeholder-count="5">
+              <div style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EDF1F6">
+                <span style="{{g.icon}}">{{g.tick}}</span>
+                <div style="flex-grow: 1; min-width: 0">
+                  <div style="font-size: 14px; font-weight: 600">{{g.title}}</div>
+                  <div style="font-size: 12.5px; color: #54657E; margin-top: 2px">{{g.sub}}</div>
+                </div>
+                <span style="{{g.chipStyle}}">{{g.chip}}</span>
+              </div>
+            </sc-for>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 16px">
+              <a href="Documents.dc.html" style="font-size: 14px; font-weight: 700; color: #042A5E; background: #FF7A00; border-radius: 8px; height: 44px; padding: 0 18px; display: inline-flex; align-items: center; text-decoration: none">Open document workspace</a>
+              <button type="button" disabled style="font-family: inherit; font-size: 14px; font-weight: 600; color: #94A3B8; background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 8px; height: 44px; padding: 0 18px; cursor: not-allowed">Mark stage complete</button>
+            </div>
+            <p style="margin: 12px 0 0; font-size: 12.5px; color: #54657E">The gate stays shut until every document above is signed and marked uploaded to the portal. An admin can override with a written reason.</p>
+          </div>
+        </section>
+
+        <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 20px 22px">
+          <h2 style="margin: 0 0 14px; font-size: 13px; font-weight: 600; color: #54657E; letter-spacing: 0.04em; text-transform: uppercase">Flags raised during onboarding</h2>
+          <sc-for list="{{flags}}" as="f" hint-placeholder-count="2">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid #EDF1F6">
+              <div style="flex-grow: 1; min-width: 220px">
+                <div style="font-size: 14px; font-weight: 600">{{f.title}}</div>
+                <div style="font-size: 12.5px; color: #54657E; margin-top: 2px">{{f.sub}}</div>
+              </div>
+              <span style="display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 4px 11px; background: #DCFCE7; color: #15803D">{{f.status}}</span>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+
+      <div style="flex: 1 1 320px; min-width: 300px; display: flex; flex-direction: column; gap: 18px">
+
+        <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 20px 22px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px">
+            <h2 style="margin: 0; font-size: 13px; font-weight: 600; color: #54657E; letter-spacing: 0.04em; text-transform: uppercase; flex-grow: 1">Payments</h2>
+            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #334155; background: #E2E8F0; border-radius: 999px; padding: 4px 9px; white-space: nowrap">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 018 0v3"></path></svg>
+              Admin only
+            </span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px">
+            <span style="font-size: 13px; color: #54657E">Project value</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 500">&#8377;3,10,000</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px">
+            <span style="font-size: 13px; color: #54657E">Received</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 500; color: #15803D">&#8377;1,55,000</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; margin-top: 8px; border-top: 1px solid #EDF1F6">
+            <span style="font-size: 13px; font-weight: 600">Outstanding</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 600; color: #92400E">&#8377;1,55,000</span>
+          </div>
+          <div style="height: 8px; border-radius: 4px; background: #E2E8F0; margin: 14px 0 16px; overflow: hidden">
+            <span style="display: block; width: 50%; height: 100%; background: #1E7A2E"></span>
+          </div>
+          <sc-for list="{{milestones}}" as="ms" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid #EDF1F6">
+              <span style="{{ms.dot}}"></span>
+              <div style="flex-grow: 1; min-width: 0">
+                <div style="font-size: 13px; font-weight: 600">{{ms.label}}</div>
+                <div style="font-size: 11.5px; color: #54657E">{{ms.trigger}}</div>
+              </div>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px">{{ms.amount}}</span>
+            </div>
+          </sc-for>
+          <div style="margin-top: 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 14px">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #54657E; margin-bottom: 4px">Subsidy</div>
+            <div style="font-size: 13.5px; font-weight: 600">Applied &middot; awaiting credit</div>
+            <div style="font-size: 12.5px; color: #54657E; margin-top: 3px">&#8377;78,000 expected to the customer&rsquo;s account. Marking it received triggers the balance reminder.</div>
+          </div>
+        </section>
+
+        <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 20px 22px">
+          <h2 style="margin: 0 0 12px; font-size: 13px; font-weight: 600; color: #54657E; letter-spacing: 0.04em; text-transform: uppercase">Team</h2>
+          <sc-for list="{{team}}" as="t" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 11px; padding: 9px 0">
+              <span style="width: 34px; height: 34px; border-radius: 999px; background: #EAF0F8; color: #042A5E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0">{{t.initials}}</span>
+              <div style="flex-grow: 1; min-width: 0">
+                <div style="font-size: 13.5px; font-weight: 600">{{t.name}}</div>
+                <div style="font-size: 11.5px; color: #54657E">{{t.role}}</div>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+
+        <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 20px 22px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px">
+            <h2 style="margin: 0; font-size: 13px; font-weight: 600; color: #54657E; letter-spacing: 0.04em; text-transform: uppercase; flex-grow: 1">Referred by</h2>
+            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #334155; background: #E2E8F0; border-radius: 999px; padding: 4px 9px; white-space: nowrap">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 018 0v3"></path></svg>
+              Amounts admin only
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 14px">
+            <span style="width: 36px; height: 36px; border-radius: 999px; background: #FFE8D1; color: #C2410C; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0">SP</span>
+            <div style="flex-grow: 1; min-width: 0">
+              <div style="font-size: 14px; font-weight: 600">Suresh Prajapati</div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #54657E; margin-top: 1px">+91 94250 33817</div>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-top: 1px solid #EDF1F6">
+            <span style="font-size: 13px; color: #54657E">Rate</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13.5px">&#8377;2,000 / kW</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-top: 1px solid #EDF1F6">
+            <span style="font-size: 13px; color: #54657E">Commission</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600">&#8377;10,000</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #EDF1F6">
+            <span style="font-size: 13px; color: #54657E">Status</span>
+            <span style="display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 4px 11px; background: #F1F5F9; color: #475569">Accrues at commissioning</span>
+          </div>
+          <p style="margin: 11px 0 0; font-size: 12px; color: #54657E; line-height: 1.5">Nothing is owed until stage 8 is signed off, so a referral that never gets built never generates a payout.</p>
+        </section>
+
+        <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 20px 22px">
+          <h2 style="margin: 0 0 12px; font-size: 13px; font-weight: 600; color: #54657E; letter-spacing: 0.04em; text-transform: uppercase">External references</h2>
+          <sc-for list="{{refs}}" as="rf" hint-placeholder-count="4">
+            <div style="padding: 9px 0; border-top: 1px solid #EDF1F6">
+              <div style="font-size: 11.5px; color: #54657E">{{rf.k}}</div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13.5px; font-weight: 500; margin-top: 2px">{{rf.v}}</div>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var mono = 'font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:500;margin-top:3px';
+    var plain = 'font-size:14px;font-weight:600;margin-top:3px';
+
+    var meta = [
+      { k: 'Plant size', v: '5 kW', vs: plain },
+      { k: 'Portal ID', v: 'UP/2026/0451887', vs: mono },
+      { k: 'Consumer no.', v: '7740 2291 5508', vs: mono },
+      { k: 'Division', v: 'Lucknow &mdash; Gomti Nagar', vs: plain },
+      { k: 'Installed', v: '28 Sep 2026', vs: plain }
+    ];
+
+    var names = ['Onboarding', 'Agreement', 'Installation', 'Evidence', 'DCR', 'Meter payment', 'Documents', 'Commissioning', 'Settlement'];
+    var subs = ['12 Aug', '19 Aug', '28 Sep', '28 Sep', '1 Oct', '4 Oct', 'In progress', 'Locked', 'Locked'];
+    var current = 7;
+    var circleBase = 'display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;font-size:12px;font-weight:700;font-family:"IBM Plex Mono",monospace;flex-shrink:0;';
+
+    var rail = names.map(function (n, i) {
+      var no = i + 1, done = no < current, now = no === current;
+      return {
+        name: n,
+        sub: subs[i],
+        mark: done ? '✓' : String(no),
+        circle: circleBase + (done
+          ? 'background:#1E7A2E;color:#FFFFFF'
+          : now ? 'background:#FF7A00;color:#042A5E;box-shadow:0 0 0 4px #FFE8D1'
+                : 'background:#FFFFFF;color:#94A3B8;border:1.5px solid #DDE3EC'),
+        bar: 'display:block;flex-grow:1;height:3px;border-radius:2px;background:' + (done ? '#1E7A2E' : '#E2E8F0'),
+        label: 'font-size:13px;font-weight:600;color:' + (no <= current ? '#0F1B2D' : '#94A3B8')
+      };
+    });
+
+    var tickOk = 'display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:#DCFCE7;color:#15803D;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px';
+    var tickWait = 'display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:#F1F5F9;color:#94A3B8;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px';
+    var chipOk = 'display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;background:#DCFCE7;color:#15803D;white-space:nowrap';
+    var chipWait = 'display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;background:#FEF3C7;color:#92400E;white-space:nowrap';
+
+    var gate = [
+      ['Agreement', 'Generated, printed, wet-signed by both parties, scan uploaded', true, 'Signed'],
+      ['NOC certificate', 'Uploaded for the electricity bill name change', true, 'Verified'],
+      ['Jan Samarth sanction letter', 'Downloaded from the portal and uploaded here', true, 'Verified'],
+      ['Bank loan pack', 'Merged print set &mdash; 12 pages, A4', true, 'Printed'],
+      ['Portal upload', '4 of 7 documents marked uploaded to PM Surya Ghar', false, '4 / 7']
+    ].map(function (g) {
+      return {
+        title: g[0], sub: g[1],
+        icon: g[2] ? tickOk : tickWait,
+        tick: g[2] ? '✓' : '·',
+        chip: g[3], chipStyle: g[2] ? chipOk : chipWait
+      };
+    });
+
+    var flags = [
+      { title: 'Name mismatch', sub: 'Electricity bill read R. K. Kumar against Rajesh Kumar on Aadhaar, PAN and bank. Name changed on the bill 2 Sep.', status: 'Resolved' },
+      { title: 'Load enhancement', sub: 'Sanctioned load was 3 kW against a 5 kW plant. Enhanced to 5 kW, approved by the DISCOM 14 Sep.', status: 'Resolved' }
+    ];
+
+    var milestones = [
+      { label: '50% on agreement', trigger: 'Received 20 Aug &middot; NEFT', amount: '₹1,55,000', dot: 'display:block;width:9px;height:9px;border-radius:999px;background:#1E7A2E;flex-shrink:0' },
+      { label: 'Balance after subsidy', trigger: 'Due once the subsidy is credited', amount: '₹1,55,000', dot: 'display:block;width:9px;height:9px;border-radius:999px;background:#FF7A00;flex-shrink:0' }
+    ];
+
+    var team = [
+      { initials: 'PS', name: 'Priya Sharma', role: 'Employee &middot; owner' },
+      { initials: 'VY', name: 'Vikram Yadav', role: 'Installer &middot; assigned 26 Sep' }
+    ];
+
+    var refs = [
+      { k: 'National Portal ID', v: 'UP/2026/0451887' },
+      { k: 'DCR certificate no.', v: 'DCR-7781-2026' },
+      { k: 'Meter payment ref.', v: 'MTR/LKO/88213' },
+      { k: 'Net meter serial', v: 'Not yet issued' }
+    ];
+
+    return { meta: meta, rail: rail, gate: gate, flags: flags, milestones: milestones, team: team, refs: refs };
+  }
+}
+</script>
+</body>
+</html>

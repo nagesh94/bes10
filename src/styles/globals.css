@@ -1,0 +1,525 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   BHIM Energy Solutions — design tokens
+   "Module & Daylight"
+
+   Taken from the thing itself. A PV module is deep blue-violet glass in an
+   aluminium frame; the sun's contribution is gold, not red. So:
+
+     chrome   deep module glass, dark in BOTH themes — the app bar and the
+              phone tab bar never invert, which is what makes an installed
+              PWA feel like an app rather than a page
+     canvas   light aluminium, deep enough that white cards sit ON it
+     amber    the single action colour, always carrying navy ink
+     gold     data only — statistics, the array fill, the focus ring.
+              Never a button, so a number is never mistaken for a control
+
+   Status colours are re-derived rather than inherited: every text-on-soft
+   pair here clears 5:1 in both themes.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Surfaces — four steps, not three: the canvas is darker than the cards
+     so a page of cards reads as layers without a shadow on every one. */
+  --bg: #e7ecf2;
+  --surface: #ffffff;
+  --surface-2: #f1f5fa;
+  --surface-sunken: #dce3ed;
+
+  /* Hairlines */
+  --line: #c9d4e2;
+  --line-soft: #e2e9f2;
+
+  /* Text */
+  --ink: #0a1a2f;
+  --muted: #4d6075;
+  --muted-soft: #677c92;
+
+  /* App chrome. Dark in both themes — see note above. */
+  --chrome: #081e36;
+  --chrome-2: #0f2b4a;
+  --chrome-ink: #ffffff;
+  --chrome-muted: #9fb6d1;
+  --chrome-line: #15385d;
+
+  /* Brand navy */
+  --navy: #072744;
+  --navy-ink: #ffffff;
+  --navy-soft: #e5edf7;
+  --navy-border: #c2d4e9;
+  --link: #0e4c8a;
+  --link-hover: #072744;
+
+  /* Solar amber — the single primary action. Navy ink, never white:
+     white on amber fails in both themes, navy on it clears 7:1. */
+  --orange: #f59008;
+  --orange-hover: #e07f00;
+  --orange-ink: #0a1a2f;
+  --orange-text: #a8520a;
+  --orange-soft: #fff2e0;
+  --orange-border: #f8cd96;
+  --orange-ring: #ffe4bd;
+
+  /* Daylight gold — energy and statistics. Not an action. */
+  --gold: #f0a500;
+  --gold-ink: #0a1a2f;
+  /* Gold as a fill is 2:1 on white, so text never uses it: a figure set in
+     gold uses this one instead, which clears 5:1 and still reads as sun. */
+  --gold-text: #9a6400;
+  --gold-soft: #fff6e0;
+  --gold-border: #f3d79a;
+
+  /* Leaf green — completed, verified */
+  --green: #157f33;
+  --green-ink: #ffffff;
+  --green-text: #0f6b2a;
+  --green-soft: #dcf3e1;
+  --green-border: #b4e4c1;
+
+  /* Amber — open flags */
+  --amber-text: #8a5206;
+  --amber-body: #6a4409;
+  --amber-soft: #fdf0ce;
+  --amber-surface: #fffaed;
+  --amber-border: #ecc97f;
+
+  /* Red — blocked, rejected, mismatch */
+  --red-text: #ad2118;
+  --red-soft: #fde5e2;
+  --red-border: #f7bdb7;
+  --red-surface: #fff5f4;
+
+  /* Channel partner */
+  --partner-text: #6b21a8;
+  --partner-soft: #f2e9fe;
+
+  /* Restricted / admin-only lock chip */
+  --locked-text: #3c4f64;
+  --locked-soft: #e3e9f1;
+
+  /* Neutral chip */
+  --chip-text: #41566e;
+  --chip-soft: #edf1f7;
+
+  /* Stage rail */
+  --stage-done: #157f33;
+  --stage-now: #f59008;
+  --stage-todo: #bccbdb;
+
+  /* Statistics series. Ordered so neighbours stay apart for the most
+     common colour-blindness, and so each one holds up at 6px wide. */
+  --data-1: #0e4c8a;
+  --data-2: #f0a500;
+  --data-3: #157f33;
+  --data-4: #7c3aed;
+  --data-5: #0d7490;
+  --data-6: #b45309;
+  --data-rest: #93a7bd;
+  --data-track: #e2e9f2;
+
+  /* Elevation. Two layers, tinted with the ink rather than pure black,
+     so a raised panel reads as lit from above and not as a grey halo. */
+  --shadow-card: 0 1px 2px rgb(10 26 47 / 0.05), 0 1px 1px rgb(10 26 47 / 0.04);
+  --shadow-panel:
+    0 1px 2px rgb(10 26 47 / 0.06), 0 12px 28px -10px rgb(10 26 47 / 0.16);
+  --shadow-chrome: 0 1px 0 rgb(10 26 47 / 0.04);
+  --shadow-float: 0 24px 60px rgb(2 11 24 / 0.45);
+
+  /* Radius is a scale, not one number: panels, controls, chips. */
+  --radius: 0.625rem;
+  --radius-control: 0.5rem;
+  --radius-chip: 0.25rem;
+
+  color-scheme: light;
+}
+
+/* ── Dark ─────────────────────────────────────────────────────────────────
+   Not an inversion. The canvas becomes the glass itself, the chrome goes
+   one step deeper still so the bar stays legible against the content, and
+   every status colour is re-picked for a dark ground rather than lightened.
+   ────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #07121f;
+    --surface: #101f33;
+    --surface-2: #0c1a2c;
+    --surface-sunken: #162940;
+
+    --line: #1f3a5c;
+    --line-soft: #182c47;
+
+    --ink: #e6edf7;
+    --muted: #93a8c2;
+    --muted-soft: #7a91ad;
+
+    --chrome: #050f1c;
+    --chrome-2: #102641;
+    --chrome-ink: #f3f7fd;
+    --chrome-muted: #93abc8;
+    --chrome-line: #1b3a5e;
+
+    --navy: #16304f;
+    --navy-ink: #e6edf7;
+    --navy-soft: #13283f;
+    --navy-border: #27456c;
+    --link: #7fb2ea;
+    --link-hover: #a9ccf3;
+
+    --orange-text: #ffa94d;
+    --orange-soft: #3a2608;
+    --orange-border: #5e4414;
+    --orange-ring: #2a1c08;
+
+    --gold: #ffb22c;
+    --gold-text: #ffb22c;
+    --gold-soft: #332307;
+    --gold-border: #5c4414;
+
+    --green: #1a8d3a;
+    --green-text: #5cd47e;
+    --green-soft: #0f3520;
+    --green-border: #1c5c33;
+
+    --amber-text: #f9c256;
+    --amber-body: #d9bc85;
+    --amber-soft: #352607;
+    --amber-surface: #241b06;
+    --amber-border: #5c4414;
+
+    --red-text: #ff9c94;
+    --red-soft: #3a1310;
+    --red-border: #652420;
+    --red-surface: #280f0d;
+
+    --partner-text: #d7b4fe;
+    --partner-soft: #2b1065;
+
+    --locked-text: #c3d4ea;
+    --locked-soft: #16304f;
+
+    --chip-text: #a9ccf3;
+    --chip-soft: #15293f;
+
+    --stage-done: #2ba84c;
+    --stage-todo: #2b4668;
+
+    --data-1: #62a6ef;
+    --data-2: #ffb22c;
+    --data-3: #4ec873;
+    --data-4: #b288f9;
+    --data-5: #3fb8cf;
+    --data-6: #f0923b;
+    --data-rest: #5b7696;
+    --data-track: #182c47;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 14px 32px -12px rgb(0 0 0 / 0.6);
+    --shadow-chrome: 0 1px 0 rgb(0 0 0 / 0.4);
+
+    color-scheme: dark;
+  }
+}
+
+/* Explicit choice always wins */
+:root[data-theme="dark"] {
+  --bg: #07121f;
+  --surface: #101f33;
+  --surface-2: #0c1a2c;
+  --surface-sunken: #162940;
+
+  --line: #1f3a5c;
+  --line-soft: #182c47;
+
+  --ink: #e6edf7;
+  --muted: #93a8c2;
+  --muted-soft: #7a91ad;
+
+  --chrome: #050f1c;
+  --chrome-2: #102641;
+  --chrome-ink: #f3f7fd;
+  --chrome-muted: #93abc8;
+  --chrome-line: #1b3a5e;
+
+  --navy: #16304f;
+  --navy-ink: #e6edf7;
+  --navy-soft: #13283f;
+  --navy-border: #27456c;
+  --link: #7fb2ea;
+  --link-hover: #a9ccf3;
+
+  --orange-text: #ffa94d;
+  --orange-soft: #3a2608;
+  --orange-border: #5e4414;
+  --orange-ring: #2a1c08;
+
+  --gold: #ffb22c;
+  --gold-text: #ffb22c;
+  --gold-soft: #332307;
+  --gold-border: #5c4414;
+
+  --green: #1a8d3a;
+  --green-text: #5cd47e;
+  --green-soft: #0f3520;
+  --green-border: #1c5c33;
+
+  --amber-text: #f9c256;
+  --amber-body: #d9bc85;
+  --amber-soft: #352607;
+  --amber-surface: #241b06;
+  --amber-border: #5c4414;
+
+  --red-text: #ff9c94;
+  --red-soft: #3a1310;
+  --red-border: #652420;
+  --red-surface: #280f0d;
+
+  --partner-text: #d7b4fe;
+  --partner-soft: #2b1065;
+
+  --locked-text: #c3d4ea;
+  --locked-soft: #16304f;
+
+  --chip-text: #a9ccf3;
+  --chip-soft: #15293f;
+
+  --stage-done: #2ba84c;
+  --stage-todo: #2b4668;
+
+  --data-1: #62a6ef;
+  --data-2: #ffb22c;
+  --data-3: #4ec873;
+  --data-4: #b288f9;
+  --data-5: #3fb8cf;
+  --data-6: #f0923b;
+  --data-rest: #5b7696;
+  --data-track: #182c47;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 14px 32px -12px rgb(0 0 0 / 0.6);
+  --shadow-chrome: 0 1px 0 rgb(0 0 0 / 0.4);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-deva: var(--font-noto-deva), var(--font-archivo), sans-serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-sunken: var(--surface-sunken);
+
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-muted-soft: var(--muted-soft);
+
+  --color-chrome: var(--chrome);
+  --color-chrome-2: var(--chrome-2);
+  --color-chrome-ink: var(--chrome-ink);
+  --color-chrome-muted: var(--chrome-muted);
+  --color-chrome-line: var(--chrome-line);
+
+  --color-navy: var(--navy);
+  --color-navy-ink: var(--navy-ink);
+  --color-navy-soft: var(--navy-soft);
+  --color-navy-border: var(--navy-border);
+  --color-link: var(--link);
+
+  --color-orange: var(--orange);
+  --color-orange-ink: var(--orange-ink);
+  --color-orange-text: var(--orange-text);
+  --color-orange-soft: var(--orange-soft);
+  --color-orange-border: var(--orange-border);
+
+  --color-gold: var(--gold);
+  --color-gold-text: var(--gold-text);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-border: var(--gold-border);
+
+  --color-green: var(--green);
+  --color-green-ink: var(--green-ink);
+  --color-green-text: var(--green-text);
+  --color-green-soft: var(--green-soft);
+  --color-green-border: var(--green-border);
+
+  --color-amber-text: var(--amber-text);
+  --color-amber-body: var(--amber-body);
+  --color-amber-soft: var(--amber-soft);
+  --color-amber-surface: var(--amber-surface);
+  --color-amber-border: var(--amber-border);
+
+  --color-red-text: var(--red-text);
+  --color-red-soft: var(--red-soft);
+  --color-red-border: var(--red-border);
+  --color-red-surface: var(--red-surface);
+
+  --color-partner-text: var(--partner-text);
+  --color-partner-soft: var(--partner-soft);
+
+  --color-locked-text: var(--locked-text);
+  --color-locked-soft: var(--locked-soft);
+
+  --color-chip-text: var(--chip-text);
+  --color-chip-soft: var(--chip-soft);
+
+  --color-stage-done: var(--stage-done);
+  --color-stage-now: var(--stage-now);
+  --color-stage-todo: var(--stage-todo);
+
+  --radius-card: var(--radius);
+  --shadow-card: var(--shadow-card);
+  --shadow-panel: var(--shadow-panel);
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    /* An installed app should not flash a grey rubber-band edge, and a tap
+       should not leave a system highlight behind. */
+    background-color: var(--bg);
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: var(--link);
+  }
+  a:hover {
+    color: var(--link-hover);
+  }
+
+  ::selection {
+    background-color: var(--orange-ring);
+    color: var(--ink);
+  }
+
+  /* Controls answer the pointer. Nothing moves — only colour changes — so
+     a dense table does not shiver as the cursor crosses it. */
+  a,
+  button,
+  [role="button"],
+  summary {
+    transition:
+      background-color 0.14s ease,
+      border-color 0.14s ease,
+      color 0.14s ease;
+  }
+
+  /* Row tracking. A utility class on a row still wins, so a row that sets
+     its own background keeps it. */
+  tbody tr:hover {
+    background-color: var(--surface-2);
+  }
+
+  h1,
+  h2,
+  h3 {
+    /* Headings are set tight; the scale lives in the pages. */
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  /* Reference numbers are read aloud and retyped into government portals.
+     They are always monospace, always Latin digits, in every language. */
+  .ref {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+
+  /* Statistics are not reference numbers: they stay in the UI face so they
+     read as quantities, but with fixed-width digits so a column of them
+     lines up and a counting figure does not jiggle as it changes. */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "ss01";
+    letter-spacing: -0.015em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  /* The daylight seam: the three colours of the logo's underline, used as
+     the app's horizon line under the bar. The only gradient in the app. */
+  .seam {
+    height: 3px;
+    flex: none;
+    background: linear-gradient(
+      90deg,
+      var(--green) 0%,
+      var(--gold) 38%,
+      var(--orange) 52%,
+      var(--navy) 100%
+    );
+  }
+
+  /* Scrollbars, so a dense table does not punch a white strip through a
+     dark theme. */
+  @supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar {
+      width: 11px;
+      height: 11px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border: 3px solid transparent;
+      border-radius: 99px;
+      background-clip: content-box;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted-soft);
+      background-clip: content-box;
+    }
+  }
+}
+
+/* Installed, with no browser bar to protect the top of the screen. */
+@media (display-mode: standalone) {
+  body {
+    /* Nothing should look selectable-by-accident in an installed app, but
+       the forms still need to be, so this is deliberately narrow. */
+    user-select: none;
+  }
+  input,
+  textarea,
+  select,
+  [contenteditable],
+  .ref,
+  table {
+    user-select: text;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

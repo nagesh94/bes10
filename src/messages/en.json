@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "BHIM Energy Solutions",
+    "shortName": "BHIM CRM"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "email": "Email address",
+    "emailPlaceholder": "you@bhimenergy.in",
+    "password": "Password",
+    "forgot": "Forgot password?",
+    "signingIn": "Signing in…",
+    "signOut": "Sign out",
+    "invalid": "That email and password do not match an account.",
+    "inactive": "This account has been deactivated. Ask an admin to re-enable it.",
+    "adminCreates": "Accounts are created by an admin. If you cannot get in, ask them to reset your password."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "leads": "Leads",
+    "projects": "Projects",
+    "quotations": "Quotations",
+    "agreements": "Agreements",
+    "partners": "Partners",
+    "documents": "Documents",
+    "admin": "Admin",
+    "settings": "Settings",
+    "myJobs": "My jobs",
+    "myReferrals": "My referrals",
+    "more": "More"
+  },
+  "roles": {
+    "ADMIN": "Admin",
+    "EMPLOYEE": "Employee",
+    "INSTALLER": "Installer",
+    "PARTNER": "Channel partner"
+  },
+  "stages": {
+    "onboarding": "Onboarding",
+    "agreement": "Agreement",
+    "installation": "Installation",
+    "evidence": "Evidence",
+    "dcr": "DCR certificate",
+    "meter": "Meter payment",
+    "documents": "Documents",
+    "commissioning": "Commissioning",
+    "settlement": "Settlement"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "continue": "Continue",
+    "adminOnly": "Admin only",
+    "language": "Language",
+    "appearance": "Appearance",
+    "theme": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
+  }
+}

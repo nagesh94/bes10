@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Audit log</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; min-height: 64px">
+    <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 38px; width: auto; display: block; flex-shrink: 0">
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1">
+      <a href="Main.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Pipeline</a>
+      <a href="Leads.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Leads</a>
+      <a href="Project.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Projects</a>
+      <a href="Documents.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Documents</a>
+      <a href="AdminUsers.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #042A5E; background: #EAF0F8">Admin</a>
+    </nav>
+    <span style="width: 36px; height: 36px; border-radius: 999px; background: #042A5E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0">AK</span>
+  </header>
+
+  <div style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px">
+    <div style="max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 2px">
+      <a href="AdminUsers.dc.html" style="padding: 13px 14px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Users &amp; roles</a>
+      <a href="AdminMaster.dc.html" style="padding: 13px 14px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Master data</a>
+      <a href="AdminMaster.dc.html" style="padding: 13px 14px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Templates</a>
+      <a href="#" style="padding: 13px 14px; font-size: 14px; font-weight: 600; text-decoration: none; color: #042A5E; box-shadow: inset 0 -2.5px 0 #FF7A00">Audit log</a>
+    </div>
+  </div>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 26px 24px 56px">
+
+    <h1 style="margin: 0 0 4px; font-size: 25px; font-weight: 700; letter-spacing: -0.02em">Audit log</h1>
+    <p style="margin: 0 0 18px; font-size: 14px; color: #54657E; max-width: 760px">Every change records who, what, before and after. Reads of an Aadhaar document are logged too, which is why they appear here alongside edits.</p>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px">
+      <label style="display: flex; align-items: center; gap: 8px; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; padding: 0 12px; height: 42px; flex: 1 1 240px; min-width: 200px">
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search the audit log</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#54657E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <input type="search" placeholder="Project code, person or action" style="border: 0; background: transparent; outline: none; font-family: inherit; font-size: 13.5px; color: #0F1B2D; width: 100%">
+      </label>
+      <select aria-label="Filter by person" style="font-family: inherit; font-size: 13.5px; color: #0F1B2D; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 42px; padding: 0 11px">
+        <option>Everyone</option>
+        <option>Amit Kumar</option>
+        <option>Priya Sharma</option>
+      </select>
+      <select aria-label="Filter by type" style="font-family: inherit; font-size: 13.5px; color: #0F1B2D; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 42px; padding: 0 11px">
+        <option>All activity</option>
+        <option>Overrides only</option>
+        <option>Document reads</option>
+      </select>
+      <button type="button" style="font-family: inherit; font-size: 13.5px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 42px; padding: 0 16px; cursor: pointer">Export CSV</button>
+    </div>
+
+    <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; overflow: hidden">
+      <sc-for list="{{events}}" as="e" hint-placeholder-count="9">
+        <div style="{{e.row}}">
+          <span style="{{e.icon}}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{e.stroke}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{e.path}}"></path></svg>
+          </span>
+          <div style="flex: 1 1 320px; min-width: 0">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 2px">{{e.title}}</div>
+            <div style="font-size: 12.5px; color: #54657E; line-height: 1.45">{{e.detail}}</div>
+          </div>
+          <span style="{{e.tagStyle}}">{{e.tag}}</span>
+          <div style="flex-shrink: 0; text-align: right; min-width: 128px">
+            <div style="font-size: 13px; font-weight: 600">{{e.who}}</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #54657E; margin-top: 2px">{{e.when}}</div>
+          </div>
+        </div>
+      </sc-for>
+      <div style="padding: 14px 20px; font-size: 13px; color: #54657E; border-top: 1px solid #EDF1F6">Showing the last 9 of 1,284 entries &middot; <a href="#" style="font-weight: 600">Load more</a></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":880}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var rowBase = 'display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #EDF1F6;';
+    var iconBase = 'display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;flex-shrink:0;';
+    var tagBase = 'display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;border-radius:999px;padding:4px 10px;white-space:nowrap;flex-shrink:0;';
+
+    var P = {
+      edit: 'M4 20h4l10-10-4-4L4 16z',
+      doc: 'M6 2h9l5 5v15H6zM15 2v5h5',
+      eye: 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z',
+      alert: 'M12 9v4M12 17h.01M10.3 3.9L1.8 18.4h20.4z',
+      check: 'M20 6L9 17l-5-5',
+      user: 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0'
+    };
+
+    var defs = [
+      ['override', 'Stage gate overridden', 'BHIM-2026-0008 · stage 4 marked complete with 5 of 6 photos. Reason: &ldquo;Earthing pit photo lost, re-shoot scheduled.&rdquo;', 'Override', 'Amit Kumar', '10 Oct 14:22', P.alert],
+      ['read', 'Aadhaar document opened', 'BHIM-2026-0014 · Ramesh Chauhan', 'Document read', 'Priya Sharma', '10 Oct 13:58', P.eye],
+      ['edit', 'Sanctioned load changed', 'BHIM-2026-0014 · 2 kW → 3 kW · closed the load enhancement flag', 'Update', 'Priya Sharma', '10 Oct 13:41', P.edit],
+      ['doc', 'NOC certificate generated', 'BHIM-2026-0014 · template v2 · 11 fields merged', 'Generate', 'Priya Sharma', '10 Oct 13:30', P.doc],
+      ['ok', 'Subsidy marked received', 'BHIM-2026-0002 · ₹78,000 · collection task created, reminder queued', 'Update', 'Amit Kumar', '10 Oct 11:04', P.check],
+      ['doc', 'Portal upload pack downloaded', 'BHIM-2026-0007 · 7 files · largest 184 KB after resize', 'Export', 'Priya Sharma', '09 Oct 17:46', P.doc],
+      ['edit', 'Installation record completed', 'BHIM-2026-0011 · 6 panel serials, hybrid battery bank', 'Update', 'Vikram Yadav', '09 Oct 16:12', P.edit],
+      ['user', 'User invited', 'deepak@bhimenergy.in · role Installer', 'Admin', 'Amit Kumar', '09 Oct 10:30', P.user],
+      ['edit', 'Payment plan locked', 'BHIM-2026-0012 · split · 3 milestones · ₹3,10,000', 'Update', 'Priya Sharma', '08 Oct 15:55', P.edit]
+    ];
+
+    var events = defs.map(function (d) {
+      var kind = d[0];
+      var tone = kind === 'override'
+        ? ['#FEF3C7', '#92400E', '#FFF8EC', 'background:#FEF3C7;color:#92400E']
+        : kind === 'read'
+          ? ['#EAF0F8', '#042A5E', '', 'background:#EDE9FE;color:#5B21B6']
+          : kind === 'ok'
+            ? ['#DCFCE7', '#15803D', '', 'background:#DCFCE7;color:#15803D']
+            : kind === 'user'
+              ? ['#EAF0F8', '#042A5E', '', 'background:#042A5E;color:#FFFFFF']
+              : ['#F1F5F9', '#475569', '', 'background:#F1F5F9;color:#475569'];
+
+      return {
+        title: d[1], detail: d[2], tag: d[3], who: d[4], when: d[5], path: d[6],
+        row: rowBase + (tone[2] ? 'background:' + tone[2] + ';box-shadow:inset 3px 0 0 #FF7A00' : ''),
+        icon: iconBase + 'background:' + tone[0],
+        stroke: tone[1],
+        tagStyle: tagBase + tone[3]
+      };
+    });
+
+    return { events: events };
+  }
+}
+</script>
+</body>
+</html>

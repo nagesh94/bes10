@@ -1,0 +1,201 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { contacts, projects } from "@/lib/db/schema";
+import {
+  FinanceForm,
+  PaymentPlanForm,
+  RecordPaymentForm,
+} from "@/components/payments/payment-plan-form";
+import { getMoneyView } from "@/app/actions/payments";
+import { canSeeMoney } from "@/lib/rbac/permissions";
+import { getActor } from "@/lib/session";
+import { involvesFinance } from "@/lib/workflow/stages";
+
+const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+
+function LockChip() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--locked-soft)] px-2.5 py-1 text-[10.5px] font-bold tracking-[0.06em] text-[var(--locked-text)] uppercase">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <rect x="4" y="10" width="16" height="11" rx="2" />
+        <path d="M8 10V7a4 4 0 018 0v3" />
+      </svg>
+      Admin only
+    </span>
+  );
+}
+
+export default async function PaymentsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const actor = await getActor();
+
+  // This is an admin-only route, not a page with fields hidden. An employee
+  // never reaches the query at all.
+  if (!actor || !canSeeMoney(actor.role)) notFound();
+
+  const [row] = await db
+    .select({ project: projects, contact: contacts })
+    .from(projects)
+    .innerJoin(contacts, eq(projects.contactId, contacts.id))
+    .where(eq(projects.id, id))
+    .limit(1);
+  if (!row) notFound();
+
+  const view = await getMoneyView(id);
+  const { plan, milestones, received, finance, subsidy, totalReceived, outstanding } = view;
+
+  const totalValue = plan?.totalValue ? Number(plan.totalValue) : 0;
+  const pct = totalValue > 0 ? Math.min(Math.round((totalReceived / totalValue) * 100), 100) : 0;
+  const showFinance = involvesFinance(plan?.mode ?? null);
+  const subsidyExpected = subsidy?.expectedAmount ? Number(subsidy.expectedAmount) : 0;
+
+  return (
+    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
+      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
+        <Link href="/projects" className="no-underline">Projects</Link>
+        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
+        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
+        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
+        <span>Payments</span>
+      </nav>
+
+      <div className="mb-1 flex flex-wrap items-center gap-2.5">
+        <h1 className="text-[25px] font-bold tracking-[-0.02em]">Payment plan</h1>
+        <LockChip />
+      </div>
+      <p className="mb-5 text-sm text-[var(--muted)]">
+        {row.contact.firstName} {row.contact.lastName ?? ""} · employees and installers never see
+        this page.
+      </p>
+
+      <div className="flex flex-wrap items-start gap-4.5">
+        <div className="min-w-0 flex-[999_1_560px] space-y-4.5">
+          <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
+            <h2 className="mb-4 text-base font-bold">How is the customer paying?</h2>
+            <PaymentPlanForm
+              projectId={id}
+              locked={Boolean(plan?.lockedAt)}
+              initial={{
+                mode: (plan?.mode ?? "CASH") as "CASH" | "FINANCE" | "SPLIT",
+                totalValue: plan?.totalValue ?? "",
+                cashComponent: plan?.cashComponent ?? "",
+                financeComponent: plan?.financeComponent ?? "",
+                milestones: milestones.map((m) => ({
+                  label: m.label,
+                  amount: m.amount,
+                  trigger: m.trigger,
+                })),
+                finance: null,
+              }}
+            />
+          </section>
+
+          {showFinance ? (
+            <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
+              <div className="mb-1 flex flex-wrap items-baseline gap-2">
+                <h2 className="flex-1 text-base font-bold">Finance — Jan Samarth</h2>
+              </div>
+              <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
+                The loan is applied for on Jan Samarth, not here. The sanction letter is uploaded
+                with the documents — an employee can do that without seeing the amount below.
+              </p>
+              <a
+                href="https://www.jansamarth.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-4.5 flex items-center gap-3 rounded-[9px] bg-[var(--navy)] px-4 py-3.5 text-[var(--navy-ink)] no-underline"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-bold">Open Jan Samarth</span>
+                  <span className="ref mt-0.5 block text-[11.5px] opacity-75">
+                    jansamarth.in · opens in a new tab
+                  </span>
+                </span>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0">
+                  <path d="M14 4h6v6" />
+                  <path d="M20 4l-9 9" />
+                  <path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5" />
+                </svg>
+              </a>
+              <FinanceForm
+                projectId={id}
+                initial={{
+                  bankName: finance?.bankName ?? "",
+                  loanAmount: finance?.loanAmount ?? "",
+                  status: finance?.status ?? "NOT_APPLIED",
+                }}
+              />
+            </section>
+          ) : (
+            <section className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-5">
+              <h2 className="mb-1 text-base font-bold text-[var(--muted)]">Finance</h2>
+              <p className="text-[13px] text-[var(--muted)]">
+                This is a cash project, so there is no Jan Samarth application, no sanction letter
+                and no bank loan pack. Switch the mode above if that changes.
+              </p>
+            </section>
+          )}
+
+          {received.length ? (
+            <section className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
+              <h2 className="border-b border-[var(--line)] px-6 py-4 text-base font-bold">
+                Payments received
+              </h2>
+              {received.map((r) => (
+                <div key={r.id} className="flex flex-wrap items-center gap-3 border-b border-[var(--line-soft)] px-6 py-3.5">
+                  <span className="ref min-w-28 flex-1 text-sm font-semibold">
+                    {inr(Number(r.amount))}
+                  </span>
+                  <span className="text-[13px] text-[var(--muted)]">{r.mode}</span>
+                  <span className="ref text-[12.5px] text-[var(--muted)]">{r.referenceNo ?? "—"}</span>
+                  <span className="ref text-[12.5px] text-[var(--muted)]">{r.receivedOn}</span>
+                </div>
+              ))}
+            </section>
+          ) : null}
+        </div>
+
+        <aside className="min-w-72 flex-[1_1_320px] space-y-4.5">
+          <section className="rounded-[var(--radius)] bg-[var(--navy)] px-6 py-5 text-[var(--navy-ink)]">
+            <h2 className="mb-4 text-[15px] font-bold opacity-80">
+              Where the money is
+            </h2>
+            {[
+              ["Project value", inr(totalValue)],
+              ["Received", inr(totalReceived)],
+              ...(subsidyExpected ? [["Subsidy expected", `− ${inr(subsidyExpected)}`]] : []),
+            ].map(([k, v]) => (
+              <div key={k} className="flex items-baseline justify-between py-2">
+                <span className="text-[13px] opacity-75">{k}</span>
+                <span className="ref text-[15px] font-medium">{v}</span>
+              </div>
+            ))}
+            <div className="mt-2 flex items-baseline justify-between border-t border-white/15 pt-3.5">
+              <span className="text-sm font-semibold">Outstanding</span>
+              <span className="ref text-[22px] font-semibold text-[var(--orange-text)]">
+                {inr(outstanding)}
+              </span>
+            </div>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
+              <span className="block h-full rounded-full bg-[var(--green)]" style={{ width: `${pct}%` }} />
+            </div>
+            <p className="mt-3 text-[12px] leading-relaxed opacity-70">
+              The subsidy is credited to the customer's own account, not to BHIM — it reduces what
+              they are out of pocket, never what they owe us.
+            </p>
+          </section>
+
+          <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
+            <h2 className="mb-3.5 text-sm font-bold">Record a payment</h2>
+            <RecordPaymentForm
+              projectId={id}
+              milestones={milestones.map((m) => ({ id: m.id, label: m.label }))}
+            />
+          </section>
+        </aside>
+      </div>
+    </main>
+  );
+}

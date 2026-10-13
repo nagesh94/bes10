@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Noto+Sans+Devanagari:wght@400;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; min-height: 64px">
+    <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 38px; width: auto; display: block; flex-shrink: 0">
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1">
+      <a href="Main.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Pipeline</a>
+      <a href="Leads.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Leads</a>
+      <a href="Project.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Projects</a>
+      <a href="Documents.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Documents</a>
+      <a href="AdminUsers.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Admin</a>
+    </nav>
+    <span style="width: 36px; height: 36px; border-radius: 999px; background: #042A5E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0">PS</span>
+  </header>
+
+  <main style="max-width: 860px; margin: 0 auto; padding: 28px 24px 56px">
+
+    <h1 style="margin: 0 0 4px; font-size: 26px; font-weight: 700; letter-spacing: -0.02em">Settings</h1>
+    <p style="margin: 0 0 24px; font-size: 14px; color: #54657E">Your account, how the app looks, and what it says.</p>
+
+    <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 22px 24px; margin-bottom: 18px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+        <span style="width: 56px; height: 56px; border-radius: 999px; background: #042A5E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; flex-shrink: 0">PS</span>
+        <div style="flex-grow: 1; min-width: 180px">
+          <div style="font-size: 18px; font-weight: 700">Priya Sharma</div>
+          <div style="font-size: 13.5px; color: #54657E">priya@bhimenergy.in &middot; Employee</div>
+        </div>
+        <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 44px; padding: 0 16px; cursor: pointer">Edit profile</button>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 22px 24px; margin-bottom: 18px">
+      <h2 style="margin: 0 0 3px; font-size: 16px; font-weight: 700">Appearance</h2>
+      <p style="margin: 0 0 18px; font-size: 13px; color: #54657E">System follows your phone or laptop. Installers often pick dark for early-morning and evening site visits.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <sc-for list="{{themes}}" as="t" hint-placeholder-count="3">
+          <button type="button" style="{{t.card}}">
+            <span style="{{t.swatch}}">
+              <span style="{{t.bar}}"></span>
+              <span style="{{t.dot}}"></span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 7px">
+              <span style="{{t.radio}}"></span>
+              <span style="font-size: 14px; font-weight: 600">{{t.label}}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 22px 24px; margin-bottom: 18px">
+      <h2 style="margin: 0 0 3px; font-size: 16px; font-weight: 700">Language</h2>
+      <p style="margin: 0 0 18px; font-size: 13px; color: #54657E">Changes labels, buttons and messages. Reference numbers, serials, IFSC codes and amounts always stay as they are, because they get retyped into government portals exactly as shown.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px">
+        <button type="button" style="flex: 1 1 220px; display: flex; align-items: center; gap: 12px; text-align: left; font-family: inherit; background: #FFF6EC; border: 1.5px solid #FF7A00; border-radius: 10px; padding: 15px 16px; cursor: pointer">
+          <span style="display: block; width: 18px; height: 18px; border-radius: 999px; border: 5px solid #FF7A00; background: #FFFFFF; flex-shrink: 0"></span>
+          <span>
+            <span style="display: block; font-size: 15px; font-weight: 700; color: #0F1B2D">English</span>
+            <span style="display: block; font-size: 12.5px; color: #54657E; margin-top: 1px">Default</span>
+          </span>
+        </button>
+        <button type="button" style="flex: 1 1 220px; display: flex; align-items: center; gap: 12px; text-align: left; font-family: inherit; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 10px; padding: 15px 16px; cursor: pointer">
+          <span style="display: block; width: 18px; height: 18px; border-radius: 999px; border: 1.5px solid #C3CEDD; background: #FFFFFF; flex-shrink: 0"></span>
+          <span>
+            <span style="display: block; font-size: 15px; font-weight: 700; color: #0F1B2D; font-family: 'Noto Sans Devanagari', Archivo, sans-serif">&#2361;&#2367;&#2306;&#2342;&#2368;</span>
+            <span style="display: block; font-size: 12.5px; color: #54657E; margin-top: 1px">Hindi</span>
+          </span>
+        </button>
+      </div>
+      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 13px 15px">
+        <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #54657E; margin-bottom: 8px">Preview</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px 28px">
+          <sc-for list="{{preview}}" as="p" hint-placeholder-count="3">
+            <div>
+              <div style="font-size: 12px; color: #54657E">{{p.en}}</div>
+              <div style="{{p.hiStyle}}">{{p.hi}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 22px 24px; margin-bottom: 18px">
+      <h2 style="margin: 0 0 16px; font-size: 16px; font-weight: 700">Notifications</h2>
+      <sc-for list="{{notifs}}" as="n" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 14px; padding: 13px 0; border-top: 1px solid #EDF1F6">
+          <div style="flex-grow: 1; min-width: 0">
+            <div style="font-size: 14px; font-weight: 600">{{n.title}}</div>
+            <div style="font-size: 12.5px; color: #54657E; margin-top: 2px">{{n.sub}}</div>
+          </div>
+          <span style="{{n.track}}"><span style="{{n.knob}}"></span></span>
+        </div>
+      </sc-for>
+      <p style="margin: 14px 0 0; font-size: 12.5px; color: #54657E; line-height: 1.5">Customer SMS and WhatsApp stay switched off until the TRAI DLT templates are approved. Email works today.</p>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 22px 24px">
+      <h2 style="margin: 0 0 16px; font-size: 16px; font-weight: 700">Security</h2>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 13px 0; border-top: 1px solid #EDF1F6">
+        <div style="flex-grow: 1; min-width: 200px">
+          <div style="font-size: 14px; font-weight: 600">Password</div>
+          <div style="font-size: 12.5px; color: #54657E; margin-top: 2px">Last changed 2 Sep 2026</div>
+        </div>
+        <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 40px; padding: 0 14px; cursor: pointer">Change</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 13px 0; border-top: 1px solid #EDF1F6">
+        <div style="flex-grow: 1; min-width: 200px">
+          <div style="font-size: 14px; font-weight: 600">Signed-in devices</div>
+          <div style="font-size: 12.5px; color: #54657E; margin-top: 2px">This laptop &middot; one phone</div>
+        </div>
+        <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 40px; padding: 0 14px; cursor: pointer">Sign out everywhere</button>
+      </div>
+      <p style="margin: 14px 0 0; font-size: 12.5px; color: #54657E; line-height: 1.5">Sign-in is email and password for now. Two-factor can be added later without changing how anyone signs in today.</p>
+    </section>
+  </main>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var cardBase = 'flex:1 1 200px;font-family:inherit;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:12px;border-radius:10px;padding:14px;';
+    var defs = [
+      ['System', true, '#FFFFFF', '#0A1626'],
+      ['Light', false, '#FFFFFF', '#FFFFFF'],
+      ['Dark', false, '#0A1626', '#0A1626']
+    ];
+    var themes = defs.map(function (d) {
+      var on = d[1];
+      return {
+        label: d[0],
+        card: cardBase + (on
+          ? 'background:#FFF6EC;border:1.5px solid #FF7A00'
+          : 'background:#FFFFFF;border:1px solid #DDE3EC'),
+        swatch: 'display:block;position:relative;height:62px;border-radius:7px;border:1px solid #DDE3EC;overflow:hidden;background:linear-gradient(to right,' + d[2] + ' 50%,' + d[3] + ' 50%)',
+        bar: 'position:absolute;left:9px;right:9px;top:11px;height:7px;border-radius:3px;background:#8FA6C4;opacity:0.55',
+        dot: 'position:absolute;left:9px;bottom:11px;width:30px;height:9px;border-radius:4px;background:#FF7A00',
+        radio: on
+          ? 'display:block;width:16px;height:16px;border-radius:999px;border:5px solid #FF7A00;background:#FFFFFF;flex-shrink:0'
+          : 'display:block;width:16px;height:16px;border-radius:999px;border:1.5px solid #C3CEDD;background:#FFFFFF;flex-shrink:0'
+      };
+    });
+
+    var hiStyle = 'font-family:"Noto Sans Devanagari",Archivo,sans-serif;font-size:15px;font-weight:600;margin-top:2px';
+    var preview = [
+      { en: 'Convert to prospect', hi: 'प्रॉस्पेक्ट बनाएँ', hiStyle: hiStyle },
+      { en: 'Load enhancement required', hi: 'लोड बढ़ाना आवश्यक है', hiStyle: hiStyle },
+      { en: 'Consumer number', hi: 'उपभोक्ता संख्या', hiStyle: hiStyle }
+    ];
+
+    var trackOn = 'display:block;width:46px;height:27px;border-radius:999px;background:#1E7A2E;position:relative;flex-shrink:0';
+    var trackOff = 'display:block;width:46px;height:27px;border-radius:999px;background:#CBD5E1;position:relative;flex-shrink:0';
+    var knobOn = 'position:absolute;top:3px;left:22px;width:21px;height:21px;border-radius:999px;background:#FFFFFF';
+    var knobOff = 'position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:999px;background:#FFFFFF';
+
+    var notifs = [
+      { title: 'A flag is raised on one of my projects', sub: 'Email, straight away', track: trackOn, knob: knobOn },
+      { title: 'Subsidy marked received', sub: 'Email &middot; creates a balance-collection task', track: trackOn, knob: knobOn },
+      { title: 'Daily pipeline summary', sub: 'Email, 8:00 am', track: trackOff, knob: knobOff }
+    ];
+
+    return { themes: themes, preview: preview, notifs: notifs };
+  }
+}
+</script>
+</body>
+</html>

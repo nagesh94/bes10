@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Master data and templates</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; min-height: 64px">
+    <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 38px; width: auto; display: block; flex-shrink: 0">
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1">
+      <a href="Main.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Pipeline</a>
+      <a href="Leads.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Leads</a>
+      <a href="Project.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Projects</a>
+      <a href="Documents.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Documents</a>
+      <a href="AdminUsers.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #042A5E; background: #EAF0F8">Admin</a>
+    </nav>
+    <span style="width: 36px; height: 36px; border-radius: 999px; background: #042A5E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0">AK</span>
+  </header>
+
+  <div style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px">
+    <div style="max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 2px">
+      <a href="AdminUsers.dc.html" style="padding: 13px 14px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Users &amp; roles</a>
+      <a href="#" style="padding: 13px 14px; font-size: 14px; font-weight: 600; text-decoration: none; color: #042A5E; box-shadow: inset 0 -2.5px 0 #FF7A00">Master data</a>
+      <a href="#" style="padding: 13px 14px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Templates</a>
+      <a href="AdminAudit.dc.html" style="padding: 13px 14px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Audit log</a>
+    </div>
+  </div>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 26px 24px 56px">
+
+    <h1 style="margin: 0 0 4px; font-size: 25px; font-weight: 700; letter-spacing: -0.02em">Master data &amp; templates</h1>
+    <p style="margin: 0 0 20px; font-size: 14px; color: #54657E; max-width: 760px">Everything here is editable without a deploy. Add a panel model or a new agreement wording and it is live for the next project.</p>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+
+      <aside style="flex: 1 1 230px; min-width: 210px; max-width: 280px; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 9px">
+        <sc-for list="{{cats}}" as="c" hint-placeholder-count="7">
+          <button type="button" style="{{c.btn}}">
+            <span style="flex-grow: 1; min-width: 0; text-align: left; font-size: 13.5px; font-weight: 600">{{c.name}}</span>
+            <span style="{{c.count}}">{{c.n}}</span>
+          </button>
+        </sc-for>
+      </aside>
+
+      <section style="flex: 1 1 420px; min-width: 320px; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; overflow: hidden">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #DDE3EC">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700; flex-grow: 1">Panel models</h2>
+          <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 38px; padding: 0 14px; cursor: pointer">Add model</button>
+        </div>
+        <sc-for list="{{models}}" as="m" hint-placeholder-count="6">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 13px 20px; border-bottom: 1px solid #EDF1F6">
+            <div style="flex: 1 1 170px; min-width: 0">
+              <div style="font-size: 14px; font-weight: 600">{{m.model}}</div>
+              <div style="font-size: 12px; color: #54657E; margin-top: 2px">{{m.company}}</div>
+            </div>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #54657E; flex-shrink: 0">{{m.watt}}</span>
+            <span style="{{m.dcr}}">{{m.dcrText}}</span>
+          </div>
+        </sc-for>
+      </section>
+
+      <section style="flex: 1 1 400px; min-width: 320px; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; overflow: hidden">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #DDE3EC">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700; flex-grow: 1">Document templates</h2>
+          <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 38px; padding: 0 14px; cursor: pointer">Upload</button>
+        </div>
+        <sc-for list="{{templates}}" as="t" hint-placeholder-count="5">
+          <div style="padding: 13px 20px; border-bottom: 1px solid #EDF1F6">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 4px">
+              <span style="font-size: 14px; font-weight: 600; flex-grow: 1; min-width: 0">{{t.name}}</span>
+              <span style="{{t.engine}}">{{t.engineText}}</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #54657E">{{t.version}}</span>
+              <span style="font-size: 11.5px; color: #54657E">&middot; {{t.fields}} fields</span>
+              <span style="flex-grow: 1"></span>
+              <span style="{{t.status}}">{{t.statusText}}</span>
+            </div>
+          </div>
+        </sc-for>
+        <div style="padding: 15px 20px; background: #F8FAFC">
+          <p style="margin: 0; font-size: 12.5px; color: #54657E; line-height: 1.55">Word templates are the ones your team can edit directly. Flat government PDFs are filled by coordinates, so changing one needs a developer.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var btnBase = 'width:100%;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:9px;border:0;margin-bottom:2px;';
+    var cats = [
+      ['Panel companies', '7', false],
+      ['Panel models', '24', true],
+      ['Inverter models', '18', false],
+      ['Structure companies', '5', false],
+      ['Banks', '9', false],
+      ['DISCOM hierarchy', '112', false],
+      ['Plant sizes', '8', false]
+    ].map(function (c) {
+      return {
+        name: c[0], n: c[1],
+        btn: btnBase + (c[2] ? 'background:#EAF0F8;color:#042A5E' : 'background:transparent;color:#0F1B2D'),
+        count: 'font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;color:#54657E;background:' +
+          (c[2] ? '#FFFFFF' : '#F1F5F9') + ';border-radius:999px;padding:3px 8px;flex-shrink:0'
+      };
+    });
+
+    var chip = 'display:inline-block;font-size:10.5px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap;flex-shrink:0;';
+    var dcrYes = chip + 'background:#DCFCE7;color:#15803D';
+    var dcrNo = chip + 'background:#F1F5F9;color:#64748B';
+
+    var models = [
+      ['WSMD-545', 'Waaree Energies', '545 W', true],
+      ['WSMD-585', 'Waaree Energies', '585 W', true],
+      ['VSMDG-540', 'Vikram Solar', '540 W', true],
+      ['AS-7M144', 'Adani Solar', '550 W', true],
+      ['TP6L60M', 'Tata Power Solar', '450 W', true],
+      ['JKM-575N', 'Jinko Solar', '575 W', false]
+    ].map(function (m) {
+      return { model: m[0], company: m[1], watt: m[2], dcr: m[3] ? dcrYes : dcrNo, dcrText: m[3] ? 'DCR' : 'Non-DCR' };
+    });
+
+    var engChip = 'display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:500;letter-spacing:0.04em;border-radius:4px;padding:3px 7px;white-space:nowrap;flex-shrink:0;';
+    var stChip = 'display:inline-block;font-size:10.5px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap;';
+
+    var templates = [
+      ['Agreement &mdash; residential', 'DOCX', 'v3 &middot; 12 Sep 2026', '38', true],
+      ['NOC certificate', 'DOCX', 'v2 &middot; 04 Aug 2026', '11', true],
+      ['Subsidy claim form', 'PDF_OVERLAY', 'v1 &middot; 22 Jul 2026', '26', true],
+      ['SBI solar loan application', 'PDF_FORM', 'v4 &middot; 30 Sep 2026', '41', true],
+      ['Agreement &mdash; residential', 'DOCX', 'v2 &middot; 15 Mar 2026', '36', false]
+    ].map(function (t) {
+      return {
+        name: t[0], engineText: t[1], version: t[2], fields: t[3],
+        engine: engChip + (t[1] === 'DOCX'
+          ? 'background:#EAF0F8;color:#042A5E'
+          : t[1] === 'PDF_FORM' ? 'background:#F0FDF4;color:#15803D'
+          : 'background:#FEF3C7;color:#92400E'),
+        status: stChip + (t[4] ? 'background:#DCFCE7;color:#15803D' : 'background:#F1F5F9;color:#64748B'),
+        statusText: t[4] ? 'Active' : 'Superseded'
+      };
+    });
+
+    return { cats: cats, models: models, templates: templates };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stage 1 prospect form</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; display: flex; flex-direction: column; overflow: hidden; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+    <button type="button" aria-label="Back to project" style="width: 44px; height: 44px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#042A5E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 19l-7-7 7-7"></path></svg>
+    </button>
+    <div style="flex-grow: 1; min-width: 0">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #54657E">BHIM-2026-0014</div>
+      <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em">Ramesh Chauhan</div>
+    </div>
+    <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #15803D; background: #DCFCE7; border-radius: 999px; padding: 5px 10px; flex-shrink: 0">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+      Saved
+    </span>
+  </header>
+
+  <div style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 12px 0 11px; flex-shrink: 0">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 0 16px 9px">
+      <span style="font-size: 12px; font-weight: 700; color: #042A5E">Section 6 of 8</span>
+      <span style="font-size: 12px; color: #54657E">Prospect form</span>
+    </div>
+    <div style="display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 2px">
+      <sc-for list="{{sections}}" as="s" hint-placeholder-count="8">
+        <button type="button" style="{{s.chip}}">{{s.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow-y: auto; padding: 16px 16px 20px">
+
+    <h1 style="margin: 0 0 3px; font-size: 20px; font-weight: 700; letter-spacing: -0.015em">Electricity bill details</h1>
+    <p style="margin: 0 0 16px; font-size: 13px; color: #54657E">Taken from the latest bill for this connection.</p>
+
+    <div style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 16px; margin-bottom: 14px">
+      <label for="consumer" style="display: block; font-size: 12px; font-weight: 600; color: #54657E; margin-bottom: 6px">Consumer number</label>
+      <input id="consumer" type="text" value="7740 2291 5508" style="width: 100%; box-sizing: border-box; font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #0F1B2D; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 48px; padding: 0 12px; margin-bottom: 16px">
+
+      <label for="load" style="display: block; font-size: 12px; font-weight: 600; color: #54657E; margin-bottom: 6px">Sanctioned load on the bill</label>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <input id="load" type="text" value="3" style="flex-grow: 1; min-width: 0; box-sizing: border-box; font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #0F1B2D; background: #FFFFFF; border: 1.5px solid #FF7A00; border-radius: 8px; height: 48px; padding: 0 12px">
+        <span style="font-size: 14px; color: #54657E; flex-shrink: 0">kW</span>
+      </div>
+    </div>
+
+    <div style="background: #FFF8EC; border: 1px solid #F0C98A; border-radius: 12px; padding: 14px 15px; margin-bottom: 14px">
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9L1.8 18.4A2 2 0 003.5 21.4h17A2 2 0 0022.2 18.4L13.7 3.9a2 2 0 00-3.4 0z"></path></svg>
+        <div style="min-width: 0">
+          <div style="font-size: 14px; font-weight: 700; color: #92400E">Load enhancement required</div>
+          <p style="margin: 5px 0 0; font-size: 13px; line-height: 1.45; color: #6B4A12">The sanctioned load is 3 kW against a 5 kW plant. Sanctioned load has to be at least the plant size, so this connection needs enhancing to <strong>5 kW</strong> before stage 1 can close.</p>
+          <button type="button" style="margin-top: 11px; font-family: inherit; font-size: 13px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 44px; padding: 0 16px; cursor: pointer">Start load enhancement</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 16px; margin-bottom: 14px">
+      <label for="amount" style="display: block; font-size: 12px; font-weight: 600; color: #54657E; margin-bottom: 6px">Current bill amount</label>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <span style="font-size: 15px; color: #54657E; flex-shrink: 0">&#8377;</span>
+        <input id="amount" type="text" value="2,480" style="flex-grow: 1; min-width: 0; box-sizing: border-box; font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #0F1B2D; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 48px; padding: 0 12px">
+      </div>
+    </div>
+
+    <div style="background: #FFF8EC; border: 1px solid #F0C98A; border-radius: 12px; overflow: hidden; margin-bottom: 8px">
+      <div style="padding: 13px 15px 11px; display: flex; gap: 10px; align-items: flex-start">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+        <div style="min-width: 0">
+          <div style="font-size: 14px; font-weight: 700; color: #92400E">Name mismatch</div>
+          <p style="margin: 4px 0 0; font-size: 12.5px; line-height: 1.45; color: #6B4A12">The name on the bill does not match the other three documents.</p>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border-top: 1px solid #F0C98A; padding: 4px 15px 10px">
+        <sc-for list="{{names}}" as="n" hint-placeholder-count="4">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F1F5F9">
+            <span style="width: 74px; flex-shrink: 0; font-size: 11.5px; font-weight: 600; color: #54657E">{{n.src}}</span>
+            <span style="flex-grow: 1; min-width: 0; font-size: 13.5px; font-weight: 600">{{n.value}}</span>
+            <span style="{{n.mark}}">{{n.icon}}</span>
+          </div>
+        </sc-for>
+        <button type="button" style="width: 100%; margin-top: 11px; font-family: inherit; font-size: 13px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 44px; cursor: pointer">Start name change on the bill</button>
+        <p style="margin: 9px 0 2px; font-size: 11.5px; color: #54657E">Needs an applicant photo, the khasra number, and an NOC &mdash; BHIM generates the NOC for you.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #DDE3EC; padding: 12px 16px; display: flex; gap: 10px; flex-shrink: 0">
+    <button type="button" style="font-family: inherit; font-size: 14px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 48px; padding: 0 18px; cursor: pointer; flex-shrink: 0">Back</button>
+    <button type="button" style="flex-grow: 1; font-family: inherit; font-size: 15px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 48px; cursor: pointer">Save and continue</button>
+  </div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var base = 'font-family:inherit;cursor:pointer;flex-shrink:0;height:34px;padding:0 13px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;';
+    var defs = [
+      ['1 User', 'done'], ['2 Rooftop', 'done'], ['3 Aadhaar', 'done'], ['4 PAN', 'done'],
+      ['5 Bank', 'done'], ['6 Bill', 'now'], ['7 Other', 'todo'], ['8 Survey', 'todo']
+    ];
+    var sections = defs.map(function (d) {
+      var style = d[1] === 'now'
+        ? 'background:#FF7A00;border:1px solid #FF7A00;color:#042A5E'
+        : d[1] === 'done'
+          ? 'background:#DCFCE7;border:1px solid #BBF7D0;color:#15803D'
+          : 'background:#FFFFFF;border:1px solid #DDE3EC;color:#94A3B8';
+      return { label: d[0], chip: base + style };
+    });
+
+    var okMark = 'display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:#DCFCE7;color:#15803D;font-size:11px;font-weight:700;flex-shrink:0';
+    var badMark = 'display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:#FEE2E2;color:#B91C1C;font-size:12px;font-weight:700;flex-shrink:0';
+
+    var names = [
+      { src: 'Aadhaar', value: 'Ramesh Chauhan', mark: okMark, icon: '✓' },
+      { src: 'PAN', value: 'Ramesh Chauhan', mark: okMark, icon: '✓' },
+      { src: 'Bank', value: 'Ramesh Chauhan', mark: okMark, icon: '✓' },
+      { src: 'Bill', value: 'R. C. Singh', mark: badMark, icon: '×' }
+    ];
+
+    return { sections: sections, names: names };
+  }
+}
+</script>
+</body>
+</html>

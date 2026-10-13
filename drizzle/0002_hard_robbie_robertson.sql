@@ -1,0 +1,1 @@
+ALTER TABLE "discom_companies" ADD COLUMN "land_records_url" text;

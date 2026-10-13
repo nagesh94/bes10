@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Two-factor authentication</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; padding: 44px 24px 56px; -webkit-font-smoothing: antialiased">
+  <div style="max-width: 920px; margin: 0 auto">
+
+    <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 40px; width: auto; display: block; margin: 0 auto 32px">
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <section style="flex: 1 1 400px; min-width: 300px; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 28px 30px">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 10px; background: #EAF0F8; margin-bottom: 16px">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#042A5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 018 0v3"></path><path d="M12 15v2"></path></svg>
+        </span>
+        <h1 style="margin: 0 0 6px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em">Enter your code</h1>
+        <p style="margin: 0 0 22px; font-size: 14px; color: #54657E; line-height: 1.5">Six digits from the authenticator app on your phone. The code changes every thirty seconds.</p>
+
+        <label for="code" style="display: block; font-size: 12px; font-weight: 600; color: #54657E; margin-bottom: 7px">Verification code</label>
+        <input id="code" type="text" inputmode="numeric" value="4 1 8 2 0 6" style="width: 100%; box-sizing: border-box; font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 500; letter-spacing: 0.22em; text-align: center; color: #0F1B2D; background: #FFFFFF; border: 1.5px solid #FF7A00; border-radius: 10px; height: 64px; padding: 0 12px; margin-bottom: 18px">
+
+        <button type="button" style="width: 100%; font-family: inherit; font-size: 15px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 50px; cursor: pointer; margin-bottom: 16px">Verify and sign in</button>
+
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; font-size: 13px">
+          <a href="Login.dc.html" style="text-decoration: none; font-weight: 600">Back to sign in</a>
+          <span style="color: #54657E">Lost your phone? Ask an admin to reset it.</span>
+        </div>
+      </section>
+
+      <section style="flex: 1 1 360px; min-width: 300px; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 12px; padding: 28px 30px">
+        <span style="display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #C2410C; background: #FFF1E3; border-radius: 4px; padding: 4px 8px; margin-bottom: 14px">First time</span>
+        <h2 style="margin: 0 0 6px; font-size: 19px; font-weight: 700; letter-spacing: -0.015em">Set up your authenticator</h2>
+        <p style="margin: 0 0 20px; font-size: 13.5px; color: #54657E; line-height: 1.5">Scan this with Google Authenticator, Authy or any TOTP app.</p>
+
+        <div style="display: flex; align-items: center; justify-content: center; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px; margin-bottom: 16px">
+          <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(9, 15px); grid-auto-rows: 15px; gap: 2px">
+            <sc-for list="{{qr}}" as="q" hint-placeholder-count="81">
+              <span style="{{q.s}}"></span>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="font-size: 11.5px; font-weight: 600; color: #54657E; margin-bottom: 5px">Or enter this key by hand</div>
+        <div style="display: flex; align-items: center; gap: 8px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; margin-bottom: 18px">
+          <code style="flex-grow: 1; min-width: 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.04em; word-break: break-all">KZXW 6YTB OI5D CMRR GEZA</code>
+          <button type="button" aria-label="Copy key" style="width: 34px; height: 34px; border: 1px solid #DDE3EC; background: #FFFFFF; border-radius: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042A5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 012-2h10"></path></svg>
+          </button>
+        </div>
+
+        <button type="button" style="width: 100%; font-family: inherit; font-size: 14px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #042A5E; border-radius: 8px; height: 46px; cursor: pointer">I have scanned it</button>
+      </section>
+    </div>
+
+    <p style="margin: 26px auto 0; max-width: 620px; text-align: center; font-size: 12.5px; color: #54657E; line-height: 1.5">Two-factor is compulsory for admin accounts and optional for employees and installers. An admin can reset a lost device from Admin &rsaquo; Users.</p>
+  </div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    // A fixed, hand-set pattern standing in for the real QR image.
+    var pattern = [
+      1,1,1,0,1,0,1,1,1,
+      1,0,1,0,0,1,1,0,1,
+      1,1,1,0,1,1,1,1,1,
+      0,0,0,1,0,0,0,0,0,
+      1,0,1,1,1,0,1,1,0,
+      0,1,1,0,1,1,0,0,1,
+      1,1,1,0,0,1,1,1,1,
+      1,0,1,1,1,0,1,0,1,
+      1,1,1,0,1,1,1,1,1
+    ];
+    var qr = pattern.map(function (v) {
+      return { s: 'display:block;width:15px;height:15px;border-radius:2px;background:' + (v ? '#042A5E' : '#FFFFFF') };
+    });
+    return { qr: qr };
+  }
+}
+</script>
+</body>
+</html>

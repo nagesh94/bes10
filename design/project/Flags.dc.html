@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flag resolution</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F4F6F9; }
+    a { color: #0B3C7E; }
+    a:hover { color: #042A5E; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; font-family: Archivo, system-ui, sans-serif; color: #0F1B2D; -webkit-font-smoothing: antialiased">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #DDE3EC; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; min-height: 64px">
+    <img src="/_blob/40bea2b43b8cd7e79288b8f8905e7326" alt="BHIM Energy Solutions" style="height: 38px; width: auto; display: block; flex-shrink: 0">
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1">
+      <a href="Main.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Pipeline</a>
+      <a href="Leads.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Leads</a>
+      <a href="Project.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #042A5E; background: #EAF0F8">Projects</a>
+      <a href="Documents.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Documents</a>
+      <a href="AdminUsers.dc.html" style="padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; color: #54657E">Admin</a>
+    </nav>
+    <span style="width: 36px; height: 36px; border-radius: 999px; background: #042A5E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0">PS</span>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 20px 24px 56px">
+
+    <nav aria-label="Breadcrumb" style="font-size: 13px; color: #54657E; margin-bottom: 14px">
+      <a href="Main.dc.html" style="text-decoration: none">Pipeline</a>
+      <span style="margin: 0 6px; color: #94A3B8">/</span>
+      <a href="Stage1Desktop.dc.html" style="text-decoration: none; font-family: 'IBM Plex Mono', monospace">BHIM-2026-0014</a>
+      <span style="margin: 0 6px; color: #94A3B8">/</span>
+      <span>Flags</span>
+    </nav>
+
+    <h1 style="margin: 0 0 4px; font-size: 25px; font-weight: 700; letter-spacing: -0.02em">Flags</h1>
+    <p style="margin: 0 0 20px; font-size: 14px; color: #54657E">Raised automatically from the form data. Both have to close before stage 1 does.</p>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+
+      <section style="flex: 1 1 480px; min-width: 320px; background: #FFFFFF; border: 1px solid #F0C98A; border-radius: 12px; overflow: hidden">
+        <div style="background: #FFF8EC; border-bottom: 1px solid #F0C98A; padding: 16px 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700; flex-grow: 1">Name change on the electricity bill</h2>
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: #FEF3C7; color: #92400E; border-radius: 999px; padding: 4px 11px">In progress</span>
+        </div>
+
+        <div style="padding: 18px 22px 22px">
+          <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #54657E; margin-bottom: 9px">What the four documents say</div>
+          <div style="border: 1px solid #EDF1F6; border-radius: 9px; overflow: hidden; margin-bottom: 20px">
+            <sc-for list="{{names}}" as="n" hint-placeholder-count="4">
+              <div style="{{n.row}}">
+                <span style="width: 92px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: #54657E">{{n.src}}</span>
+                <span style="flex-grow: 1; min-width: 0; font-size: 14px; font-weight: 600">{{n.value}}</span>
+                <span style="{{n.mark}}">{{n.icon}}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <a href="#" style="display: flex; align-items: center; gap: 12px; text-decoration: none; background: #042A5E; color: #FFFFFF; border-radius: 9px; padding: 14px 16px; margin-bottom: 20px">
+            <span style="flex-grow: 1; min-width: 0">
+              <span style="display: block; font-size: 14px; font-weight: 700">Open the MPCZ name change application</span>
+              <span style="display: block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; margin-top: 2px; color: #9DB6D8">mpcz.in &middot; opens in a new tab</span>
+            </span>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M14 4h6v6"></path><path d="M20 4l-9 9"></path><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"></path></svg>
+          </a>
+
+          <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #54657E; margin-bottom: 9px">What the DISCOM needs</div>
+
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #EDF1F6">
+            <span style="display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px; background: #DCFCE7; color: #15803D; font-size: 11px; font-weight: 700; flex-shrink: 0">&#10003;</span>
+            <div style="flex-grow: 1; min-width: 0">
+              <div style="font-size: 14px; font-weight: 600">Applicant photo</div>
+              <div style="font-size: 12px; color: #54657E; margin-top: 1px">Uploaded 8 Oct &middot; 1.2 MB</div>
+            </div>
+            <button type="button" style="font-family: inherit; font-size: 12.5px; font-weight: 600; color: #042A5E; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 7px; height: 36px; padding: 0 12px; cursor: pointer">View</button>
+          </div>
+
+          <div style="padding: 12px 0; border-top: 1px solid #EDF1F6">
+            <label for="khasra" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px">Khasra number</label>
+            <input id="khasra" type="text" value="447/2" style="width: 100%; box-sizing: border-box; font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #0F1B2D; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 44px; padding: 0 12px">
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0 16px; border-top: 1px solid #EDF1F6">
+            <span style="display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px; background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 700; flex-shrink: 0">&middot;</span>
+            <div style="flex-grow: 1; min-width: 180px">
+              <div style="font-size: 14px; font-weight: 600">NOC certificate</div>
+              <div style="font-size: 12px; color: #54657E; margin-top: 1px">Prepared outside the app and uploaded here, like the quotation.</div>
+            </div>
+            <button type="button" style="font-family: inherit; font-size: 13px; font-weight: 700; color: #042A5E; background: #FF7A00; border: 0; border-radius: 8px; height: 42px; padding: 0 15px; cursor: pointer">Upload NOC</button>
+          </div>
+
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; padding: 13px 15px">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #54657E; margin-bottom: 9px">Progress</div>
+            <sc-for list="{{nameSteps}}" as="s" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 5px 0">
+                <span style="{{s.dot}}"></span>
+                <span style="{{s.text}}">{{s.label}}</span>
+                <span style="flex-grow: 1"></span>
+                <span style="font-size: 11.5px; color: #94A3B8; font-family: 'IBM Plex Mono', monospace">{{s.when}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <section style="flex: 1 1 400px; min-width: 320px; background: #FFFFFF; border: 1px solid #F0C98A; border-radius: 12px; overflow: hidden">
+        <div style="background: #FFF8EC; border-bottom: 1px solid #F0C98A; padding: 16px 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700; flex-grow: 1">Load enhancement</h2>
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: #FEF3C7; color: #92400E; border-radius: 999px; padding: 4px 11px">Applied</span>
+        </div>
+
+        <div style="padding: 18px 22px 22px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px 18px; margin-bottom: 18px">
+            <div style="flex: 1 1 100px">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #54657E">Sanctioned</div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 500; margin-top: 3px; color: #B91C1C">2 kW</div>
+            </div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            <div style="flex: 1 1 100px">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #54657E">Needs to be</div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 500; margin-top: 3px; color: #15803D">3 kW</div>
+            </div>
+          </div>
+
+          <p style="margin: 0 0 18px; font-size: 13.5px; color: #54657E; line-height: 1.55">The rule is simple: sanctioned load must be at least the plant size. A 3 kW plant on a 2 kW connection will not pass DISCOM inspection, so the enhancement has to be applied for and approved before stage 1 closes.</p>
+
+          <a href="#" style="display: flex; align-items: center; gap: 12px; text-decoration: none; background: #042A5E; color: #FFFFFF; border-radius: 9px; padding: 14px 16px; margin-bottom: 18px">
+            <span style="flex-grow: 1; min-width: 0">
+              <span style="display: block; font-size: 14px; font-weight: 700">Open the MPCZ load enhancement application</span>
+              <span style="display: block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; margin-top: 2px; color: #9DB6D8">mpcz.in &middot; opens in a new tab</span>
+            </span>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M14 4h6v6"></path><path d="M20 4l-9 9"></path><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"></path></svg>
+          </a>
+
+          <label for="ack" style="display: block; font-size: 12px; font-weight: 600; color: #54657E; margin-bottom: 6px">DISCOM acknowledgement number</label>
+          <input id="ack" type="text" value="LESA/LE/2026/22418" style="width: 100%; box-sizing: border-box; font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #0F1B2D; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 44px; padding: 0 12px; margin-bottom: 14px">
+
+          <label for="newload" style="display: block; font-size: 12px; font-weight: 600; color: #54657E; margin-bottom: 6px">Approved load, once it comes through</label>
+          <input id="newload" type="text" placeholder="Pending approval" style="width: 100%; box-sizing: border-box; font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #94A3B8; background: #FFFFFF; border: 1px solid #DDE3EC; border-radius: 8px; height: 44px; padding: 0 12px; margin-bottom: 18px">
+
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; padding: 13px 15px; margin-bottom: 18px">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #54657E; margin-bottom: 9px">Progress</div>
+            <sc-for list="{{loadSteps}}" as="s" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 5px 0">
+                <span style="{{s.dot}}"></span>
+                <span style="{{s.text}}">{{s.label}}</span>
+                <span style="flex-grow: 1"></span>
+                <span style="font-size: 11.5px; color: #94A3B8; font-family: 'IBM Plex Mono', monospace">{{s.when}}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <button type="button" style="width: 100%; font-family: inherit; font-size: 13.5px; font-weight: 600; color: #54657E; background: #FFFFFF; border: 1px dashed #C3CEDD; border-radius: 8px; height: 44px; cursor: pointer">Waive this flag (admin only)</button>
+          <p style="margin: 9px 0 0; font-size: 11.5px; color: #54657E; line-height: 1.5">A waiver needs a written reason and is recorded in the audit log against your name.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var rowBase = 'display:flex;align-items:center;gap:12px;padding:11px 14px;';
+    var okMark = 'display:flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:999px;background:#DCFCE7;color:#15803D;font-size:11px;font-weight:700;flex-shrink:0';
+    var badMark = 'display:flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:999px;background:#FEE2E2;color:#B91C1C;font-size:12px;font-weight:700;flex-shrink:0';
+
+    var names = [
+      ['Aadhaar', 'Ramesh Chauhan', true],
+      ['PAN', 'Ramesh Chauhan', true],
+      ['Bank', 'Ramesh Chauhan', true],
+      ['Electricity bill', 'R. C. Singh', false]
+    ].map(function (n, i) {
+      return {
+        src: n[0], value: n[1],
+        mark: n[2] ? okMark : badMark,
+        icon: n[2] ? '✓' : '×',
+        row: rowBase + (n[2]
+          ? 'background:#FFFFFF;' + (i > 0 ? 'border-top:1px solid #EDF1F6' : '')
+          : 'background:#FEF2F2;border-top:1px solid #FECACA')
+      };
+    });
+
+    function steps(defs) {
+      return defs.map(function (d) {
+        var done = d[2];
+        return {
+          label: d[0], when: d[1],
+          dot: 'display:block;width:9px;height:9px;border-radius:999px;flex-shrink:0;background:' + (done ? '#1E7A2E' : '#CBD5E1'),
+          text: 'font-size:13px;font-weight:' + (done ? '600' : '500') + ';color:' + (done ? '#0F1B2D' : '#94A3B8')
+        };
+      });
+    }
+
+    var nameSteps = steps([
+      ['Flag raised from the form', '8 Oct', true],
+      ['Photo and khasra collected', '8 Oct', true],
+      ['NOC signed and uploaded', '—', false],
+      ['New bill issued in the right name', '—', false]
+    ]);
+
+    var loadSteps = steps([
+      ['Flag raised from the form', '8 Oct', true],
+      ['Application filed with the DISCOM', '9 Oct', true],
+      ['Approved and new load recorded', '—', false]
+    ]);
+
+    return { names: names, nameSteps: nameSteps, loadSteps: loadSteps };
+  }
+}
+</script>
+</body>
+</html>
