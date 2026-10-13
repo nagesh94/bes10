@@ -82,7 +82,20 @@ export const DATABASE_POOL_MAX = Number(opt("DATABASE_POOL_MAX") ?? 10);
 // ── Auth ──────────────────────────────────────────────────────────────────
 
 export const AUTH_SECRET = need("AUTH_SECRET", "bhim-local-development-secret-not-for-production");
-export const AUTH_URL = need("AUTH_URL", "http://localhost:3000");
+
+/**
+ * The public URL, and the one value that cannot physically be the same in
+ * both places — the browser's origin is localhost in development and the real
+ * domain on the server, and Better Auth rejects a sign-in whose Origin does
+ * not match.
+ *
+ * Rather than keep two .env files for this one line, it is derived: the file
+ * states the production URL, and development quietly uses localhost. `next
+ * dev` sets NODE_ENV=development and `next start` sets production, so the
+ * switch happens on its own and there is nothing to edit when deploying.
+ */
+export const PUBLIC_URL = need("AUTH_URL", "http://localhost:3000");
+export const AUTH_URL = isProduction ? PUBLIC_URL : "http://localhost:3000";
 
 if (isProduction && !isBuild && AUTH_SECRET.length < 32) {
   throw new Error("AUTH_SECRET must be at least 32 characters. Generate: openssl rand -base64 32");

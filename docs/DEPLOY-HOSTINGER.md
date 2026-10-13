@@ -116,7 +116,7 @@ dpkg-reconfigure -plow unattended-upgrades    # answer Yes
 > `ufw allow from <ip> to any port 22 proto tcp` — just expect to use the
 > hPanel console when the address changes.
 
-> Postgres, MinIO and Gotenberg are **never** opened. `deploy/docker-compose.prod.yml`
+> Postgres, MinIO and Gotenberg are **never** opened. `docker-compose.yml`
 > binds all three to `127.0.0.1`, so the firewall is a second line of defence
 > rather than the only one.
 
@@ -134,70 +134,52 @@ sudo -u bhim git clone <repo-url> /srv/bhim-crm/current
 
 ---
 
-## 4. The .env file
+## 4. The .env file — copied, not edited
 
-There is only one, and the app, the scripts and `docker compose` all read it.
+There is **one** `.env` and it is identical on both machines. Nothing in it
+changes when you deploy.
+
+That works because the addresses inside it are loopback ones, and both machines
+run the same `docker-compose.yml` on the same ports — so
+`postgresql://...@127.0.0.1:5432/bhim_crm` is correct in both places. The one
+value that genuinely cannot match, `AUTH_URL`, is derived in code instead:
+the file holds the production URL, and `next dev` uses localhost on its own
+because NODE_ENV differs.
+
+So the whole of this step is:
 
 ```bash
-sudo -u bhim cp /srv/bhim-crm/current/.env /srv/bhim-crm/current/.env.bak 2>/dev/null || true
-sudo -u bhim nano /srv/bhim-crm/current/.env
-chmod 600 /srv/bhim-crm/current/.env
+mv /root/bhim.env /srv/bhim-crm/current/.env
 chown bhim:bhim /srv/bhim-crm/current/.env
+chmod 600 /srv/bhim-crm/current/.env
 ```
 
-Copy your working `.env` across, then change these. Everything else stays.
+The `.env` you copied up already holds the final values — the local Postgres
+and MinIO credentials, `AUTH_URL="https://crm.bes247.tech"`, and the
+`FIELD_ENCRYPTION_KEY` you have been using. Verify it arrived intact and move
+on:
 
-```ini
-# ── The one line that differs from development ──────────────────────────
-AUTH_URL="https://crm.bes247.tech"
-
-# ── Database: now local, not Neon ──────────────────────────────────────
-# The container is on loopback, so no TLS — the connection never leaves the
-# machine. Generate a real password; do not reuse the development one.
-DATABASE_URL="postgresql://bhim:REPLACE_WITH_STRONG_PASSWORD@127.0.0.1:5432/bhim_crm"
-DATABASE_SSL="disable"
-
-# docker compose reads these to create that same database and user.
-POSTGRES_USER="bhim"
-POSTGRES_PASSWORD="REPLACE_WITH_STRONG_PASSWORD"   # must match DATABASE_URL
-POSTGRES_DB="bhim_crm"
-
-# ── Object storage: now local MinIO ────────────────────────────────────
-# These double as MinIO's root credentials in docker-compose.prod.yml.
-S3_ENDPOINT="http://127.0.0.1:9000"
-S3_REGION="us-east-1"
-S3_ACCESS_KEY_ID="REPLACE_WITH_STRONG_KEY"
-S3_SECRET_ACCESS_KEY="REPLACE_WITH_STRONG_SECRET"
-S3_BUCKET_DOCUMENTS="bhim-documents"
-S3_BUCKET_TEMP="bhim-temp"
-S3_MANAGE_BUCKETS="true"
-
-# ── Off-site backup: this is what Neon is for now ──────────────────────
-# A DEDICATED bucket. Never the app's temp bucket — scripts/cleanup-temp.mjs
-# deletes anything older than a day in there, which would quietly destroy
-# every backup. Create `bhim-crm-backup` in the Neon console.
-BACKUP_S3_ENDPOINT="https://br-xxxx.storage.c-3.ap-southeast-1.aws.neon.tech"
-BACKUP_S3_REGION="ap-southeast-1"
-BACKUP_S3_ACCESS_KEY_ID="nak_live_..."
-BACKUP_S3_SECRET_ACCESS_KEY="nsk_live_..."
-BACKUP_S3_BUCKET="bhim-crm-backup"
-BACKUP_RETENTION_DAYS="14"
+```bash
+grep -c . /srv/bhim-crm/current/.env     # non-empty line count, ~40
 ```
 
-Keep `FIELD_ENCRYPTION_KEY` **exactly as it is**. And back it up somewhere
-other than this server before you seed — without it every stored Aadhaar
-number is permanently unreadable, and a database dump does not help.
-
-`GOTENBERG_URL` stays `http://localhost:3001`; the container publishes there.
-
----
+> **Working on your laptop against the same data.** Open a tunnel and the same
+> `.env` points at the server's containers rather than your own:
+>
+> ```bash
+> ssh -L 5432:127.0.0.1:5432 -L 9000:127.0.0.1:9000 bhim@187.126.125.193
+> ```
+>
+> Leave that running, then `npm run dev` locally. Same file, same database,
+> same documents, and nothing exposed to the internet. Close the tunnel and
+> your local containers serve instead.
 
 ## 5. Start the services
 
 ```bash
 cd /srv/bhim-crm/current
-sudo -u bhim docker compose -f deploy/docker-compose.prod.yml up -d
-sudo -u bhim docker compose -f deploy/docker-compose.prod.yml ps
+sudo -u bhim docker compose up -d
+sudo -u bhim docker compose ps
 ```
 
 Three containers, all healthy, nothing listening publicly — confirm that:
@@ -339,7 +321,7 @@ before the service is touched, so a failed build leaves the running version up.
 |---|---|
 | Service won't start, log names a variable | Missing from `.env`. Production has no fallbacks by design. |
 | `password authentication failed` | `POSTGRES_PASSWORD` and the password inside `DATABASE_URL` disagree. |
-| Database connection refused | Containers aren't up: `docker compose -f deploy/docker-compose.prod.yml ps`. |
+| Database connection refused | Containers aren't up: `docker compose ps`. |
 | Login does nothing, no error | `AUTH_URL` isn't the exact public `https://` origin, so the secure cookie is rejected. |
 | Upload fails in the browser | MinIO isn't reachable on `127.0.0.1:9000`, or `S3_*` credentials don't match the compose file. |
 | `NoSuchBucket` | `S3_MANAGE_BUCKETS` is `false` and the buckets were never created. |
@@ -348,7 +330,7 @@ before the service is touched, so a failed build leaves the running version up.
 | Backups "succeed" but the bucket is empty | `BACKUP_S3_BUCKET` points at the app's temp bucket, and the cleanup job deleted them. Use a dedicated bucket. |
 
 Logs: `journalctl -u bhim-crm -f` and
-`docker compose -f deploy/docker-compose.prod.yml logs -f`
+`docker compose logs -f`
 
 ---
 

@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "./db";
-import { APP_URL, AUTH_SECRET, AUTH_URL, isProduction } from "./env";
+import { APP_URL, AUTH_SECRET, AUTH_URL, PUBLIC_URL, isProduction } from "./env";
 import { account, session, user, verification } from "./db/schema";
 
 /**
@@ -23,7 +23,7 @@ export const auth = betterAuth({
    * Behind nginx the browser's origin is the public hostname, not localhost,
    * so AUTH_URL must be the real https:// URL in production.
    */
-  trustedOrigins: [AUTH_URL, APP_URL].filter(
+  trustedOrigins: [AUTH_URL, PUBLIC_URL, APP_URL, "http://localhost:3000"].filter(
     (u, i, all) => u && all.indexOf(u) === i,
   ) as string[],
 
