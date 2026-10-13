@@ -1,16 +1,22 @@
 /**
- * Storage smoke test, against the real MinIO.
+ * Storage smoke test, against whatever S3-compatible storage .env points at —
+ * MinIO locally, or Neon Object Storage.
  *
  * Builds a large synthetic photo, runs it through the variant pipeline, puts
  * all three variants in the bucket, reads one back through a presigned URL,
  * and checks the portal copy actually came in under the cap.
  *
- *   npx tsx scripts/smoke-storage.mjs
+ * It writes real objects, so it deletes them again at the end. With a single
+ * shared .env this runs against the live bucket, and 20 MB of leftovers per
+ * run adds up fast against a free tier.
+ *
+ *   npm run smoke:storage
  */
 import sharp from "sharp";
 import { buildVariants, stampGeo } from "../src/lib/storage/variants.ts";
-import { PORTAL_MAX_KB, documentKey } from "../src/lib/storage/client.ts";
+import { PORTAL_MAX_KB, S3_ENDPOINT, documentKey } from "../src/lib/storage/client.ts";
 import {
+  deleteDocumentObject,
   ensureBuckets,
   presignDownload,
   putDocument,
@@ -59,11 +65,19 @@ try {
 
   variants.thumb ? pass(`thumb ${kb(variants.thumb.bytes)}`) : fail("no thumb");
 
-  // A PDF must pass through untouched — rasterising one belongs in phase 4.
+  // A PDF under the cap must pass through untouched. It does still get a
+  // portal variant, but that variant IS the original object rather than a
+  // second copy — `portalSameAsOriginal` is how the caller knows to upload one
+  // file and point both keys at it. This assertion used to demand
+  // `portal === null`, which was the behaviour before that flag existed, so it
+  // failed against correct code.
   const fakePdf = Buffer.from("%PDF-1.7\n% test\n");
   const pdfVariants = await buildVariants(fakePdf, "application/pdf");
-  pdfVariants.portal === null && pdfVariants.original.bytes === fakePdf.byteLength
-    ? pass("a PDF passes through with no portal variant")
+  pdfVariants.portalSameAsOriginal === true &&
+  pdfVariants.thumb === null &&
+  pdfVariants.original.bytes === fakePdf.byteLength &&
+  pdfVariants.portal?.bytes === fakePdf.byteLength
+    ? pass("a small PDF passes through, portal reusing the original object")
     : fail("PDF was altered");
 
   // Put all three in the bucket and read one back.
@@ -75,7 +89,7 @@ try {
   await putDocument(keyO, variants.original.body, "image/jpeg");
   await putDocument(keyP, variants.portal.body, "image/jpeg");
   await putDocument(keyT, variants.thumb.body, "image/jpeg");
-  pass("all three variants written to MinIO");
+  pass(`all three variants written to ${S3_ENDPOINT ?? "S3"}`);
 
   const url = await presignDownload(keyP, 120);
   const res = await fetch(url);
@@ -99,6 +113,11 @@ try {
   stamped.byteLength > 0 && stampedMeta.width
     ? pass(`geo stamp burned in (${stampedMeta.width}×${stampedMeta.height})`)
     : fail("geo stamp failed");
+
+  // Put the bucket back how it was found. Important now that .env points
+  // local runs at the live bucket.
+  for (const key of [keyO, keyP, keyT]) await deleteDocumentObject(key);
+  pass("test objects removed");
 
   console.log("");
 } catch (err) {

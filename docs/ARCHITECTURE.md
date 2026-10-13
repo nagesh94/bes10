@@ -508,7 +508,7 @@ next dev                →  localhost:3000    the application
 
 Buckets created on first run: `bhim-documents` (versioning on, no lifecycle expiry) and `bhim-temp`.
 
-The compose file lives at the repository root; `.env.example` holds the matching variables. The only values that change when this moves to a server are the Postgres URL, the S3 endpoint and its credentials.
+The compose file lives at the repository root. A single `.env` (gitignored) holds every variable and is used in development and on the server alike, both pointing at the live Neon database and bucket; see `NEON.md`. The only line that differs between the two is `AUTH_URL`.
 
 ### Theming — light and dark
 

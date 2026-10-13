@@ -2,20 +2,25 @@
   "name": "bhim-crm",
   "version": "0.1.0",
   "private": true,
-  "description": "BHIM Energy Solutions — residential rooftop solar CRM for PM Surya Ghar",
+  "description": "BHIM Energy Solutions \u2014 residential rooftop solar CRM for PM Surya Ghar",
   "scripts": {
     "dev": "node scripts/with-swc-cache.mjs next dev",
     "build": "node scripts/with-swc-cache.mjs next build",
-    "start": "node scripts/with-swc-cache.mjs next start",
+    "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/lib/db/seed.ts",
+    "db:seed": "tsx --env-file-if-exists=.env src/lib/db/seed.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:migrate:prod": "node --env-file-if-exists=.env scripts/migrate.mjs",
+    "deploy:release": "npm run db:migrate:prod && npm run db:seed",
+    "storage:cleanup": "node --env-file-if-exists=.env scripts/cleanup-temp.mjs",
+    "smoke:storage": "tsx --env-file-if-exists=.env scripts/smoke-storage.mjs",
+    "db:backup": "node --env-file-if-exists=.env scripts/backup.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",
@@ -37,6 +42,7 @@
     "react-hook-form": "^7.63.0",
     "sharp": "^0.35.5",
     "tailwind-merge": "^3.3.1",
+    "tsx": "^4.20.5",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -47,8 +53,10 @@
     "@types/react-dom": "^19.1.9",
     "drizzle-kit": "^0.31.4",
     "tailwindcss": "^4.1.13",
-    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.9"
   }
 }

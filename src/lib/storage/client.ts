@@ -1,52 +1,85 @@
 import { S3Client } from "@aws-sdk/client-s3";
+import {
+  PORTAL_MAX_FILE_KB,
+  S3_ACCESS_KEY_ID,
+  S3_BUCKET_DOCUMENTS,
+  S3_BUCKET_TEMP,
+  S3_ENDPOINT,
+  S3_FORCE_PATH_STYLE,
+  S3_REGION,
+  S3_SECRET_ACCESS_KEY,
+  isProduction,
+} from "../env";
 
 /**
  * One S3 client, pointed at whatever endpoint the environment names.
  *
- * MinIO locally, S3 or Cloudflare R2 later — the API is identical, so moving
- * is four environment variables rather than a code change. That is the whole
- * reason the POC runs an S3-compatible server instead of writing to disk.
+ * MinIO locally, Neon Object Storage in production. Both speak the S3 API, so
+ * moving between them is configuration rather than a code change — which is
+ * the whole reason the POC ran an S3-compatible server instead of writing to
+ * disk, and the reason Neon's bucket feature needed no rewrite.
  */
 
-export const S3_ENDPOINT = process.env.S3_ENDPOINT ?? "http://localhost:9000";
-export const BUCKET_DOCUMENTS = process.env.S3_BUCKET_DOCUMENTS ?? "bhim-documents";
-export const BUCKET_TEMP = process.env.S3_BUCKET_TEMP ?? "bhim-temp";
+export { S3_BUCKET_DOCUMENTS as BUCKET_DOCUMENTS, S3_BUCKET_TEMP as BUCKET_TEMP, S3_ENDPOINT };
 
 /**
  * Government portals cap uploads; the portal variant is squeezed under this.
  *
- * 2 MB. The default has to match `.env.example`, because a deployment that
+ * 2 MB. The default has to match `.env`, because a deployment that
  * forgets the variable would otherwise squeeze every portal copy to a
  * different size than the one tested.
  */
-export const PORTAL_MAX_KB = Number(process.env.PORTAL_MAX_FILE_KB ?? 2048);
+export const PORTAL_MAX_KB = PORTAL_MAX_FILE_KB;
+
+/**
+ * Credentials, from a Neon credential or MinIO's root user.
+ *
+ * Left undefined when neither is set, which makes the SDK walk its own
+ * provider chain — useful if this ever points back at AWS with an instance
+ * role. Neon has no such mechanism, so production does carry a key; `lib/env`
+ * refuses to start without one.
+ */
+const credentials =
+  S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY
+    ? { accessKeyId: S3_ACCESS_KEY_ID, secretAccessKey: S3_SECRET_ACCESS_KEY }
+    : undefined;
 
 const globalForS3 = globalThis as unknown as { __bhimS3?: S3Client };
 
 export const s3 =
   globalForS3.__bhimS3 ??
   new S3Client({
-    region: process.env.S3_REGION ?? "us-east-1",
-    endpoint: S3_ENDPOINT,
-    // MinIO needs path-style addressing; AWS S3 does not.
-    forcePathStyle: (process.env.S3_FORCE_PATH_STYLE ?? "true") === "true",
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "bhim_minio",
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "bhim_minio_local_dev",
-    },
-    // The SDK now adds a CRC32 checksum to every request by default. Real S3
+    region: S3_REGION,
+    // Absent only if this ever points at real AWS, which builds its own
+    // regional endpoint. Neon and MinIO both name one.
+    ...(S3_ENDPOINT ? { endpoint: S3_ENDPOINT } : {}),
+    // Neon accepts path-style addressing only. MinIO needs it too.
+    forcePathStyle: S3_FORCE_PATH_STYLE,
+    ...(credentials ? { credentials } : {}),
+    /**
+     * Three attempts with the SDK's adaptive backoff. Neon documents a
+     * `503 SlowDown` under load and asks clients to back off, and a retried
+     * rooftop photo upload is much better than an error in front of a
+     * technician standing on a roof.
+     */
+    maxAttempts: 3,
+    // The SDK adds a CRC32 checksum to every request by default. Real S3
     // accepts it; several S3-compatible servers answer 501 NotImplemented.
     // Sending it only when the operation requires it keeps both happy.
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
   });
 
-if (process.env.NODE_ENV !== "production") globalForS3.__bhimS3 = s3;
+if (!isProduction) globalForS3.__bhimS3 = s3;
 
 /**
  * Keys are grouped by project so a whole project's files can be listed,
  * copied or audited as one prefix. Aadhaar lives under its own prefix so a
  * bucket policy can restrict it separately.
+ *
+ * The timestamp matters more than it looks: every key is unique, so nothing
+ * is ever overwritten. That is what makes the lack of real object versioning
+ * on Neon survivable — see the note in `operations.ts`.
  */
 export function documentKey(
   projectId: string,

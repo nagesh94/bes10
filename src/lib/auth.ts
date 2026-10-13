@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "./db";
+import { APP_URL, AUTH_SECRET, AUTH_URL, isProduction } from "./env";
 import { account, session, user, verification } from "./db/schema";
 
 /**
@@ -13,8 +14,28 @@ import { account, session, user, verification } from "./db/schema";
  */
 export const auth = betterAuth({
   appName: "BHIM Solar CRM",
-  secret: process.env.AUTH_SECRET,
-  baseURL: process.env.AUTH_URL ?? "http://localhost:3000",
+  secret: AUTH_SECRET,
+  baseURL: AUTH_URL,
+
+  /**
+   * Better Auth rejects a sign-in whose Origin is not listed here, which is
+   * what stops another site from driving this one with the user's cookie.
+   * Behind nginx the browser's origin is the public hostname, not localhost,
+   * so AUTH_URL must be the real https:// URL in production.
+   */
+  trustedOrigins: [AUTH_URL, APP_URL].filter(
+    (u, i, all) => u && all.indexOf(u) === i,
+  ) as string[],
+
+  advanced: {
+    /**
+     * `__Secure-` prefix and SameSite=Lax over HTTPS. The prefix is enforced
+     * by the browser: a cookie named this way is refused unless it is Secure
+     * and sent from a secure origin, so a misconfigured plaintext deployment
+     * fails to log anybody in instead of sending session cookies in clear.
+     */
+    useSecureCookies: isProduction,
+  },
 
   database: drizzleAdapter(db, {
     provider: "pg",

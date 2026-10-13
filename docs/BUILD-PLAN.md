@@ -42,7 +42,7 @@ Then `npm run dev` on 3000.
 ```
 bhim-crm/
 ├─ docker-compose.yml          postgres · minio · gotenberg · mailpit
-├─ .env.example
+├─ .env                  (gitignored; the only env file)
 ├─ templates/                  the five source .docx files
 ├─ public/brand/               emblem · wordmark · both vendor signatures
 ├─ drizzle/                    generated migrations

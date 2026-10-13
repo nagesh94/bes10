@@ -4,6 +4,7 @@ import {
   randomBytes,
   timingSafeEqual,
 } from "node:crypto";
+import { FIELD_ENCRYPTION_KEY } from "../env";
 
 /**
  * Column-level encryption for the one field that legally needs it.
@@ -22,8 +23,8 @@ import {
 const VERSION = "v1";
 
 function key(): Buffer {
-  const raw = process.env.FIELD_ENCRYPTION_KEY;
-  if (!raw || raw.startsWith("generate-with")) {
+  const raw = FIELD_ENCRYPTION_KEY;
+  if (!raw) {
     throw new Error(
       "FIELD_ENCRYPTION_KEY is not set. Generate one with: openssl rand -base64 32",
     );

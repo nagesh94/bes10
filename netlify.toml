@@ -1,0 +1,32 @@
+# Netlify build configuration.
+#
+# The Next.js runtime plugin turns the build into edge/serverless functions;
+# Netlify installs it automatically from this declaration, so it is not a
+# package.json dependency.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  # Matches the engines field in package.json.
+  NODE_VERSION = "22"
+  # Netlify's runtime packages the app itself; a standalone build confuses it.
+  # Set this to "true" only for a VPS deploy via deploy/.
+  BUILD_STANDALONE = "false"
+
+# Gotenberg is gone, so nothing here needs a container any more. What is left
+# that matters on a serverless host:
+#
+#   * Function timeout is the binding constraint — 10s on older free accounts,
+#     30s on newer ones. The submission pack is the only slow path.
+#   * Request bodies are capped around 6 MB by the underlying Lambda, below the
+#     12 MB serverActions limit in next.config.ts. That is fine because every
+#     large upload goes straight to object storage through a presigned URL and
+#     never passes through a function — only admin template uploads (small
+#     .docx files) arrive as a request body.
+#   * DATABASE_URL must be Neon's POOLED host here (`-pooler`), unlike a VPS.
+#     src/lib/db/index.ts detects that and disables prepared statements.

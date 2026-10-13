@@ -6,6 +6,7 @@
  */
 import sharp from "sharp";
 import {
+  deleteDocumentObject,
   deleteTempObject,
   ensureBuckets,
   getTempObject,
@@ -81,9 +82,15 @@ try {
   }
 
   const dl = await fetch(await presignDownload(keyOriginal, 60));
+  // Checked before cleanup below, which removes both stored variants.
   dl.ok
     ? pass("original downloads through a presigned URL")
     : fail(`download returned ${dl.status}`);
+
+  // Put the bucket back how it was found. Important now that .env points
+  // local runs at the live bucket.
+  for (const key of [keyOriginal, keyPortal]) await deleteDocumentObject(key);
+  pass("test objects removed");
 
   console.log("");
 } catch (err) {

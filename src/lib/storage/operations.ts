@@ -3,20 +3,40 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
-  PutBucketVersioningCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3_MANAGE_BUCKETS, S3_SSE } from "../env";
 import { BUCKET_DOCUMENTS, BUCKET_TEMP, s3 } from "./client";
 
 /**
- * Buckets exist and are versioned.
+ * The buckets exist.
  *
- * Versioning is on for documents and there is deliberately no lifecycle
- * expiry: a bank or the portal may ask for a file a year later, and a
- * superseded electricity bill still has to be producible.
+ * Runs once per process rather than once per upload. Every upload path calls
+ * this first, which was free against MinIO but is a wasted round trip against
+ * a remote endpoint — and against a least-privilege AWS credential it would
+ * fail outright. `S3_MANAGE_BUCKETS` turns it off where the buckets are
+ * created by hand instead.
+ *
+ * Note what is no longer here: nothing enables object versioning.
+ *
+ * It used to call PutBucketVersioning, which mattered because a re-generated
+ * agreement must not destroy the copy that was already printed and signed.
+ * Neon stores that setting and does not enforce it — objects always come back
+ * with `x-amz-version-id: null` — so the call would have reported success
+ * while protecting nothing, which is worse than not making it. Two things
+ * make that survivable: every key carries a timestamp, so no object is ever
+ * overwritten, and the generated documents are printed and signed on paper.
+ * What is genuinely lost is recovery of a superseded file at the three places
+ * that delete one on regeneration. Move to a provider with real versioning if
+ * that stops being acceptable.
  */
+let bootstrapped = false;
+
 export async function ensureBuckets(): Promise<void> {
+  if (!S3_MANAGE_BUCKETS) return;
+  if (bootstrapped) return;
+
   for (const bucket of [BUCKET_DOCUMENTS, BUCKET_TEMP]) {
     try {
       await s3.send(new HeadBucketCommand({ Bucket: bucket }));
@@ -25,12 +45,7 @@ export async function ensureBuckets(): Promise<void> {
     }
   }
 
-  await s3.send(
-    new PutBucketVersioningCommand({
-      Bucket: BUCKET_DOCUMENTS,
-      VersioningConfiguration: { Status: "Enabled" },
-    }),
-  );
+  bootstrapped = true;
 }
 
 /**
@@ -105,16 +120,17 @@ export async function putDocument(
   body: Buffer,
   contentType: string,
 ): Promise<void> {
-  // No ServerSideEncryption header: MinIO answers 501 for SSE-S3 unless a KMS
-  // is configured, and at-rest encryption here is the volume's job. On real S3
-  // or R2 this is set as a bucket default rather than per request, so the
-  // application code stays identical.
+  // The encryption header is sent only where it is supported: MinIO answers
+  // 501 without a KMS, and Neon answers 501 to the bucket-encryption API and
+  // encrypts at rest on its own. So S3_SSE is unset for both and set only if
+  // this ever points back at real AWS S3.
   await s3.send(
     new PutObjectCommand({
       Bucket: BUCKET_DOCUMENTS,
       Key: key,
       Body: body,
       ContentType: contentType,
+      ...(S3_SSE ? { ServerSideEncryption: S3_SSE as "AES256" } : {}),
     }),
   );
 }
@@ -129,9 +145,10 @@ export async function deleteTempObject(key: string): Promise<void> {
 }
 
 /**
- * Removes one stored file. The documents bucket is versioned, so this marks
- * the current version deleted rather than destroying history — but the row
- * and the object stop appearing anywhere a caller is still relying on.
+ * Removes one stored file.
+ *
+ * This is a permanent delete on Neon, which does not enforce versioning — see
+ * `ensureBuckets`. Callers only pass keys they have already superseded.
  */
 export async function deleteDocumentObject(key: string): Promise<void> {
   try {

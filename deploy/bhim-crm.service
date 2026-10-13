@@ -1,0 +1,62 @@
+# /etc/systemd/system/bhim-crm.service
+#
+#   sudo cp deploy/bhim-crm.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now bhim-crm
+#   sudo journalctl -u bhim-crm -f
+
+[Unit]
+Description=BHIM Solar CRM (Next.js)
+Documentation=https://github.com/bhimenergy/besapp
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bhim
+Group=bhim
+WorkingDirectory=/srv/bhim-crm/current
+
+# The single .env that development also uses, kept with the app.
+#
+# Next reads it by itself; systemd needs it too so ${PORT} resolves in
+# ExecStart below. It is NOT in git, so a redeploy will not overwrite it — but
+# it does live in the deploy directory, so `git clean -x` would delete it.
+# Keep a copy somewhere safe, and chmod 600.
+EnvironmentFile=/srv/bhim-crm/current/.env
+
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start --port ${PORT}
+
+# Always come back. RestartSec stops a crash loop from pinning the CPU on a
+# box this small.
+Restart=always
+RestartSec=5
+
+# Capping the heap means a runaway request gets an out-of-memory error inside
+# Node, which systemd restarts cleanly, rather than the kernel's OOM killer
+# choosing a victim — which on a box like this has a habit of choosing the
+# Docker daemon, taking Postgres down with it.
+#
+# 2 GB on a KVM 2 (8 GB): the containers take ~1.3 GB together, so this leaves
+# plenty spare while still being a cap rather than a free-for-all.
+Environment=NODE_OPTIONS=--max-old-space-size=2048
+
+# Hardening. The app writes nothing to disk outside .next/cache, so the
+# filesystem is read-only apart from what is named here.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/bhim-crm/current/.next
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bhim-crm
+
+[Install]
+WantedBy=multi-user.target

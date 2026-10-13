@@ -1,4 +1,4 @@
-const GOTENBERG_URL = process.env.GOTENBERG_URL ?? "http://localhost:3001";
+import { GOTENBERG_URL } from "../env";
 
 const DOCX_MIME =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
