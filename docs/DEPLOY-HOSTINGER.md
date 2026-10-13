@@ -55,13 +55,31 @@ apt install -y git nginx curl ufw
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt install -y nodejs
 
-# Docker
+```
+
+**Check for Docker before adding its repository.** Hostinger's VPS images
+usually ship with it, and adding the repo a second time gives
+`Conflicting values set for option Signed-By` — which breaks `apt` completely
+until the duplicate is removed:
+
+```bash
+docker --version && docker compose version
+```
+
+If that works, **skip the next block** — you already have Docker. Only if it
+fails:
+
+```bash
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
 https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
 apt update && apt install -y docker-ce docker-compose-plugin
 ```
+
+> This box reports its release as `resolute`, newer than 24.04. Docker's
+> repository does not always publish for the newest Ubuntu, which is a second
+> reason to prefer whatever came pre-installed.
 
 Swap, so the build is never OOM-killed:
 
