@@ -1,23 +1,34 @@
 import { fileURLToPath } from "node:url";
-import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
-const nextConfig: NextConfig = {
+/**
+ * Plain JavaScript, deliberately — not next.config.ts.
+ *
+ * A TypeScript config has to be compiled before it can be read, and Next does
+ * that with a platform-specific native SWC binary. On the server that failed
+ * with "Failed to load native binding", which stops `next start` before the
+ * app gets anywhere: the production build was fine, but the config could not
+ * be parsed to start serving it.
+ *
+ * A .mjs config needs no compilation and no native binding, so booting the app
+ * depends on nothing beyond Node itself. Type checking is kept through the
+ * JSDoc annotation below, which editors honour exactly like the imported type.
+ *
+ * @type {import('next').NextConfig}
+ */
+const nextConfig = {
   // A build while `npm run dev` is running otherwise fights the dev server
   // for .next and fails collecting page data. Set NEXT_DIST_DIR to send a
   // one-off build somewhere else.
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
+
   /**
-   * Standalone output is for a VPS, and Netlify must not get it.
-   *
-   * Netlify's Next runtime does its own packaging into functions; a
-   * standalone build confuses it. So this is opt-in: set BUILD_STANDALONE=true
-   * when deploying to a plain Linux box with deploy/, and leave it unset for
-   * Netlify.
+   * Standalone output is for a lean deploy and must be opt-in: Next's hosting
+   * adapters do their own packaging, and a standalone build confuses them.
    */
-  ...(process.env.BUILD_STANDALONE === "true" ? { output: "standalone" as const } : {}),
+  ...(process.env.BUILD_STANDALONE === "true" ? { output: "standalone" } : {}),
 
   /**
    * Pin the trace root to this directory.
@@ -48,14 +59,11 @@ const nextConfig: NextConfig = {
    * get embedded into generated documents. Next's tracing cannot see those
    * reads, because the paths are built at runtime rather than imported, and
    * `public/` is served as static files rather than bundled into functions.
-   *
-   * On a VPS that happens to work, since the whole repo is on disk. On a
-   * serverless host it does not: the function has no `public/`, every
-   * document generation throws ENOENT, and nothing in development warns you.
    */
   outputFileTracingIncludes: {
     "/**": ["./public/brand/**"],
   },
+
   experimental: {
     // Server Actions carry photo uploads from the field; the default 1 MB cap
     // is too small even after client-side compression.
@@ -102,4 +110,7 @@ const nextConfig: NextConfig = {
   },
 };
 
+// next-intl wraps the config to register its request handler. Without this
+// wrapper the app loses locale handling entirely — en/hi switching, and the
+// server-side message loading every page depends on.
 export default withNextIntl(nextConfig);
