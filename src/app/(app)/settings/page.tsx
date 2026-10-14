@@ -42,7 +42,7 @@ export default async function SettingsPage() {
           <div className="min-w-44 flex-1">
             <div className="text-lg font-bold">{user.name}</div>
             <div className="text-[13.5px] text-[var(--muted)]">
-              {user.email} · {t(`roles.${actor.role}`)}
+              {user.email} · {actor.roles.map((role) => t(`roles.${role}`)).join(" · ")}
             </div>
           </div>
           <div className="text-right">
@@ -51,10 +51,10 @@ export default async function SettingsPage() {
             </div>
             <div
               className={`mt-0.5 text-sm font-semibold ${
-                canSeeMoney(actor.role) ? "text-[var(--green-text)]" : "text-[var(--muted)]"
+                canSeeMoney(actor.roles) ? "text-[var(--green-text)]" : "text-[var(--muted)]"
               }`}
             >
-              {canSeeMoney(actor.role) ? "Yes" : "No"}
+              {canSeeMoney(actor.roles) ? "Yes" : "No"}
             </div>
           </div>
         </div>

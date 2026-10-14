@@ -113,6 +113,27 @@
       "when": 1791880518541,
       "tag": "0015_strong_millenium_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791964126029,
+      "tag": "0016_slim_ultimo",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791969283849,
+      "tag": "0017_user_roles_add",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791969299940,
+      "tag": "0018_user_role_drop",
+      "breakpoints": true
     }
   ]
 }

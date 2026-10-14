@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { auditLog, projectStageProgress, projects, stageHistory } from "@/lib/db/schema";
-import { assertCan, can } from "@/lib/rbac/permissions";
+import { assertCan, can, hasRole } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { canEnterStage, evaluateGate, stageByNo } from "@/lib/workflow/stages";
 import { buildSnapshot, completedStages } from "@/lib/workflow/snapshot";
@@ -31,7 +31,7 @@ export async function completeStage(
   const stage = stageByNo(stageNo);
   if (!stage) return { ok: false, error: "No such stage." };
 
-  if (stage.adminOnly && actor.role !== "ADMIN") {
+  if (stage.adminOnly && !hasRole(actor, "ADMIN")) {
     return { ok: false, error: "Only an admin can complete this stage." };
   }
 

@@ -4,7 +4,7 @@ node_modules/
 out/
 build/
 
-
+.env
 *.pem
 
 *.tsbuildinfo

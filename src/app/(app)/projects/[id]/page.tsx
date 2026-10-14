@@ -205,7 +205,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
               projectId={project.id}
               currentStage={project.pipelineStage}
               completed={completed}
-              canSeeMoney={canSeeMoney(actor.role)}
+              canSeeMoney={canSeeMoney(actor.roles)}
               canSeeDocuments={can(actor, "document.read")}
               openFlagCount={openFlagCount}
               sectionsComplete={snapshot.prospectSectionsComplete}

@@ -9,8 +9,8 @@ import {
   deleteDocumentObject,
   deleteTempObject,
   ensureBuckets,
+  getDocumentObject,
   getTempObject,
-  presignDownload,
   presignUpload,
   putDocument,
 } from "../src/lib/storage/operations.ts";
@@ -81,11 +81,11 @@ try {
     pass("temp object no longer retrievable");
   }
 
-  const dl = await fetch(await presignDownload(keyOriginal, 60));
   // Checked before cleanup below, which removes both stored variants.
-  dl.ok
-    ? pass("original downloads through a presigned URL")
-    : fail(`download returned ${dl.status}`);
+  const dl = await getDocumentObject(keyOriginal);
+  dl.body.byteLength > 0
+    ? pass("original reads back from storage")
+    : fail("original read back empty");
 
   // Put the bucket back how it was found. Important now that .env points
   // local runs at the live bucket.

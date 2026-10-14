@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isOnly } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 
 /**
@@ -12,6 +13,6 @@ import { getActor } from "@/lib/session";
  */
 export default async function ProjectsLayout({ children }: { children: React.ReactNode }) {
   const actor = await getActor();
-  if (actor?.role === "INSTALLER") redirect("/installer");
+  if (isOnly(actor, "INSTALLER")) redirect("/installer");
   return children;
 }

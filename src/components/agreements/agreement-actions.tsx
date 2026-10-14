@@ -3,48 +3,105 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
+  deleteAgreement,
   getAgreementUrl,
   regenerateAgreementDocx,
   setAgreementStatus,
 } from "@/app/actions/agreements";
+import { useConfirm } from "@/components/shell/confirm";
+import { saveFile } from "@/lib/documents/open-file";
 
 /**
  * Opening and re-marking an agreement.
  *
- * The link is presigned per click rather than rendered into the list, so
- * the permission check happens when the file is actually asked for and the
- * URL expires shortly after — an agreement states a price, and a page left
- * open on a shared office screen should not hand out a permanent link.
+ * The URL is asked for per click rather than rendered into the list, so the
+ * permission check and the audit entry happen when the file is actually
+ * wanted — an agreement states a price. The link itself goes to this app
+ * and is re-checked there on every request, so a page left open on a shared
+ * office screen hands out nothing usable.
  */
 
-export function AgreementRowActions({ id, hasFile }: { id: string; hasFile: boolean }) {
-  const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
+const rowBtn =
+  "h-9 shrink-0 cursor-pointer rounded-[var(--radius-control)] border px-3 text-[12.5px] font-bold whitespace-nowrap disabled:opacity-60 bg-[var(--surface)]";
 
-  if (!hasFile) {
-    return <span className="text-[12px] text-[var(--muted)]">No file</span>;
+export function AgreementRowActions({
+  id,
+  hasFile,
+  canDelete = false,
+}: {
+  id: string;
+  hasFile: boolean;
+  /**
+   * Decided per row by the page: an agreement attached to a project is
+   * admin-only. The server decides again — this only keeps a button the
+   * person cannot use off the screen.
+   */
+  canDelete?: boolean;
+}) {
+  const router = useRouter();
+  const ask = useConfirm();
+  const [busy, setBusy] = useState<"download" | "delete" | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function download() {
+    setBusy("download");
+    setFailed(false);
+    const result = await getAgreementUrl(id);
+    setBusy(null);
+    if (!result.ok) return setFailed(true);
+    saveFile(result.url);
+  }
+
+  async function remove() {
+    const answer = await ask({
+      title: "Delete this agreement?",
+      body: "The .docx goes for good. Who the parties were and what was agreed stays on record.",
+      confirmLabel: "Delete it",
+      reason: {},
+    });
+    if (!answer.confirmed) return;
+
+    setBusy("delete");
+    setError(null);
+    const result = await deleteAgreement(id, answer.reason);
+    setBusy(null);
+    if (!result.ok) return setError(result.error);
+    router.refresh();
   }
 
   return (
-    <button
-      type="button"
-      disabled={busy}
-      onClick={async () => {
-        setBusy(true);
-        setFailed(false);
-        const result = await getAgreementUrl(id);
-        setBusy(false);
-        if (!result.ok) return setFailed(true);
-        window.location.href = result.url;
-      }}
-      className={`h-9 shrink-0 cursor-pointer rounded-[var(--radius-control)] border px-3 text-[12.5px] font-bold whitespace-nowrap disabled:opacity-60 ${
-        failed
-          ? "border-[var(--red-text)] bg-[var(--surface)] text-[var(--red-text)]"
-          : "border-[var(--line)] bg-[var(--surface)] text-[var(--link)]"
-      }`}
-    >
-      {busy ? "Opening…" : failed ? "Failed" : "Download"}
-    </button>
+    <span className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+      {hasFile ? (
+        <button
+          type="button"
+          disabled={busy !== null}
+          onClick={() => void download()}
+          className={`${rowBtn} ${
+            failed
+              ? "border-[var(--red-text)] text-[var(--red-text)]"
+              : "border-[var(--line)] text-[var(--link)]"
+          }`}
+        >
+          {busy === "download" ? "Preparing…" : failed ? "Failed" : "Download"}
+        </button>
+      ) : (
+        <span className="text-[12px] text-[var(--muted)]">No file</span>
+      )}
+      {canDelete ? (
+        <button
+          type="button"
+          disabled={busy !== null}
+          onClick={() => void remove()}
+          className={`${rowBtn} border-[var(--red-border)] text-[var(--red-text)]`}
+        >
+          {busy === "delete" ? "Deleting…" : "Delete"}
+        </button>
+      ) : null}
+      {error ? (
+        <span className="text-[11.5px] font-semibold text-[var(--red-text)]">{error}</span>
+      ) : null}
+    </span>
   );
 }
 
@@ -60,13 +117,17 @@ export function AgreementControls({
   status,
   hasFile,
   canWrite,
+  canDelete = false,
 }: {
   id: string;
   status: string;
   hasFile: boolean;
   canWrite: boolean;
+  /** Already resolved against this agreement — see `AgreementRowActions`. */
+  canDelete?: boolean;
 }) {
   const router = useRouter();
+  const ask = useConfirm();
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,7 +139,7 @@ export function AgreementControls({
     if (!result.ok) return setError(result.error);
     // A .docx is downloaded rather than opened in a tab — the browser has
     // nothing to show it in, and the lawyer wants the file anyway.
-    window.location.href = result.url;
+    saveFile(result.url);
   }
 
   async function rebuild() {
@@ -96,6 +157,25 @@ export function AgreementControls({
     const result = await setAgreementStatus({ id, status: next });
     setPending(null);
     if (!result.ok) return setError(result.error);
+    router.refresh();
+  }
+
+  async function remove() {
+    const answer = await ask({
+      title: "Delete this agreement?",
+      body: "The .docx goes for good, and the agreement leaves every list. Who signed what stays on record, in the audit log.",
+      confirmLabel: "Delete it",
+      reason: {},
+    });
+    if (!answer.confirmed) return;
+
+    setPending("delete");
+    setError(null);
+    const result = await deleteAgreement(id, answer.reason);
+    setPending(null);
+    if (!result.ok) return setError(result.error);
+    // Nothing left to show here.
+    router.push("/agreements");
     router.refresh();
   }
 
@@ -139,6 +219,18 @@ export function AgreementControls({
               </select>
             </label>
           </>
+        ) : null}
+
+        {canDelete ? (
+          <button
+            type="button"
+            disabled={pending !== null}
+            onClick={remove}
+            title="Remove this agreement — the audit log keeps what it was"
+            className="ml-auto h-11 cursor-pointer rounded-lg border border-[var(--red-border)] bg-[var(--surface)] px-4 text-sm font-bold text-[var(--red-text)] disabled:opacity-60"
+          >
+            {pending === "delete" ? "Deleting…" : "Delete"}
+          </button>
         ) : null}
       </div>
 

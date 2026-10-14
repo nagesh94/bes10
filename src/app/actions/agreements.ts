@@ -15,16 +15,13 @@ import {
 import { emptyAgreement } from "@/lib/agreements/form-values";
 import { prefillFromProject } from "@/lib/agreements/prefill";
 import { buildAgreementDocx } from "@/lib/documents/agreement";
+import { writeAudit } from "@/lib/admin/write-audit";
 import { newId } from "@/lib/projects/code";
-import { assertCan } from "@/lib/rbac/permissions";
+import { assertCan, can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { agreementKey } from "@/lib/storage/client";
-import {
-  deleteDocumentObject,
-  ensureBuckets,
-  presignDownload,
-  putDocument,
-} from "@/lib/storage/operations";
+import { fileHref } from "@/lib/storage/file-url";
+import { deleteDocumentObject, ensureBuckets, putDocument } from "@/lib/storage/operations";
 import {
   agreementLinkSchema,
   agreementPrimarySchema,
@@ -82,7 +79,7 @@ function fieldErrorsOf(error: { flatten: () => { fieldErrors: unknown } }) {
 async function renderAndStore(
   agreementId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const [row] = await db.select().from(agreements).where(eq(agreements.id, agreementId)).limit(1);
+  const [row] = await db.select().from(agreements).where(live(agreementId)).limit(1);
   if (!row) return { ok: false, error: "That agreement no longer exists." };
 
   const milestones = await db
@@ -268,6 +265,16 @@ async function writeMilestones(agreementId: string, input: AgreementInput): Prom
   );
 }
 
+/**
+ * One agreement, as long as it has not been deleted.
+ *
+ * The twin of `live` in `quotations.ts`, and for the same reason: deleting
+ * leaves the row behind, so a lookup by id has to say so.
+ */
+function live(id: string) {
+  return and(eq(agreements.id, id), isNull(agreements.deletedAt));
+}
+
 function revalidate(projectId: string | null | undefined): void {
   revalidatePath("/agreements");
   if (projectId) {
@@ -377,7 +384,7 @@ export async function updateAgreement(id: string, raw: AgreementInput): Promise<
   }
   const input = parsed.data;
 
-  const [existing] = await db.select().from(agreements).where(eq(agreements.id, id)).limit(1);
+  const [existing] = await db.select().from(agreements).where(live(id)).limit(1);
   if (!existing) return { ok: false, error: "That agreement no longer exists." };
 
   // The letterhead is deliberately not re-snapshotted on an edit. The second
@@ -445,7 +452,7 @@ export async function regenerateAgreementDocx(
   const [row] = await db
     .select({ projectId: agreements.projectId, consumerName: agreements.consumerName })
     .from(agreements)
-    .where(eq(agreements.id, id))
+    .where(live(id))
     .limit(1);
   if (!row) return { ok: false, error: "That agreement no longer exists." };
 
@@ -479,7 +486,7 @@ export async function setAgreementStatus(
   const [row] = await db
     .select({ projectId: agreements.projectId, status: agreements.status })
     .from(agreements)
-    .where(eq(agreements.id, id))
+    .where(live(id))
     .limit(1);
   if (!row) return { ok: false, error: "That agreement no longer exists." };
 
@@ -530,7 +537,7 @@ export async function makeAgreementPrimary(
       status: agreements.status,
     })
     .from(agreements)
-    .where(eq(agreements.id, id))
+    .where(live(id))
     .limit(1);
   if (!row) return { ok: false, error: "That agreement no longer exists." };
   if (!row.projectId) {
@@ -600,7 +607,7 @@ export async function linkAgreementToProject(
       status: agreements.status,
     })
     .from(agreements)
-    .where(eq(agreements.id, id))
+    .where(live(id))
     .limit(1);
   if (!row) return { ok: false, error: "That agreement no longer exists." };
 
@@ -690,11 +697,104 @@ export async function attachableProjects(): Promise<
 }
 
 /**
- * A short-lived link to the .docx.
+ * Delete an agreement.
  *
- * Presigned per click rather than rendered into the page, so the permission
- * check happens when the file is actually asked for and the URL stops
- * working soon after. Reads are logged: an agreement states a price.
+ * The same shape as `deleteQuotation`, and deliberately so. The row stays —
+ * who the parties were, what clause 19.1 said and who removed it are not
+ * things to lose — while the .docx, the copy filed into the project's
+ * documents and its place in every list all go.
+ *
+ * Attached to a project means admin only, standalone means whoever may
+ * write agreements. Nothing here names a role: the two permissions carry
+ * that, and deleting detaches first so the "one filed agreement per project"
+ * index is left clear.
+ *
+ * A signed agreement is not treated differently from a draft. It is the same
+ * decision either way — an admin removing a record of what was signed — and
+ * the audit entry carries the status it had when it went.
+ */
+export async function deleteAgreement(
+  id: string,
+  reason?: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const actor = await getActor();
+
+  const [row] = await db
+    .select({
+      consumerName: agreements.consumerName,
+      status: agreements.status,
+      totalValue: agreements.totalValue,
+      executionDate: agreements.executionDate,
+      projectId: agreements.projectId,
+      documentId: agreements.documentId,
+      isPrimary: agreements.isPrimary,
+      s3Key: agreements.s3Key,
+    })
+    .from(agreements)
+    .where(live(id))
+    .limit(1);
+  if (!row) return { ok: false, error: "That agreement no longer exists." };
+
+  const attached = Boolean(row.projectId);
+  if (!can(actor, attached ? "agreement.delete.filed" : "agreement.delete")) {
+    return {
+      ok: false,
+      error: attached
+        ? "This agreement is attached to a project, so only an admin can delete it. Detach it first, or mark it Cancelled."
+        : "You are not allowed to delete an agreement.",
+    };
+  }
+
+  await db.transaction(async (tx) => {
+    if (row.documentId) {
+      await tx.delete(documents).where(eq(documents.id, row.documentId));
+    }
+
+    await tx
+      .update(agreements)
+      .set({
+        deletedBy: actor!.id,
+        deletedAt: new Date(),
+        projectId: null,
+        isPrimary: false,
+        documentId: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(agreements.id, id));
+  });
+
+  // Outside the transaction, for the reason given in `deleteQuotation`.
+  if (row.s3Key) await deleteDocumentObject(row.s3Key);
+
+  await writeAudit({
+    actorId: actor!.id,
+    action: "agreement.delete",
+    entityType: "agreement",
+    entityId: id,
+    projectId: row.projectId,
+    before: {
+      consumer: row.consumerName,
+      status: row.status,
+      value: row.totalValue,
+      executionDate: row.executionDate,
+      projectId: row.projectId,
+      wasPrimary: row.isPrimary,
+    },
+    reason: reason?.trim() || null,
+  });
+
+  revalidate(row.projectId);
+  revalidatePath(`/agreements/${id}`);
+  return { ok: true };
+}
+
+/**
+ * The link to the .docx.
+ *
+ * Asked for per click rather than rendered into the page, so the permission
+ * check happens when the file is wanted. The URL points at this app's own
+ * file route, which checks the permission again before a byte is served.
+ * Reads are logged: an agreement states a price.
  */
 export async function getAgreementUrl(
   id: string,
@@ -709,7 +809,7 @@ export async function getAgreementUrl(
       projectId: agreements.projectId,
     })
     .from(agreements)
-    .where(eq(agreements.id, id))
+    .where(live(id))
     .limit(1);
 
   if (!row) return { ok: false, error: "That agreement no longer exists." };
@@ -724,7 +824,7 @@ export async function getAgreementUrl(
     after: { consumer: row.consumerName },
   });
 
-  return { ok: true, url: await presignDownload(row.s3Key) };
+  return { ok: true, url: fileHref("agreement", id, { download: true }) };
 }
 
 /**

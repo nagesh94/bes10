@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, arrayContains, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { projectInstallers, user } from "@/lib/db/schema";
 
@@ -59,6 +59,6 @@ export async function availableInstallers(): Promise<CrewMember[]> {
   return db
     .select({ id: user.id, name: user.name, phone: user.phone })
     .from(user)
-    .where(and(eq(user.role, "INSTALLER"), eq(user.active, true)))
+    .where(and(arrayContains(user.roles, ["INSTALLER"]), eq(user.active, true)))
     .orderBy(user.name);
 }

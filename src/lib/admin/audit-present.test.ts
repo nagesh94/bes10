@@ -52,10 +52,68 @@ describe("presentAudit", () => {
       projectCode: null,
       reason: null,
       before: null,
-      after: { email: "deepak@bhimenergy.in", role: "INSTALLER" },
+      after: { email: "deepak@bhimenergy.in", roles: ["INSTALLER"] },
     });
     expect(invite.kind).toBe("user");
     expect(invite.title).toBe("User invited");
-    expect(invite.detail).toBe("deepak@bhimenergy.in · role Installer");
+    expect(invite.detail).toBe("deepak@bhimenergy.in · Installer");
+  });
+
+  it("names every role an account was given", () => {
+    const invite = presentAudit({
+      action: "user.invite",
+      entityType: "user",
+      projectCode: null,
+      reason: null,
+      before: null,
+      after: { email: "priya@bhimenergy.in", roles: ["EMPLOYEE", "INSTALLER"] },
+    });
+    expect(invite.detail).toBe("priya@bhimenergy.in · Executive + Installer");
+  });
+
+  it("still reads a row written before accounts could hold several roles", () => {
+    const invite = presentAudit({
+      action: "user.invite",
+      entityType: "user",
+      projectCode: null,
+      reason: null,
+      before: null,
+      after: { email: "deepak@bhimenergy.in", role: "INSTALLER" },
+    });
+    expect(invite.detail).toBe("deepak@bhimenergy.in · Installer");
+  });
+
+  it("says when an account was disabled, re-enabled or had its password reset", () => {
+    const off = presentAudit({
+      action: "user.disable",
+      entityType: "user",
+      projectCode: null,
+      reason: null,
+      before: { active: true },
+      after: { email: "deepak@bhimenergy.in", active: false },
+    });
+    expect(off.title).toBe("User disabled");
+    expect(off.detail).toBe("deepak@bhimenergy.in · disabled");
+
+    const on = presentAudit({
+      action: "user.enable",
+      entityType: "user",
+      projectCode: null,
+      reason: null,
+      before: { active: false },
+      after: { email: "deepak@bhimenergy.in", active: true },
+    });
+    expect(on.detail).toBe("deepak@bhimenergy.in · re-enabled");
+
+    const pw = presentAudit({
+      action: "user.password",
+      entityType: "user",
+      projectCode: null,
+      reason: null,
+      before: null,
+      after: { email: "deepak@bhimenergy.in", passwordReset: true },
+    });
+    expect(pw.title).toBe("Password reset by admin");
+    expect(pw.detail).toBe("deepak@bhimenergy.in · password reset");
   });
 });

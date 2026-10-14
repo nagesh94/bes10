@@ -9,6 +9,12 @@
  * anywhere: not project value, not the payment plan, not payments received,
  * not the subsidy figure, not partner rates or payouts. A channel partner sees
  * only their own commission. See `canSeeMoney` and `MONEY_ACTIONS`.
+ *
+ * An account holds a set of roles, not one. A permission is granted if any
+ * single role grants it, at the widest scope any of them grants — so adding a
+ * role can only ever widen what someone reaches, never narrow it. That is the
+ * property the whole module relies on: there is no role that takes something
+ * away, which means no ordering to get wrong and no combination to audit.
  */
 
 export const ROLES = ["ADMIN", "EMPLOYEE", "INSTALLER", "PARTNER"] as const;
@@ -48,8 +54,12 @@ export type Action =
   // Quotations and agreements. See the note on the matrix entries below.
   | "quotation.read"
   | "quotation.write"
+  | "quotation.delete"
+  | "quotation.delete.filed"
   | "agreement.read"
   | "agreement.write"
+  | "agreement.delete"
+  | "agreement.delete.filed"
   // External portal steps
   | "portal.dcr"
   | "portal.meter"
@@ -120,6 +130,16 @@ const MATRIX: Matrix = {
   "quotation.read": { ADMIN: "all", EMPLOYEE: "all" },
   "quotation.write": { ADMIN: "all", EMPLOYEE: "all" },
 
+  // Deleting is two permissions rather than one, because the rule turns on
+  // what the record is attached to and this module is the only place a role
+  // may be named. A standalone quotation is a counter mistake — a wrong
+  // phone number, a walk-in who was quoted twice — and whoever raised it can
+  // take it off the list. One attached to a project has been filed into that
+  // project's documents and may have gone out in a bank loan pack, so it is
+  // admin only. The action reads the row and asks for whichever applies.
+  "quotation.delete": { ADMIN: "all", EMPLOYEE: "all" },
+  "quotation.delete.filed": { ADMIN: "all" },
+
   // The agreement states the same figure the quotation does — clause 19.1
   // is the price the customer accepted — so it sits inside the hole the
   // quotation already opened rather than widening it. An employee who may
@@ -128,6 +148,12 @@ const MATRIX: Matrix = {
   // subsidy and partner payouts remain admin-only.
   "agreement.read": { ADMIN: "all", EMPLOYEE: "all" },
   "agreement.write": { ADMIN: "all", EMPLOYEE: "all" },
+
+  // The same split as quotations, and for the same reason. An agreement
+  // attached to a project is the one the customer signs, so removing it is
+  // an admin decision however early it is caught.
+  "agreement.delete": { ADMIN: "all", EMPLOYEE: "all" },
+  "agreement.delete.filed": { ADMIN: "all" },
 
   "portal.dcr": { ADMIN: "all", EMPLOYEE: "all" },
   "portal.meter": { ADMIN: "all", EMPLOYEE: "all" },
@@ -175,9 +201,45 @@ export const MONEY_ACTIONS: readonly Action[] = [
 
 export interface Actor {
   id: string;
-  role: Role;
-  /** Set when the actor is a channel partner. */
+  /**
+   * Every role this account holds. Never empty for a real actor — a user row
+   * is constrained to at least one, and `getActor` falls back to EMPLOYEE
+   * rather than handing out an actor that is refused everywhere.
+   */
+  roles: readonly Role[];
+  /** Set when the actor holds the PARTNER role. */
   partnerId?: string | null;
+}
+
+/** How wide a scope is, so the widest of several roles can be picked. */
+const SCOPE_RANK: Record<Scope, number> = { own: 1, assigned: 2, all: 3 };
+
+/** Does this actor hold the role at all? Prefer `can` wherever a permission is the question. */
+export function hasRole(actor: Actor | null | undefined, role: Role): boolean {
+  return !!actor?.roles.includes(role);
+}
+
+/** True only when this is the actor's single role — what the shells turn on. */
+export function isOnly(actor: Actor | null | undefined, role: Role): boolean {
+  return !!actor && actor.roles.length === 1 && actor.roles[0] === role;
+}
+
+/**
+ * The one role to show when there is room for one chip.
+ *
+ * Widest first, so "Admin" wins over "Installer" — the opposite would
+ * describe someone as narrower than they are.
+ */
+export function primaryRole(roles: readonly Role[]): Role {
+  for (const role of ROLES) if (roles.includes(role)) return role;
+  return "EMPLOYEE";
+}
+
+/** Where signing in lands this actor. An installer's whole app is their job list. */
+export function homeFor(roles: readonly Role[]): string {
+  if (roles.length === 1 && roles[0] === "INSTALLER") return "/installer";
+  if (roles.length === 1 && roles[0] === "PARTNER") return "/my-referrals";
+  return "/dashboard";
 }
 
 /** What is being acted on. Only needed for `assigned` and `own` scopes. */
@@ -196,7 +258,14 @@ export function can(
 ): boolean {
   if (!actor) return false;
 
-  const scope = MATRIX[action]?.[actor.role];
+  // The widest scope any of the actor's roles grants for this action. An
+  // employee who is also an installer gets the employee's "all" rather than
+  // being held to the installer's assigned jobs.
+  let scope: Scope | undefined;
+  for (const role of actor.roles) {
+    const granted = MATRIX[action]?.[role];
+    if (granted && (!scope || SCOPE_RANK[granted] > SCOPE_RANK[scope])) scope = granted;
+  }
   if (!scope) return false;
 
   if (scope === "all") return true;
@@ -248,10 +317,10 @@ export function assertCan(
  * The one exception: a channel partner sees their own commission, which is
  * served by a dedicated query, never by relaxing this.
  */
-export function canSeeMoney(role: Role): boolean {
-  return role === "ADMIN";
+export function canSeeMoney(roles: readonly Role[]): boolean {
+  return roles.includes("ADMIN");
 }
 
-export function isStaff(role: Role): boolean {
-  return role === "ADMIN" || role === "EMPLOYEE" || role === "INSTALLER";
+export function isStaff(roles: readonly Role[]): boolean {
+  return roles.some((role) => role === "ADMIN" || role === "EMPLOYEE" || role === "INSTALLER");
 }

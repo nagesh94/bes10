@@ -26,13 +26,27 @@ export const user = pgTable("user", {
     .notNull(),
 
   // ── BHIM additions ──
-  role: roleEnum("role").notNull().default("EMPLOYEE"),
+  /**
+   * Every role this account holds, not one.
+   *
+   * A Postgres enum array rather than a join table: a user has a handful of
+   * roles, they are always read all at once with the user, and there is
+   * nothing to hang off the pairing — a join table would buy a query per
+   * request and no expressiveness. `can()` grants a permission if any one of
+   * these roles grants it, taking the widest scope.
+   *
+   * Never empty. An account with no roles would pass authentication and then
+   * be refused everywhere, which looks like a broken app rather than a
+   * disabled account; that is what `active` is for.
+   */
+  roles: roleEnum("roles").array().notNull().default(["EMPLOYEE"]),
+
   phone: text("phone"),
   active: boolean("active").notNull().default(true),
   locale: localeEnum("locale").notNull().default("en"),
   /** Mirrored to localStorage so the right theme paints on first render. */
   theme: themeEnum("theme").notNull().default("system"),
-  /** Set only for PARTNER accounts; links to channel_partners.id. */
+  /** Set when the account holds the PARTNER role; links to channel_partners.id. */
   partnerId: text("partner_id"),
 });
 

@@ -24,7 +24,7 @@ const day = (v: string | Date | null | undefined) => {
 export default async function Stage9Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const actor = await getActor();
-  if (!actor || !canSeeMoney(actor.role)) notFound();
+  if (!actor || !canSeeMoney(actor.roles)) notFound();
 
   const [row] = await db
     .select({ project: projects, contact: contacts })

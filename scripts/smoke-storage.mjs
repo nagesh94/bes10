@@ -3,8 +3,8 @@
  * MinIO locally, or Neon Object Storage.
  *
  * Builds a large synthetic photo, runs it through the variant pipeline, puts
- * all three variants in the bucket, reads one back through a presigned URL,
- * and checks the portal copy actually came in under the cap.
+ * all three variants in the bucket, reads one back out of storage, and
+ * checks the portal copy actually came in under the cap.
  *
  * It writes real objects, so it deletes them again at the end. With a single
  * shared .env this runs against the live bucket, and 20 MB of leftovers per
@@ -18,7 +18,7 @@ import { PORTAL_MAX_KB, S3_ENDPOINT, documentKey } from "../src/lib/storage/clie
 import {
   deleteDocumentObject,
   ensureBuckets,
-  presignDownload,
+  getDocumentObject,
   putDocument,
 } from "../src/lib/storage/operations.ts";
 
@@ -91,12 +91,10 @@ try {
   await putDocument(keyT, variants.thumb.body, "image/jpeg");
   pass(`all three variants written to ${S3_ENDPOINT ?? "S3"}`);
 
-  const url = await presignDownload(keyP, 120);
-  const res = await fetch(url);
-  const back = Buffer.from(await res.arrayBuffer());
-  res.ok && back.byteLength === variants.portal.bytes
-    ? pass("portal variant reads back byte-for-byte through a presigned URL")
-    : fail(`read back ${res.status}, ${back.byteLength} bytes`);
+  const back = (await getDocumentObject(keyP)).body;
+  back.byteLength === variants.portal.bytes
+    ? pass("portal variant reads back byte-for-byte")
+    : fail(`read back ${back.byteLength} bytes`);
 
   // Aadhaar goes under its own prefix so a bucket policy can gate it.
   documentKey(projectId, "AADHAAR", "original", "a.jpg").startsWith("restricted/")

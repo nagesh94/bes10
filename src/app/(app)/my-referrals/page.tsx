@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { channelPartners, commissions, contacts, projects } from "@/lib/db/schema";
+import { hasRole } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 
 /**
@@ -38,7 +39,7 @@ const STATUS_LABEL: Record<string, { label: string; tone: string; note: string }
 export default async function MyReferralsPage() {
   const actor = await getActor();
   if (!actor) notFound();
-  if (actor.role !== "PARTNER" || !actor.partnerId) notFound();
+  if (!hasRole(actor, "PARTNER") || !actor.partnerId) notFound();
 
   const [partner] = await db
     .select()

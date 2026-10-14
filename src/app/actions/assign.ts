@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, inArray } from "drizzle-orm";
+import { and, arrayContains, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { auditLog, projectInstallers, projects, user } from "@/lib/db/schema";
@@ -40,7 +40,13 @@ export async function setProjectCrew(
     ? await db
         .select({ id: user.id })
         .from(user)
-        .where(and(inArray(user.id, wanted), eq(user.role, "INSTALLER"), eq(user.active, true)))
+        .where(
+          and(
+            inArray(user.id, wanted),
+            arrayContains(user.roles, ["INSTALLER"]),
+            eq(user.active, true),
+          ),
+        )
     : [];
   const validIds = valid.map((v) => v.id);
 

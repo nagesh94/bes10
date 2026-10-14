@@ -6,6 +6,8 @@
  * the page and the CSV export stay in step.
  */
 
+import { ROLE_LABEL } from "./role-copy";
+
 export type AuditKind = "override" | "read" | "edit" | "doc" | "ok" | "user";
 
 export interface AuditSource {
@@ -32,6 +34,10 @@ const KNOWN: Record<string, { title: string; tag: string; kind: AuditKind }> = {
   "document.generate.agreement": { title: "Agreement generated", tag: "Generate", kind: "doc" },
   "document.upload": { title: "Document uploaded", tag: "Update", kind: "edit" },
   "document.delete": { title: "Document deleted", tag: "Delete", kind: "override" },
+  // Both keep the row and drop the file, so the audit entry is the only
+  // place the number, the consumer and the amount survive in one line.
+  "quotation.delete": { title: "Quotation deleted", tag: "Delete", kind: "override" },
+  "agreement.delete": { title: "Agreement deleted", tag: "Delete", kind: "override" },
   "portal.upload.mark": { title: "Marked uploaded to the portal", tag: "Update", kind: "edit" },
   "portal.upload.unmark": { title: "Portal upload mark removed", tag: "Update", kind: "edit" },
   "lead.create": { title: "Lead created", tag: "Update", kind: "edit" },
@@ -57,6 +63,9 @@ const KNOWN: Record<string, { title: string; tag: string; kind: AuditKind }> = {
   "portal.refs.dates": { title: "Portal dates saved", tag: "Update", kind: "edit" },
   "user.invite": { title: "User invited", tag: "Admin", kind: "user" },
   "user.update": { title: "User updated", tag: "Admin", kind: "user" },
+  "user.enable": { title: "User enabled", tag: "Admin", kind: "user" },
+  "user.disable": { title: "User disabled", tag: "Admin", kind: "user" },
+  "user.password": { title: "Password reset by admin", tag: "Admin", kind: "user" },
   "master.add": { title: "Master data added", tag: "Admin", kind: "user" },
   "master.retire": { title: "Master data retired", tag: "Admin", kind: "user" },
   "master.restore": { title: "Master data restored", tag: "Admin", kind: "user" },
@@ -67,12 +76,12 @@ const KNOWN: Record<string, { title: string; tag: string; kind: AuditKind }> = {
   "template.activate": { title: "Template activated", tag: "Admin", kind: "user" },
 };
 
-const ROLE_LABEL: Record<string, string> = {
-  ADMIN: "Admin",
-  EMPLOYEE: "Employee",
-  INSTALLER: "Installer",
-  PARTNER: "Channel partner",
-};
+/**
+ * Audit rows hold whatever role strings were written at the time, including
+ * ones no longer in the enum, so this reads through a widened lookup and
+ * falls back to the raw value rather than losing it.
+ */
+const roleLabel = (role: string) => (ROLE_LABEL as Record<string, string>)[role] ?? role;
 
 function record(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -174,7 +183,18 @@ function detail(source: AuditSource, kind: AuditKind): string {
 
   if (source.action.startsWith("user.")) {
     if (typeof after?.email === "string") bits.push(after.email);
-    if (typeof after?.role === "string") bits.push(`role ${ROLE_LABEL[after.role] ?? after.role}`);
+    // `roles` is the current shape. Rows written before accounts could hold
+    // more than one role carry a single `role` instead, and the history has
+    // to stay readable, so both are understood.
+    const roles = Array.isArray(after?.roles)
+      ? after.roles.filter((role): role is string => typeof role === "string")
+      : typeof after?.role === "string"
+        ? [after.role]
+        : [];
+    if (roles.length) bits.push(roles.map(roleLabel).join(" + "));
+    if (after?.active === false) bits.push("disabled");
+    else if (after?.active === true && before?.active === false) bits.push("re-enabled");
+    if (after?.passwordReset === true) bits.push("password reset");
     if (source.reason) bits.push(source.reason);
     return bits.join(" · ");
   }

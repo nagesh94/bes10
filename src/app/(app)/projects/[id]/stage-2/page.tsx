@@ -13,7 +13,7 @@ import { UploadSlot } from "@/components/documents/upload-slot";
 import { AgreementStep } from "@/components/agreements/agreement-step";
 import { BankFile } from "@/components/documents/bank-file";
 import { QuotationStep } from "@/components/quotations/quotation-step";
-import { can } from "@/lib/rbac/permissions";
+import { can, hasRole } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { involvesFinance } from "@/lib/workflow/stages";
 
@@ -73,7 +73,7 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
     .where(eq(bankAccounts.projectId, id))
     .limit(1);
   const hasCoApplicant = Boolean(bank?.hasCoApplicant);
-  const isAdmin = actor.role === "ADMIN";
+  const isAdmin = hasRole(actor, "ADMIN");
   // A quotation states a price, so the maker only appears for a role allowed
   // to see one. Everyone else still gets the upload slot.
   const canQuote = can(actor, "quotation.read");

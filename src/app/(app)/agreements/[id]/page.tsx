@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { agreementMilestones, agreements, projects } from "@/lib/db/schema";
 import { attachableProjects } from "@/app/actions/agreements";
@@ -29,7 +29,7 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
     .select({ agreement: agreements, projectCode: projects.code })
     .from(agreements)
     .leftJoin(projects, eq(agreements.projectId, projects.id))
-    .where(eq(agreements.id, id))
+    .where(and(eq(agreements.id, id), isNull(agreements.deletedAt)))
     .limit(1);
   if (!row) notFound();
 
@@ -92,6 +92,10 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
           status={agreement.status}
           hasFile={Boolean(agreement.s3Key)}
           canWrite={writable}
+          canDelete={can(
+            actor,
+            agreement.projectId ? "agreement.delete.filed" : "agreement.delete",
+          )}
         />
 
         {agreement.projectId ? (

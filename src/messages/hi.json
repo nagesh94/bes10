@@ -8,6 +8,10 @@
     "email": "ईमेल पता",
     "emailPlaceholder": "you@bhimenergy.in",
     "password": "पासवर्ड",
+    "showPassword": "पासवर्ड दिखाएँ",
+    "hidePassword": "पासवर्ड छिपाएँ",
+    "rememberMe": "मुझे साइन इन रखें",
+    "rememberHint": "साझा कंप्यूटर पर इसे बंद रखें।",
     "forgot": "पासवर्ड भूल गए?",
     "signingIn": "साइन इन हो रहा है…",
     "signOut": "साइन आउट",
@@ -31,7 +35,7 @@
   },
   "roles": {
     "ADMIN": "एडमिन",
-    "EMPLOYEE": "कर्मचारी",
+    "EMPLOYEE": "एग्ज़ीक्यूटिव",
     "INSTALLER": "इंस्टॉलर",
     "PARTNER": "चैनल पार्टनर"
   },

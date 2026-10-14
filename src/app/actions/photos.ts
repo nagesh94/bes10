@@ -9,11 +9,11 @@ import { installerIdsFor } from "@/lib/projects/crew";
 import { assertCan, can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { documentKey } from "@/lib/storage/client";
+import { fileHref } from "@/lib/storage/file-url";
 import {
   deleteTempObject,
   ensureBuckets,
   getTempObject,
-  presignDownload,
   presignUpload,
   putDocument,
 } from "@/lib/storage/operations";
@@ -212,6 +212,7 @@ export async function deletePhoto(
 export async function getPhotoUrl(
   photoId: string,
   variant: "original" | "thumb" = "original",
+  disposition: "inline" | "attachment" = "inline",
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   const [row] = await db.select().from(photos).where(eq(photos.id, photoId)).limit(1);
   if (!row) return { ok: false, error: "No such photo." };
@@ -224,7 +225,10 @@ export async function getPhotoUrl(
   const key = variant === "thumb" ? row.s3KeyThumb : row.s3KeyOriginal;
   if (!key) return { ok: false, error: "That variant does not exist." };
 
-  return { ok: true, url: await presignDownload(key) };
+  return {
+    ok: true,
+    url: fileHref("photo", photoId, { variant, download: disposition === "attachment" }),
+  };
 }
 
 /** Thumbnail URLs for a whole gallery, in one round trip. */
@@ -243,7 +247,7 @@ export async function getPhotoThumbUrls(
   return Promise.all(
     rows.map(async (r) => ({
       id: r.id,
-      url: r.s3KeyThumb ? await presignDownload(r.s3KeyThumb, 900) : null,
+      url: r.s3KeyThumb ? fileHref("photo", r.id, { variant: "thumb" }) : null,
       capturedAt: r.capturedAt,
       lat: r.latitude,
       lng: r.longitude,

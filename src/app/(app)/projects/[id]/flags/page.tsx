@@ -19,7 +19,7 @@ import { PortalLink } from "@/components/flags/portal-link";
 import { UploadSlot } from "@/components/documents/upload-slot";
 import { attachNameChangeDoc } from "@/app/actions/flags";
 import { documents as documentsTable } from "@/lib/db/schema";
-import { can } from "@/lib/rbac/permissions";
+import { can, hasRole } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 
 const STATUS_CHIP: Record<string, string> = {
@@ -80,7 +80,7 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
   const nameDetail: NameDetail = nameFlag?.detail ? JSON.parse(nameFlag.detail) : {};
   const loadDetail: LoadDetail = loadFlag?.detail ? JSON.parse(loadFlag.detail) : {};
 
-  const isAdmin = actor.role === "ADMIN";
+  const isAdmin = hasRole(actor, "ADMIN");
 
   // Latest upload per type, so "Replace" shows the current one.
   const docRows = await db

@@ -7,18 +7,21 @@ import {
   getDocumentUrl,
   regenerateGeneratedDocument,
 } from "@/app/actions/documents";
+import { useConfirm } from "@/components/shell/confirm";
+import { openFile, saveFile } from "@/lib/documents/open-file";
 
 /**
  * The four things a document row can do: open it, download it, regenerate
  * it (only offered for an app-generated file, never an upload), and delete
  * it (admin only — gated server-side too, this just decides what to show).
  *
- * Open and Download both presign on click rather than render a link, same
- * reasoning as the old `DownloadButton`: the RBAC check and the link's
- * lifetime both start at the moment the file is actually asked for.
- * Download additionally asks for `Content-Disposition: attachment`, which is
- * what makes the browser save the file under its own name instead of
- * opening it — Open does not set that, so it opens inline in a new tab.
+ * Open and Download both ask the server for the URL on click rather than
+ * render a link, same reasoning as the old `DownloadButton`: the RBAC check
+ * happens at the moment the file is actually asked for, and a failure shows
+ * up next to the row instead of in a blank tab. Download asks for
+ * `Content-Disposition: attachment`, which is what makes the browser save
+ * the file under its own name instead of displaying it — Open does not set
+ * that, so a PDF or a photo opens inline in a new tab.
  */
 
 type Busy = "open" | "download" | "regenerate" | "delete" | null;
@@ -42,6 +45,7 @@ export function DocumentRowActions({
   canDelete: boolean;
 }) {
   const router = useRouter();
+  const ask = useConfirm();
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +55,7 @@ export function DocumentRowActions({
     const result = await getDocumentUrl(documentId, "original", "inline");
     setBusy(null);
     if (!result.ok) return setError(result.error);
-    window.open(result.url, "_blank", "noopener,noreferrer");
+    openFile(result.url);
   }
 
   async function download() {
@@ -60,12 +64,7 @@ export function DocumentRowActions({
     const result = await getDocumentUrl(documentId, "original", "attachment");
     setBusy(null);
     if (!result.ok) return setError(result.error);
-    const a = document.createElement("a");
-    a.href = result.url;
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    saveFile(result.url);
   }
 
   async function regenerate() {
@@ -78,13 +77,17 @@ export function DocumentRowActions({
   }
 
   async function remove() {
-    if (!window.confirm("Delete this document? This removes the file and can't be undone here.")) {
-      return;
-    }
-    const reason = window.prompt("Reason for deleting it (optional):") ?? undefined;
+    const answer = await ask({
+      title: "Delete this document?",
+      body: "The file is removed from storage and cannot be recovered here. The record of the deletion stays in the audit log.",
+      confirmLabel: "Delete it",
+      reason: {},
+    });
+    if (!answer.confirmed) return;
+
     setBusy("delete");
     setError(null);
-    const result = await deleteDocument(documentId, reason);
+    const result = await deleteDocument(documentId, answer.reason);
     setBusy(null);
     if (!result.ok) return setError(result.error);
     router.refresh();

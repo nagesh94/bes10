@@ -22,10 +22,22 @@ export const auth = betterAuth({
    * what stops another site from driving this one with the user's cookie.
    * Behind nginx the browser's origin is the public hostname, not localhost,
    * so AUTH_URL must be the real https:// URL in production.
+   *
+   * In development the port is not knowable in advance: `next dev` takes the
+   * next free one when 3000 is busy, which it is whenever a second copy of
+   * the app is already running. Pinning 3000 meant sign-in on :3001 failed
+   * with a 403 that the form reports as "email and password do not match" —
+   * an hour lost to a wrong password that was never wrong. Any loopback
+   * origin is trusted there instead. Production is unchanged: the list stays
+   * exactly the configured hostnames, so this cannot widen a deployed site.
    */
-  trustedOrigins: [AUTH_URL, PUBLIC_URL, APP_URL, "http://localhost:3000"].filter(
-    (u, i, all) => u && all.indexOf(u) === i,
-  ) as string[],
+  trustedOrigins: isProduction
+    ? ([AUTH_URL, PUBLIC_URL, APP_URL].filter(
+        (u, i, all) => u && all.indexOf(u) === i,
+      ) as string[])
+    : [AUTH_URL, PUBLIC_URL, APP_URL, "http://localhost:*", "http://127.0.0.1:*"].filter(
+        (u, i, all) => u && all.indexOf(u) === i,
+      ) as string[],
 
   advanced: {
     /**
@@ -50,11 +62,16 @@ export const auth = betterAuth({
 
   user: {
     additionalFields: {
-      role: {
-        type: "string",
+      /**
+       * Declared so the session is typed with it, but never read for a
+       * permission decision — `getActor` reads the column. `input: false`
+       * is what stops a sign-up payload from naming its own roles.
+       */
+      roles: {
+        type: "string[]",
         required: false,
-        defaultValue: "EMPLOYEE",
-        input: false, // never settable from a sign-up payload
+        defaultValue: ["EMPLOYEE"],
+        input: false,
       },
       phone: { type: "string", required: false },
       active: { type: "boolean", required: false, defaultValue: true, input: false },

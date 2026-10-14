@@ -14,6 +14,7 @@ import {
   panelTypes,
 } from "@/lib/db/schema";
 import { BarRow, Figure, Line, ModuleArray, Panel, n, seriesColor } from "@/components/dashboard/fleet";
+import { isOnly } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 
 /**
@@ -57,8 +58,11 @@ export default async function DashboardPage() {
   // A channel partner sees their own referrals and nothing else; an
   // installer's jobs are the whole app for them. The header already hides
   // this link for both, but a hidden link is not a permission.
-  if (actor.role === "PARTNER") notFound();
-  if (actor.role === "INSTALLER") redirect("/installer");
+  //
+  // Both turn on the account holding nothing else. An executive who also
+  // installs, or who is also a partner, belongs on the dashboard.
+  if (isOnly(actor, "PARTNER")) notFound();
+  if (isOnly(actor, "INSTALLER")) redirect("/installer");
 
   const [rows, serialRow, batteryRow, catalogueRow, dcrModels] = await Promise.all([
     db

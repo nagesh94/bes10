@@ -33,7 +33,7 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
 
   // This is an admin-only route, not a page with fields hidden. An employee
   // never reaches the query at all.
-  if (!actor || !canSeeMoney(actor.role)) notFound();
+  if (!actor || !canSeeMoney(actor.roles)) notFound();
 
   const [row] = await db
     .select({ project: projects, contact: contacts })

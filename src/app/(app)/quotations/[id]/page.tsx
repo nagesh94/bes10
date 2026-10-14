@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   projects,
@@ -24,9 +24,11 @@ import { getActor } from "@/lib/session";
 /**
  * One quotation: what was offered, and the form to change it.
  *
- * Editing keeps the number and rebuilds the PDF. There is no delete — a
- * number that has been handed out is spent, and a quotation that came to
- * nothing is marked Declined or Expired so the series stays readable.
+ * Editing keeps the number and rebuilds the PDF. A quotation that came to
+ * nothing is normally marked Declined or Expired rather than deleted — the
+ * series reads better with every number accounted for. Delete is for the
+ * ones that should never have existed, and even then the number is kept
+ * back: `deleteQuotation` leaves the row and takes everything else.
  */
 export default async function QuotationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -37,7 +39,7 @@ export default async function QuotationPage({ params }: { params: Promise<{ id: 
     .select({ quotation: quotations, projectCode: projects.code })
     .from(quotations)
     .leftJoin(projects, eq(quotations.projectId, projects.id))
-    .where(eq(quotations.id, id))
+    .where(and(eq(quotations.id, id), isNull(quotations.deletedAt)))
     .limit(1);
   if (!row) notFound();
 
@@ -137,6 +139,10 @@ export default async function QuotationPage({ params }: { params: Promise<{ id: 
           status={quotation.status}
           hasPdf={Boolean(quotation.s3Key)}
           canWrite={writable}
+          canDelete={can(
+            actor,
+            quotation.projectId ? "quotation.delete.filed" : "quotation.delete",
+          )}
         />
         {quotation.projectId ? (
           <div className="mt-3.5 flex flex-wrap items-center gap-2.5">

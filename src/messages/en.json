@@ -8,6 +8,10 @@
     "email": "Email address",
     "emailPlaceholder": "you@bhimenergy.in",
     "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "rememberMe": "Keep me signed in",
+    "rememberHint": "Leave this off on a shared computer.",
     "forgot": "Forgot password?",
     "signingIn": "Signing in…",
     "signOut": "Sign out",
@@ -31,7 +35,7 @@
   },
   "roles": {
     "ADMIN": "Admin",
-    "EMPLOYEE": "Employee",
+    "EMPLOYEE": "Executive",
     "INSTALLER": "Installer",
     "PARTNER": "Channel partner"
   },

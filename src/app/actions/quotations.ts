@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
@@ -14,14 +14,16 @@ import {
   quotationScopeOverrides,
   quotations,
 } from "@/lib/db/schema";
+import { writeAudit } from "@/lib/admin/write-audit";
 import { newId } from "@/lib/projects/code";
 import { SCOPE_ROWS, type ScopeRow } from "@/lib/quotations/content";
 import { nextQuotationNumber } from "@/lib/quotations/number";
 import { buildQuotationPdf, type QuotationDoc } from "@/lib/quotations/pdf";
-import { assertCan } from "@/lib/rbac/permissions";
+import { assertCan, can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { quotationKey } from "@/lib/storage/client";
-import { ensureBuckets, presignDownload, putDocument } from "@/lib/storage/operations";
+import { fileHref } from "@/lib/storage/file-url";
+import { deleteDocumentObject, ensureBuckets, putDocument } from "@/lib/storage/operations";
 import {
   quotationChooseSchema,
   quotationLinkSchema,
@@ -50,6 +52,18 @@ export type QuotationResult =
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
 const PDF_MIME = "application/pdf";
+
+/**
+ * One quotation, as long as it has not been deleted.
+ *
+ * Deleting leaves the row in place — the number has to stay answerable, see
+ * the schema — so every lookup by id goes through this rather than matching
+ * the id alone. A deleted quotation then simply reads as "no longer exists",
+ * which is what each caller already says.
+ */
+function live(id: string) {
+  return and(eq(quotations.id, id), isNull(quotations.deletedAt));
+}
 
 function fieldErrorsOf(error: { flatten: () => { fieldErrors: unknown } }) {
   return error.flatten().fieldErrors as Record<string, string[]>;
@@ -86,7 +100,7 @@ function scopeWithOverrides(
  * with no file attached, ready to be generated again.
  */
 async function renderAndStore(quotationId: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  const [row] = await db.select().from(quotations).where(eq(quotations.id, quotationId)).limit(1);
+  const [row] = await db.select().from(quotations).where(live(quotationId)).limit(1);
   if (!row) return { ok: false, error: "That quotation no longer exists." };
 
   const [items, milestones, overrides] = await Promise.all([
@@ -372,7 +386,7 @@ export async function updateQuotation(
   }
   const input = parsed.data;
 
-  const [existing] = await db.select().from(quotations).where(eq(quotations.id, id)).limit(1);
+  const [existing] = await db.select().from(quotations).where(live(id)).limit(1);
   if (!existing) return { ok: false, error: "That quotation no longer exists." };
 
   await db.transaction(async (tx) => {
@@ -495,7 +509,7 @@ export async function setQuotationStatus(
   const [existing] = await db
     .select({ status: quotations.status, projectId: quotations.projectId, number: quotations.number })
     .from(quotations)
-    .where(eq(quotations.id, parsed.data.id))
+    .where(live(parsed.data.id))
     .limit(1);
   if (!existing) return { ok: false, error: "That quotation no longer exists." };
 
@@ -567,7 +581,7 @@ export async function chooseQuotation(
       s3Key: quotations.s3Key,
     })
     .from(quotations)
-    .where(eq(quotations.id, parsed.data.id))
+    .where(live(parsed.data.id))
     .limit(1);
   if (!row) return { ok: false, error: "That quotation no longer exists." };
   if (!row.projectId) {
@@ -650,7 +664,7 @@ export async function linkQuotationToProject(
       number: quotations.number,
     })
     .from(quotations)
-    .where(eq(quotations.id, parsed.data.id))
+    .where(live(parsed.data.id))
     .limit(1);
   if (!existing) return { ok: false, error: "That quotation no longer exists." };
 
@@ -750,14 +764,118 @@ export async function attachableProjects(): Promise<
 }
 
 /**
+ * Delete a quotation.
+ *
+ * This reverses an earlier decision that there would be no delete at all,
+ * and it keeps the part of that decision that was right: a number is never
+ * reused and never vanishes. What goes is the PDF, the row filed into the
+ * project's documents, and the quotation's place in every list. What stays
+ * is the row itself, carrying the number, the consumer, the amount and who
+ * deleted it — so BHIM100003 can still be answered for when the customer
+ * rings holding their copy.
+ *
+ * Who may do it turns on one thing: whether it is attached to a project. A
+ * standalone quotation is a counter mistake and whoever raised it can take
+ * it off the list. An attached one has been filed into that project's
+ * documents and may have gone out in a bank loan pack, so it is admin only.
+ * Both permissions live in the RBAC matrix; nothing here names a role.
+ *
+ * Deleting an attached one detaches it first, which frees the partial unique
+ * index that allows a single chosen quotation per project — the project is
+ * left with no offer rather than with a dangling one.
+ */
+export async function deleteQuotation(
+  id: string,
+  reason?: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const actor = await getActor();
+
+  const [row] = await db
+    .select({
+      number: quotations.number,
+      status: quotations.status,
+      consumerName: quotations.consumerName,
+      totalAmount: quotations.totalAmount,
+      projectId: quotations.projectId,
+      documentId: quotations.documentId,
+      isChosen: quotations.isChosen,
+      s3Key: quotations.s3Key,
+    })
+    .from(quotations)
+    .where(live(id))
+    .limit(1);
+  if (!row) return { ok: false, error: "That quotation no longer exists." };
+
+  const attached = Boolean(row.projectId);
+  if (!can(actor, attached ? "quotation.delete.filed" : "quotation.delete")) {
+    return {
+      ok: false,
+      error: attached
+        ? "This quotation is attached to a project, so only an admin can delete it. Detach it first, or mark it Declined or Expired."
+        : "You are not allowed to delete a quotation.",
+    };
+  }
+
+  await db.transaction(async (tx) => {
+    // The filed copy belongs to the project, exactly as on a detach.
+    if (row.documentId) {
+      await tx.delete(documents).where(eq(documents.id, row.documentId));
+    }
+
+    await tx
+      .update(quotations)
+      .set({
+        deletedBy: actor!.id,
+        deletedAt: new Date(),
+        projectId: null,
+        isChosen: false,
+        documentId: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(quotations.id, id));
+  });
+
+  // Last, and outside the transaction: an object cannot be rolled back, so
+  // it goes only once the row is certainly marked. Neon keeps no versions.
+  if (row.s3Key) await deleteDocumentObject(row.s3Key);
+
+  await writeAudit({
+    actorId: actor!.id,
+    action: "quotation.delete",
+    entityType: "quotation",
+    entityId: id,
+    projectId: row.projectId,
+    before: {
+      number: row.number,
+      status: row.status,
+      consumer: row.consumerName,
+      amount: row.totalAmount,
+      projectId: row.projectId,
+      wasChosen: row.isChosen,
+    },
+    reason: reason?.trim() || null,
+  });
+
+  revalidatePath("/quotations");
+  revalidatePath(`/quotations/${id}`);
+  if (row.projectId) {
+    revalidatePath(`/projects/${row.projectId}`);
+    revalidatePath(`/projects/${row.projectId}/documents`);
+  }
+  return { ok: true };
+}
+
+/**
  * A short-lived link to the PDF.
  *
- * Presigned per click rather than rendered into the page, so the permission
- * check happens when the file is asked for and the URL stops working soon
- * after. Reads are logged: a quotation carries a price.
+ * Asked for per click rather than rendered into the page, so the permission
+ * check happens when the file is wanted. The URL points at this app's own
+ * file route, which checks the permission again before a byte is served.
+ * Reads are logged: a quotation carries a price.
  */
 export async function getQuotationUrl(
   id: string,
+  disposition: "inline" | "attachment" = "inline",
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   const actor = await getActor();
   assertCan(actor, "quotation.read");
@@ -765,7 +883,7 @@ export async function getQuotationUrl(
   const [row] = await db
     .select({ s3Key: quotations.s3Key, number: quotations.number, projectId: quotations.projectId })
     .from(quotations)
-    .where(eq(quotations.id, id))
+    .where(live(id))
     .limit(1);
 
   if (!row) return { ok: false, error: "That quotation no longer exists." };
@@ -782,5 +900,8 @@ export async function getQuotationUrl(
     after: { number: row.number },
   });
 
-  return { ok: true, url: await presignDownload(row.s3Key) };
+  return {
+    ok: true,
+    url: fileHref("quotation", id, { download: disposition === "attachment" }),
+  };
 }

@@ -116,6 +116,17 @@ export const quotations = pgTable(
     /** The `documents` row filed against the project, when there is one. */
     documentId: text("document_id"),
 
+    /**
+     * Deleting a quotation keeps the row and drops everything around it —
+     * the stored PDF, the filed document and the link to the project. The
+     * number is what survives: it was handed to a customer and may be read
+     * back over the phone a year later, so "BHIM100003 was deleted on the
+     * 4th by Priya, it was Shashikala's 3 kW offer" has to stay answerable.
+     * Every listing filters `deleted_at is null`; see `deleteQuotation`.
+     */
+    deletedBy: text("deleted_by").references(() => user.id),
+    deletedAt: timestamp("deleted_at"),
+
     createdBy: text("created_by").references(() => user.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),

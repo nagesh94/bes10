@@ -10,38 +10,88 @@ const passwordSchema = z
   .min(10, "Use at least 10 characters")
   .max(128, "That password is too long");
 
-export const inviteUserSchema = z.object({
-  name: z.string().trim().min(2, "Enter the person's name").max(80),
-  email: z.string().trim().email("That does not look like an email address").max(160),
-  role: z.enum(ROLES),
-  phone: z
-    .string()
-    .trim()
-    .max(20)
-    .regex(/^[0-9+\-\s()]*$/, "Only digits, spaces and + - ( ) are allowed")
-    .optional()
-    .or(z.literal("")),
+const phoneField = z
+  .string()
+  .trim()
+  .max(20)
+  .regex(/^[0-9+\-\s()]*$/, "Only digits, spaces and + - ( ) are allowed")
+  .optional()
+  .or(z.literal(""));
+
+/**
+ * At least one role. An account with none would sign in and then be refused
+ * everywhere, which reads as a broken app rather than a disabled one —
+ * disabling is what `active` is for.
+ */
+const rolesField = z
+  .array(z.enum(ROLES))
+  .min(1, "Give them at least one role")
+  .max(ROLES.length)
+  // The same role twice is a double-click, not an error worth a message.
+  .transform((roles) => [...new Set(roles)]);
+
+const partnerIdField = z.string().trim().max(60).nullish();
+
+/**
+ * A PARTNER role is scoped to a partner record: every permission it carries
+ * is `own`, matched against `partnerId`. Without one the person signs in to
+ * an empty page, so the link is required rather than merely advised.
+ */
+function requirePartnerLink<T extends { roles: string[]; partnerId?: string | null }>(
+  value: T,
+  ctx: z.RefinementCtx,
+) {
+  if (value.roles.includes("PARTNER") && !value.partnerId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["partnerId"],
+      message: "Choose the partner record this login belongs to",
+    });
+  }
+}
+
+export const inviteUserSchema = z
+  .object({
+    name: z.string().trim().min(2, "Enter the person's name").max(80),
+    email: z.string().trim().email("That does not look like an email address").max(160),
+    roles: rolesField,
+    phone: phoneField,
+    partnerId: partnerIdField,
+    password: passwordSchema,
+  })
+  .superRefine(requirePartnerLink);
+
+export type InviteUserInput = z.input<typeof inviteUserSchema>;
+
+export const updateUserSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().trim().min(2, "Enter the person's name").max(80),
+    roles: rolesField,
+    phone: phoneField,
+    partnerId: partnerIdField,
+    active: z.boolean(),
+    password: passwordSchema.optional().or(z.literal("")),
+  })
+  .superRefine(requirePartnerLink);
+
+export type UpdateUserInput = z.input<typeof updateUserSchema>;
+
+/** The row's enable/disable switch, which carries nothing else. */
+export const setUserActiveSchema = z.object({
+  id: z.string().min(1),
+  active: z.boolean(),
+});
+
+export type SetUserActiveInput = z.infer<typeof setUserActiveSchema>;
+
+/** Resetting a forgotten password, on its own — it changes nothing else. */
+export const resetPasswordSchema = z.object({
+  id: z.string().min(1),
   password: passwordSchema,
 });
 
-export type InviteUserInput = z.infer<typeof inviteUserSchema>;
-
-export const updateUserSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().trim().min(2, "Enter the person's name").max(80),
-  role: z.enum(ROLES),
-  phone: z
-    .string()
-    .trim()
-    .max(20)
-    .regex(/^[0-9+\-\s()]*$/, "Only digits, spaces and + - ( ) are allowed")
-    .optional()
-    .or(z.literal("")),
-  active: z.boolean(),
-  password: passwordSchema.optional().or(z.literal("")),
-});
-
-export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 const nameField = z.string().trim().min(1, "Name is required").max(120);
 

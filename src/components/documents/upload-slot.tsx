@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { deleteDocument, finaliseUpload, getDocumentUrl, requestUpload } from "@/app/actions/documents";
+import { useConfirm } from "@/components/shell/confirm";
+import { openFile, saveFile } from "@/lib/documents/open-file";
 import type { DocType } from "@/lib/documents/types";
 
 export interface ExistingDoc {
@@ -42,6 +44,7 @@ export function UploadSlot({
   canDelete?: boolean;
 }) {
   const router = useRouter();
+  const ask = useConfirm();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -103,19 +106,30 @@ export function UploadSlot({
   async function view() {
     if (!existing) return;
     const res = await getDocumentUrl(existing.id, "original");
-    if (res.ok) window.open(res.url, "_blank", "noopener,noreferrer");
+    if (res.ok) openFile(res.url);
+    else setError(res.error);
+  }
+
+  async function download() {
+    if (!existing) return;
+    const res = await getDocumentUrl(existing.id, "original", "attachment");
+    if (res.ok) saveFile(res.url);
     else setError(res.error);
   }
 
   async function remove() {
     if (!existing) return;
-    if (!window.confirm(`Delete "${label}"? This removes the file and can't be undone here.`)) {
-      return;
-    }
-    const reason = window.prompt("Reason for deleting it (optional):") ?? undefined;
+    const answer = await ask({
+      title: `Delete “${label}”?`,
+      body: "The file is removed from storage and cannot be recovered here. A replacement can be uploaded in its place.",
+      confirmLabel: "Delete it",
+      reason: {},
+    });
+    if (!answer.confirmed) return;
+
     setBusy("Deleting…");
     setError(null);
-    const result = await deleteDocument(existing.id, reason);
+    const result = await deleteDocument(existing.id, answer.reason);
     setBusy(null);
     if (!result.ok) {
       setError(result.error);
@@ -177,13 +191,23 @@ export function UploadSlot({
 
       <span className="flex shrink-0 gap-2">
         {have ? (
-          <button
-            type="button"
-            onClick={view}
-            className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-semibold text-[var(--ink)]"
-          >
-            View
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={view}
+              className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-semibold text-[var(--ink)]"
+            >
+              View
+            </button>
+            <button
+              type="button"
+              onClick={download}
+              title="Save this file to this computer"
+              className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-semibold text-[var(--ink)]"
+            >
+              Download
+            </button>
+          </>
         ) : null}
         {have && canDelete && docType !== "QUOTATION" ? (
           <button

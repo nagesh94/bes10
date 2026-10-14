@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { contacts, documents as documentsTable, photos as photosTable, projects } from "@/lib/db/schema";
 import { DOC_CATEGORIES, DOC_CATEGORY_ORDER, DOC_TYPES, docCategory, isDocType } from "@/lib/documents/types";
 import { isRegenerableDocType } from "@/lib/documents/portal-pack";
-import { presignDownload } from "@/lib/storage/operations";
+import { fileHref } from "@/lib/storage/file-url";
 import { can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 
@@ -76,10 +76,8 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
   };
 
   const photoThumbs = new Map(
-    await Promise.all(
-      photoRows.map(
-        async (p) => [p.id, p.s3KeyThumb ? await presignDownload(p.s3KeyThumb, 900) : null] as const,
-      ),
+    photoRows.map(
+      (p) => [p.id, p.s3KeyThumb ? fileHref("photo", p.id, { variant: "thumb" }) : null] as const,
     ),
   );
 

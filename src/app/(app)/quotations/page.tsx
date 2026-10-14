@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { projects, quotations } from "@/lib/db/schema";
+import { ListControls, ListPager } from "@/components/shell/list-controls";
 import { QuotationRowActions } from "@/components/quotations/quotation-actions";
 import { inr } from "@/lib/quotations/content";
+import { PER_PAGE_OPTIONS, isFiltered, likePattern, readListParams } from "@/lib/list/params";
 import { peekQuotationNumber } from "@/lib/quotations/number";
 import { can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
@@ -14,6 +16,12 @@ import { getActor } from "@/lib/session";
  * One list for both kinds — raised inside a project and raised at the
  * counter for a walk-in — because the office thinks of them as one numbered
  * series, which is exactly what they are.
+ *
+ * Paged in the database rather than in the browser: a page reads its own
+ * twenty-five rows and a count, so the list costs the same whether the
+ * company has raised fifty quotations or fifty thousand. The search, the
+ * filters and the page size all live in the query string — see
+ * `lib/list/params`.
  */
 
 const STATUS_CHIP: Record<string, string> = {
@@ -32,7 +40,19 @@ const STATUS_LABEL: Record<string, string> = {
   EXPIRED: "Expired",
 };
 
-export default async function QuotationsPage() {
+const STATUS_FILTER = [
+  { value: "DRAFT", label: "Draft" },
+  { value: "ISSUED", label: "Issued" },
+  { value: "ACCEPTED", label: "Accepted" },
+  { value: "DECLINED", label: "Declined" },
+  { value: "EXPIRED", label: "Expired" },
+] as const;
+
+export default async function QuotationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const actor = await getActor();
   if (!actor || !can(actor, "quotation.read")) {
     return (
@@ -42,7 +62,33 @@ export default async function QuotationsPage() {
     );
   }
 
-  const [rows, nextNumber] = await Promise.all([
+  const params = await readListParams(
+    searchParams,
+    STATUS_FILTER.map((option) => option.value),
+  );
+  const term = params.q ? likePattern(params.q) : null;
+
+  /**
+   * One `where` for both queries, so the count and the page can never
+   * disagree about what is being looked at. A deleted quotation keeps its
+   * row so its number stays answerable, but it is off this list.
+   */
+  const where = and(
+    isNull(quotations.deletedAt),
+    params.status ? eq(quotations.status, params.status) : undefined,
+    params.project === "attached" ? isNotNull(quotations.projectId) : undefined,
+    params.project === "standalone" ? isNull(quotations.projectId) : undefined,
+    term
+      ? or(
+          ilike(quotations.number, term),
+          ilike(quotations.consumerName, term),
+          ilike(quotations.consumerPhone, term),
+          ilike(projects.code, term),
+        )
+      : undefined,
+  );
+
+  const [rows, [totals], nextNumber] = await Promise.all([
     db
       .select({
         id: quotations.id,
@@ -60,12 +106,28 @@ export default async function QuotationsPage() {
       })
       .from(quotations)
       .leftJoin(projects, eq(quotations.projectId, projects.id))
+      .where(where)
       .orderBy(desc(quotations.createdAt))
-      .limit(200),
+      .limit(params.per)
+      .offset(params.offset),
+    db
+      .select({
+        total: count(),
+        // The chip on the heading counts within whatever is being looked at,
+        // so a filtered list does not claim the whole table's figure.
+        accepted: sql<number>`count(*) filter (where ${quotations.status} = 'ACCEPTED')`.mapWith(
+          Number,
+        ),
+      })
+      .from(quotations)
+      .leftJoin(projects, eq(quotations.projectId, projects.id))
+      .where(where),
     peekQuotationNumber(db),
   ]);
 
-  const accepted = rows.filter((r) => r.status === "ACCEPTED").length;
+  const total = totals?.total ?? 0;
+  const accepted = totals?.accepted ?? 0;
+  const filtered = isFiltered(params);
 
   return (
     <main className="mx-auto max-w-[1280px] px-6 pt-7 pb-14">
@@ -73,8 +135,16 @@ export default async function QuotationsPage() {
         <div className="min-w-60 flex-1">
           <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">Quotations</h1>
           <p className="text-sm text-[var(--muted)]">
-            {rows.length} raised · {accepted} accepted · next is{" "}
+            {filtered ? `${total} matching` : `${total} raised`} · {accepted} accepted · next is{" "}
             <span className="ref font-semibold text-[var(--ink)]">{nextNumber}</span>
+            {filtered ? (
+              <>
+                {" · "}
+                <Link href="/quotations" className="font-semibold">
+                  Clear
+                </Link>
+              </>
+            ) : null}
           </p>
         </div>
         {can(actor, "quotation.write") ? (
@@ -87,7 +157,35 @@ export default async function QuotationsPage() {
         ) : null}
       </div>
 
-      {rows.length === 0 ? (
+      <ListControls
+        placeholder="Search by number, consumer, phone or project"
+        filters={[
+          { name: "status", anyLabel: "Any status", options: STATUS_FILTER },
+          {
+            name: "project",
+            anyLabel: "Attached or not",
+            options: [
+              { value: "attached", label: "On a project" },
+              { value: "standalone", label: "Standalone" },
+            ],
+          },
+        ]}
+        perOptions={PER_PAGE_OPTIONS}
+        per={params.per}
+      />
+
+      {total === 0 && filtered ? (
+        <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
+          <p className="mb-1 font-semibold">Nothing matches</p>
+          <p className="text-sm text-[var(--muted)]">
+            No quotation answers that search or those filters.{" "}
+            <Link href="/quotations" className="font-semibold">
+              Clear them
+            </Link>{" "}
+            to see the whole list.
+          </p>
+        </div>
+      ) : total === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center">
           <p className="mb-1 font-semibold">No quotations yet</p>
           <p className="mb-5 text-sm text-[var(--muted)]">
@@ -181,7 +279,14 @@ export default async function QuotationsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right align-middle">
-                      <QuotationRowActions id={row.id} hasPdf={Boolean(row.hasPdf)} />
+                      <QuotationRowActions
+                        id={row.id}
+                        hasPdf={Boolean(row.hasPdf)}
+                        canDelete={can(
+                          actor,
+                          row.projectId ? "quotation.delete.filed" : "quotation.delete",
+                        )}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -190,6 +295,10 @@ export default async function QuotationsPage() {
           </div>
         </section>
       )}
+
+      {total > 0 ? (
+        <ListPager total={total} page={params.page} per={params.per} noun="quotations" />
+      ) : null}
     </main>
   );
 }

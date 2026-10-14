@@ -64,28 +64,30 @@ export async function presignUpload(key: string, contentType: string): Promise<s
 }
 
 /**
- * A short-lived GET URL. Generated per request, after the RBAC check.
+ * Opens a stored object for streaming to the browser.
  *
- * `downloadFileName` sets `Content-Disposition: attachment`, which is what
- * makes a browser save the file under its real name instead of opening it —
- * omit it for the "Open" action, which should open inline.
+ * This replaced `presignDownload`. Handing the browser a presigned GET URL
+ * was one round trip cheaper, but it published the storage endpoint, the
+ * object key and the live access-key id to the address bar of whoever opened
+ * the file, and the link went on working for anyone it was forwarded to
+ * until it expired. The file now travels through `/api/files/...`, which
+ * re-checks the session on every request — see `lib/storage/file-url`.
+ *
+ * It is a stream and not a Buffer because the same route serves an 8 MB
+ * rooftop photo: the body goes out as it arrives rather than sitting in the
+ * Node process in one piece.
  */
-export async function presignDownload(
-  key: string,
-  seconds = 300,
-  downloadFileName?: string,
-): Promise<string> {
-  return getSignedUrl(
-    s3,
-    new GetObjectCommand({
-      Bucket: BUCKET_DOCUMENTS,
-      Key: key,
-      ...(downloadFileName
-        ? { ResponseContentDisposition: `attachment; filename="${downloadFileName.replace(/[\\"]/g, "")}"` }
-        : {}),
-    }),
-    { expiresIn: seconds },
-  );
+export async function streamDocumentObject(key: string): Promise<{
+  body: ReadableStream<Uint8Array>;
+  contentType: string;
+  contentLength: number | null;
+}> {
+  const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET_DOCUMENTS, Key: key }));
+  return {
+    body: res.Body!.transformToWebStream(),
+    contentType: res.ContentType ?? "application/octet-stream",
+    contentLength: res.ContentLength ?? null,
+  };
 }
 
 export async function getTempObject(key: string): Promise<{ body: Buffer; contentType: string }> {

@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { agreements } from "@/lib/db/schema";
 import { inr } from "@/lib/quotations/content";
+import { can } from "@/lib/rbac/permissions";
+import { getActor } from "@/lib/session";
 import { AgreementRowActions } from "./agreement-actions";
 import { UseThisAgreement } from "./use-this-agreement";
 
@@ -48,8 +50,11 @@ export async function AgreementStep({
       isPrimary: agreements.isPrimary,
     })
     .from(agreements)
-    .where(eq(agreements.projectId, projectId))
+    .where(and(eq(agreements.projectId, projectId), isNull(agreements.deletedAt)))
     .orderBy(asc(agreements.createdAt));
+
+  // Attached to this project, so the admin-only rule applies.
+  const canDelete = can(await getActor(), "agreement.delete.filed");
 
   const filed = rows.find((row) => row.isPrimary) ?? null;
 
@@ -110,7 +115,11 @@ export async function AgreementStep({
                   On file
                 </span>
               ) : null}
-              <AgreementRowActions id={agreement.id} hasFile={Boolean(agreement.s3Key)} />
+              <AgreementRowActions
+                id={agreement.id}
+                hasFile={Boolean(agreement.s3Key)}
+                canDelete={canDelete}
+              />
             </li>
           ))}
         </ul>

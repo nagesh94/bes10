@@ -4,13 +4,26 @@ import {
   ROLES,
   can,
   canSeeMoney,
+  hasRole,
+  homeFor,
+  isOnly,
+  isStaff,
+  primaryRole,
   type Actor,
   type Role,
 } from "./permissions";
 
+/** A single-role actor, which is still the common case. */
 const actor = (role: Role, id = "u1", partnerId?: string): Actor => ({
   id,
-  role,
+  roles: [role],
+  partnerId: partnerId ?? null,
+});
+
+/** Several roles at once. */
+const multi = (roles: Role[], id = "u1", partnerId?: string): Actor => ({
+  id,
+  roles,
   partnerId: partnerId ?? null,
 });
 
@@ -38,10 +51,29 @@ describe("money boundary", () => {
   });
 
   it("only an admin may read monetary columns", () => {
-    expect(canSeeMoney("ADMIN")).toBe(true);
-    expect(canSeeMoney("EMPLOYEE")).toBe(false);
-    expect(canSeeMoney("INSTALLER")).toBe(false);
-    expect(canSeeMoney("PARTNER")).toBe(false);
+    expect(canSeeMoney(["ADMIN"])).toBe(true);
+    expect(canSeeMoney(["EMPLOYEE"])).toBe(false);
+    expect(canSeeMoney(["INSTALLER"])).toBe(false);
+    expect(canSeeMoney(["PARTNER"])).toBe(false);
+  });
+
+  it("reads them for an admin who also holds a narrower role", () => {
+    expect(canSeeMoney(["EMPLOYEE", "ADMIN"])).toBe(true);
+    expect(canSeeMoney(["INSTALLER", "PARTNER"])).toBe(false);
+  });
+
+  it("denies every money action to a combination that excludes admin", () => {
+    for (const action of MONEY_ACTIONS) {
+      expect(
+        can(multi(["EMPLOYEE", "INSTALLER", "PARTNER"], "u1", "p1"), action, {
+          assignedEmployeeId: "u1",
+          assignedInstallerIds: ["u1"],
+          partnerId: "p1",
+          ownerId: "u1",
+        }),
+        action,
+      ).toBe(false);
+    }
   });
 });
 
@@ -222,5 +254,134 @@ describe("quotations are the one amount an employee may see", () => {
     expect(can(e, "settlement.write")).toBe(false);
     expect(MONEY_ACTIONS).not.toContain("quotation.read");
     expect(MONEY_ACTIONS).not.toContain("quotation.write");
+  });
+});
+
+describe("deleting a quotation or an agreement", () => {
+  it("lets an employee delete a standalone one", () => {
+    expect(can(actor("EMPLOYEE"), "quotation.delete")).toBe(true);
+    expect(can(actor("EMPLOYEE"), "agreement.delete")).toBe(true);
+  });
+
+  it("keeps one attached to a project admin-only", () => {
+    expect(can(actor("EMPLOYEE"), "quotation.delete.filed")).toBe(false);
+    expect(can(actor("EMPLOYEE"), "agreement.delete.filed")).toBe(false);
+    expect(can(actor("ADMIN"), "quotation.delete.filed")).toBe(true);
+    expect(can(actor("ADMIN"), "agreement.delete.filed")).toBe(true);
+  });
+
+  it("refuses an installer and a partner either way", () => {
+    const resource = {
+      assignedEmployeeId: "u1",
+      assignedInstallerIds: ["u1"],
+      partnerId: "p1",
+      ownerId: "u1",
+    };
+    for (const role of ["INSTALLER", "PARTNER"] as const) {
+      for (const action of [
+        "quotation.delete",
+        "quotation.delete.filed",
+        "agreement.delete",
+        "agreement.delete.filed",
+      ] as const) {
+        expect(can(actor(role, "u1", "p1"), action, resource), `${role} / ${action}`).toBe(false);
+      }
+    }
+  });
+});
+
+describe("several roles at once", () => {
+  it("grants a permission if any one role grants it", () => {
+    const both = multi(["INSTALLER", "EMPLOYEE"]);
+    // The installer role alone would refuse every one of these.
+    expect(can(both, "lead.write")).toBe(true);
+    expect(can(both, "document.generate")).toBe(true);
+    expect(can(both, "stage.advance")).toBe(true);
+  });
+
+  it("takes the widest scope, so a narrower role never claws anything back", () => {
+    const both = multi(["INSTALLER", "EMPLOYEE"], "vikram");
+    // EMPLOYEE has installation.write at "all", INSTALLER at "assigned".
+    // Someone else's job is still theirs to write.
+    expect(can(both, "installation.write", { assignedInstallerIds: ["mukesh"] })).toBe(true);
+    // And an installer on their own is still held to the assigned list.
+    expect(
+      can(actor("INSTALLER", "vikram"), "installation.write", { assignedInstallerIds: ["mukesh"] }),
+    ).toBe(false);
+  });
+
+  it("does not let a staff role smuggle in a partner's own-scope reach", () => {
+    // EMPLOYEE has no referral scope beyond "all" on its own actions, and a
+    // partner's commission is served by its own query, never by `can`.
+    const both = multi(["EMPLOYEE", "PARTNER"], "u1", "p1");
+    expect(can(both, "referral.read", { partnerId: "p2" })).toBe(true); // employee reads all
+    expect(can(both, "money.read")).toBe(false);
+  });
+
+  it("adding a role never takes a permission away", () => {
+    const actions = [
+      "lead.read",
+      "project.read",
+      "money.read",
+      "admin.users",
+      "installation.write",
+      "referral.read",
+    ] as const;
+    const resource = {
+      assignedEmployeeId: "u1",
+      assignedInstallerIds: ["u1"],
+      partnerId: "p1",
+      ownerId: "u1",
+    };
+
+    for (const base of ROLES) {
+      for (const added of ROLES) {
+        for (const action of actions) {
+          const alone = can(actor(base, "u1", "p1"), action, resource);
+          const together = can(multi([base, added], "u1", "p1"), action, resource);
+          if (alone) {
+            expect(together, `${base} + ${added} / ${action}`).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it("refuses an action no role grants", () => {
+    expect(can(multi(["EMPLOYEE", "INSTALLER", "PARTNER"]), "admin.users")).toBe(false);
+    expect(can(multi(["EMPLOYEE", "INSTALLER", "PARTNER"]), "flag.waive")).toBe(false);
+  });
+});
+
+describe("naming and routing a set of roles", () => {
+  it("hasRole is true for any role held, isOnly only for a sole role", () => {
+    const both = multi(["EMPLOYEE", "INSTALLER"]);
+    expect(hasRole(both, "INSTALLER")).toBe(true);
+    expect(hasRole(both, "ADMIN")).toBe(false);
+    expect(isOnly(both, "INSTALLER")).toBe(false);
+    expect(isOnly(actor("INSTALLER"), "INSTALLER")).toBe(true);
+    expect(hasRole(null, "ADMIN")).toBe(false);
+    expect(isOnly(null, "INSTALLER")).toBe(false);
+  });
+
+  it("names someone by their widest role, never a narrower one", () => {
+    expect(primaryRole(["INSTALLER", "ADMIN"])).toBe("ADMIN");
+    expect(primaryRole(["PARTNER", "EMPLOYEE"])).toBe("EMPLOYEE");
+    expect(primaryRole(["PARTNER"])).toBe("PARTNER");
+  });
+
+  it("sends a sole installer or partner to their own home, everyone else to the dashboard", () => {
+    expect(homeFor(["INSTALLER"])).toBe("/installer");
+    expect(homeFor(["PARTNER"])).toBe("/my-referrals");
+    expect(homeFor(["EMPLOYEE"])).toBe("/dashboard");
+    // Holding office work too means the dashboard, where the nav lives.
+    expect(homeFor(["INSTALLER", "EMPLOYEE"])).toBe("/dashboard");
+    expect(homeFor(["PARTNER", "INSTALLER"])).toBe("/dashboard");
+  });
+
+  it("counts anyone with a staff role as staff", () => {
+    expect(isStaff(["PARTNER"])).toBe(false);
+    expect(isStaff(["PARTNER", "INSTALLER"])).toBe(true);
+    expect(isStaff(["ADMIN"])).toBe(true);
   });
 });

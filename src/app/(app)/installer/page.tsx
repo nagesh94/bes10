@@ -14,6 +14,7 @@ import {
 } from "@/lib/db/schema";
 import { InstallerFooter } from "@/components/shell/installer-header";
 import { StatePill, type TaskState } from "@/components/installer/job-chrome";
+import { hasRole, isOnly } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { REQUIRED_PHOTO_TYPES } from "@/lib/workflow/photo-requirements";
 
@@ -28,12 +29,15 @@ import { REQUIRED_PHOTO_TYPES } from "@/lib/workflow/photo-requirements";
 export default async function InstallerPage() {
   const actor = await getActor();
   if (!actor) notFound();
-  if (actor.role !== "INSTALLER" && actor.role !== "ADMIN") notFound();
+  if (!hasRole(actor, "INSTALLER") && !hasRole(actor, "ADMIN")) notFound();
 
   // The crew join is the scope: an installer's query only returns the jobs
   // they are on, so another crew's job is never in the response.
+  // An admin sees every job as a preview of this screen. Anyone who holds
+  // the installer role sees the jobs they are on, admin included — their own
+  // list is the more useful answer when they have one.
   const rows =
-    actor.role === "INSTALLER"
+    hasRole(actor, "INSTALLER")
       ? await db
           .select({ project: projects, contact: contacts, rooftop: rooftopDetails })
           .from(projectInstallers)
@@ -79,7 +83,7 @@ export default async function InstallerPage() {
     <main className="mx-auto max-w-[640px] px-4 pt-4 pb-10">
       <h1 className="text-[21px] font-bold tracking-[-0.01em]">My jobs</h1>
       <p className="mt-1 mb-4 text-[13.5px] leading-relaxed text-[var(--muted)]">
-        {actor.role === "ADMIN"
+        {!hasRole(actor, "INSTALLER")
           ? "Every job, exactly as an installer sees it."
           : rows.length === 1
             ? "One job assigned to you."
@@ -155,7 +159,7 @@ export default async function InstallerPage() {
         </ul>
       )}
 
-      {actor.role === "INSTALLER" ? <InstallerFooter /> : null}
+      {isOnly(actor, "INSTALLER") ? <InstallerFooter /> : null}
     </main>
   );
 }

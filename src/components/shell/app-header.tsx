@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { can, type Actor } from "@/lib/rbac/permissions";
+import { can, hasRole, primaryRole, type Actor } from "@/lib/rbac/permissions";
 import { BottomNav } from "./bottom-nav";
 import { NavLinks } from "./nav-links";
 import { SignOutButton } from "./sign-out-button";
@@ -53,21 +53,17 @@ export async function AppHeader({ actor, name }: { actor: Actor; name: string })
     {
       href: "/dashboard",
       key: "dashboard",
-      show: can(actor, "project.read") && actor.role !== "PARTNER" && actor.role !== "INSTALLER",
+      show: can(actor, "project.write"),
     },
     { href: "/leads", key: "leads", show: can(actor, "lead.read") },
-    {
-      href: "/projects",
-      key: "projects",
-      show: actor.role === "ADMIN" || actor.role === "EMPLOYEE",
-    },
+    { href: "/projects", key: "projects", show: can(actor, "project.write") },
     { href: "/quotations", key: "quotations", show: can(actor, "quotation.read") },
     { href: "/agreements", key: "agreements", show: can(actor, "agreement.read") },
     { href: "/partners", key: "partners", show: can(actor, "partner.read") },
     { href: "/documents", key: "documents", show: can(actor, "document.read") },
     { href: "/admin/users", key: "admin", show: can(actor, "admin.users") },
-    { href: "/installer", key: "myJobs", show: actor.role === "INSTALLER" },
-    { href: "/my-referrals", key: "myReferrals", show: actor.role === "PARTNER" },
+    { href: "/installer", key: "myJobs", show: hasRole(actor, "INSTALLER") },
+    { href: "/my-referrals", key: "myReferrals", show: hasRole(actor, "PARTNER") },
   ];
 
   const visible = items
@@ -92,8 +88,15 @@ export async function AppHeader({ actor, name }: { actor: Actor; name: string })
           <NavLinks items={visible} />
 
           <div className="ml-auto flex shrink-0 items-center gap-2 md:ml-0 md:gap-2.5">
-            <span className="hidden rounded-[var(--radius-chip)] border border-[var(--chrome-line)] px-2 py-[5px] text-[10.5px] font-bold tracking-[0.08em] text-[var(--chrome-muted)] uppercase sm:inline">
-              {t(`roles.${actor.role}`)}
+            {/* One chip, widest role first: an admin who also installs reads
+                as "Admin". The full set is on the settings page, where there
+                is room to list it. */}
+            <span
+              title={actor.roles.map((role) => t(`roles.${role}`)).join(" · ")}
+              className="hidden rounded-[var(--radius-chip)] border border-[var(--chrome-line)] px-2 py-[5px] text-[10.5px] font-bold tracking-[0.08em] text-[var(--chrome-muted)] uppercase sm:inline"
+            >
+              {t(`roles.${primaryRole(actor.roles)}`)}
+              {actor.roles.length > 1 ? ` +${actor.roles.length - 1}` : ""}
             </span>
             <Link
               href="/settings"

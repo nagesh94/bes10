@@ -90,6 +90,14 @@ export const agreements = pgTable(
     /** The `documents` row filed against the project, when there is one. */
     documentId: text("document_id"),
 
+    /**
+     * As on `quotations`: the row survives the delete so who signed what,
+     * and who removed it, stays answerable. The file, the filed document
+     * and the link to the project do not. See `deleteAgreement`.
+     */
+    deletedBy: text("deleted_by").references(() => user.id),
+    deletedAt: timestamp("deleted_at"),
+
     createdBy: text("created_by").references(() => user.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),

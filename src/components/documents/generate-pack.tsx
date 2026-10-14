@@ -10,6 +10,8 @@ import {
   setPortalUploaded,
 } from "@/app/actions/generate";
 import { deleteDocument, getDocumentUrl } from "@/app/actions/documents";
+import { useConfirm } from "@/components/shell/confirm";
+import { saveFile } from "@/lib/documents/open-file";
 import type { Stage7DocType } from "@/lib/documents/portal-pack";
 
 const cell =
@@ -68,6 +70,7 @@ export function GeneratePack({
   missingFields?: string[];
 }) {
   const router = useRouter();
+  const ask = useConfirm();
   const [busy, setBusy] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<Stage7DocType, string>>>({});
   const [notice, setNotice] = useState<string | null>(null);
@@ -106,22 +109,31 @@ export function GeneratePack({
     router.refresh();
   }
 
-  async function open(documentId: string) {
+  /**
+   * These are .docx files, which a browser cannot display — so this saves
+   * the file rather than opening a tab that would immediately download it
+   * and sit there empty.
+   */
+  async function download(documentId: string) {
     setBusy(documentId);
-    const result = await getDocumentUrl(documentId);
+    const result = await getDocumentUrl(documentId, "original", "attachment");
     setBusy(null);
-    if (result.ok) window.open(result.url, "_blank", "noopener,noreferrer");
+    if (result.ok) saveFile(result.url);
   }
 
   async function remove(d: GeneratedDoc) {
     if (!d.documentId) return;
-    if (!window.confirm(`Delete "${d.label}"? This removes the file and can't be undone here.`)) {
-      return;
-    }
-    const reason = window.prompt("Reason for deleting it (optional):") ?? undefined;
+    const answer = await ask({
+      title: `Delete “${d.label}”?`,
+      body: "The file is removed from storage. It can be generated again from the project's current data.",
+      confirmLabel: "Delete it",
+      reason: {},
+    });
+    if (!answer.confirmed) return;
+
     setBusy(d.documentId);
     setErrors((e) => ({ ...e, [d.docType]: undefined }));
-    const result = await deleteDocument(d.documentId, reason);
+    const result = await deleteDocument(d.documentId, answer.reason);
     setBusy(null);
     if (!result.ok) {
       setErrors((e) => ({ ...e, [d.docType]: result.error }));
@@ -207,7 +219,7 @@ export function GeneratePack({
                 <button
                   type="button"
                   disabled={busy !== null}
-                  onClick={() => void open(d.documentId!)}
+                  onClick={() => void download(d.documentId!)}
                   className={secondary}
                 >
                   Download

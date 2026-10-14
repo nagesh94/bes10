@@ -23,8 +23,11 @@ export default async function ProjectsPage({
   searchParams: Promise<{ q?: string; stage?: string; lifecycle?: string }>;
 }) {
   const actor = await getActor();
-  if (!actor || !can(actor, "project.read")) notFound();
-  if (actor.role === "PARTNER" || actor.role === "INSTALLER") notFound();
+  // The pipeline list, not a single project. `project.write` is the
+  // permission for working the pipeline at all, which is the question here —
+  // an installer and a partner each read individual projects at a narrower
+  // scope and have their own page instead.
+  if (!actor || !can(actor, "project.write")) notFound();
 
   const { q = "", stage = "", lifecycle = "" } = await searchParams;
 

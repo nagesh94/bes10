@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { agreements, projects } from "@/lib/db/schema";
 import { AgreementRowActions } from "@/components/agreements/agreement-actions";
+import { ListControls, ListPager } from "@/components/shell/list-controls";
 import { inr } from "@/lib/quotations/content";
+import { PER_PAGE_OPTIONS, isFiltered, likePattern, readListParams } from "@/lib/list/params";
 import { can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 
@@ -15,7 +17,11 @@ import { getActor } from "@/lib/session";
  * paper, which is what they are.
  *
  * There is no number column, unlike quotations: the model agreement carries
- * no number on the paper, so one is read by consumer and execution date.
+ * no number on the paper, so one is read by consumer and execution date —
+ * which is also what the search box looks through.
+ *
+ * Paged in the database, like the quotations list beside it: a page reads
+ * its own rows and a count, never the whole table.
  */
 
 const STATUS_CHIP: Record<string, string> = {
@@ -32,7 +38,18 @@ const STATUS_LABEL: Record<string, string> = {
   CANCELLED: "Cancelled",
 };
 
-export default async function AgreementsPage() {
+const STATUS_FILTER = [
+  { value: "DRAFT", label: "Draft" },
+  { value: "ISSUED", label: "Issued" },
+  { value: "SIGNED", label: "Signed" },
+  { value: "CANCELLED", label: "Cancelled" },
+] as const;
+
+export default async function AgreementsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const actor = await getActor();
   if (!actor || !can(actor, "agreement.read")) {
     return (
@@ -42,26 +59,68 @@ export default async function AgreementsPage() {
     );
   }
 
-  const rows = await db
-    .select({
-      id: agreements.id,
-      status: agreements.status,
-      executionDate: agreements.executionDate,
-      consumerTitle: agreements.consumerTitle,
-      consumerName: agreements.consumerName,
-      consumerAddress: agreements.consumerAddress,
-      totalValue: agreements.totalValue,
-      hasFile: agreements.s3Key,
-      isPrimary: agreements.isPrimary,
-      projectId: agreements.projectId,
-      projectCode: projects.code,
-    })
-    .from(agreements)
-    .leftJoin(projects, eq(agreements.projectId, projects.id))
-    .orderBy(desc(agreements.createdAt))
-    .limit(200);
+  const params = await readListParams(
+    searchParams,
+    STATUS_FILTER.map((option) => option.value),
+  );
+  const term = params.q ? likePattern(params.q) : null;
 
-  const signed = rows.filter((r) => r.status === "SIGNED").length;
+  /**
+   * One `where` for the page and the count alike. Deleted agreements keep
+   * their row for the record, but not their place on this list.
+   */
+  const where = and(
+    isNull(agreements.deletedAt),
+    params.status ? eq(agreements.status, params.status) : undefined,
+    params.project === "attached" ? isNotNull(agreements.projectId) : undefined,
+    params.project === "standalone" ? isNull(agreements.projectId) : undefined,
+    term
+      ? or(
+          ilike(agreements.consumerName, term),
+          ilike(agreements.consumerAddress, term),
+          // `execution_date` is a date column, so it is cast before being
+          // matched — ILIKE has no operator for a date, and an agreement is
+          // often looked for by the month it was executed in.
+          sql`${agreements.executionDate}::text ilike ${term}`,
+          ilike(projects.code, term),
+        )
+      : undefined,
+  );
+
+  const [rows, [totals]] = await Promise.all([
+    db
+      .select({
+        id: agreements.id,
+        status: agreements.status,
+        executionDate: agreements.executionDate,
+        consumerTitle: agreements.consumerTitle,
+        consumerName: agreements.consumerName,
+        consumerAddress: agreements.consumerAddress,
+        totalValue: agreements.totalValue,
+        hasFile: agreements.s3Key,
+        isPrimary: agreements.isPrimary,
+        projectId: agreements.projectId,
+        projectCode: projects.code,
+      })
+      .from(agreements)
+      .leftJoin(projects, eq(agreements.projectId, projects.id))
+      .where(where)
+      .orderBy(desc(agreements.createdAt))
+      .limit(params.per)
+      .offset(params.offset),
+    db
+      .select({
+        total: count(),
+        signed: sql<number>`count(*) filter (where ${agreements.status} = 'SIGNED')`.mapWith(Number),
+      })
+      .from(agreements)
+      .leftJoin(projects, eq(agreements.projectId, projects.id))
+      .where(where),
+  ]);
+
+  const total = totals?.total ?? 0;
+  const signed = totals?.signed ?? 0;
+  const filtered = isFiltered(params);
 
   return (
     <main className="mx-auto max-w-[1280px] px-6 pt-7 pb-14">
@@ -69,7 +128,15 @@ export default async function AgreementsPage() {
         <div className="min-w-60 flex-1">
           <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">Agreements</h1>
           <p className="text-sm text-[var(--muted)]">
-            {rows.length} drawn up · {signed} signed
+            {filtered ? `${total} matching` : `${total} drawn up`} · {signed} signed
+            {filtered ? (
+              <>
+                {" · "}
+                <Link href="/agreements" className="font-semibold">
+                  Clear
+                </Link>
+              </>
+            ) : null}
           </p>
         </div>
         {can(actor, "agreement.write") ? (
@@ -82,7 +149,35 @@ export default async function AgreementsPage() {
         ) : null}
       </div>
 
-      {rows.length === 0 ? (
+      <ListControls
+        placeholder="Search by consumer, address, project or date"
+        filters={[
+          { name: "status", anyLabel: "Any status", options: STATUS_FILTER },
+          {
+            name: "project",
+            anyLabel: "Attached or not",
+            options: [
+              { value: "attached", label: "On a project" },
+              { value: "standalone", label: "Standalone" },
+            ],
+          },
+        ]}
+        perOptions={PER_PAGE_OPTIONS}
+        per={params.per}
+      />
+
+      {total === 0 && filtered ? (
+        <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
+          <p className="mb-1 font-semibold">Nothing matches</p>
+          <p className="text-sm text-[var(--muted)]">
+            No agreement answers that search or those filters.{" "}
+            <Link href="/agreements" className="font-semibold">
+              Clear them
+            </Link>{" "}
+            to see the whole list.
+          </p>
+        </div>
+      ) : total === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center">
           <p className="mb-1 font-semibold">No agreements yet</p>
           <p className="mb-5 text-sm text-[var(--muted)]">
@@ -164,7 +259,14 @@ export default async function AgreementsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right align-middle">
-                      <AgreementRowActions id={row.id} hasFile={Boolean(row.hasFile)} />
+                      <AgreementRowActions
+                        id={row.id}
+                        hasFile={Boolean(row.hasFile)}
+                        canDelete={can(
+                          actor,
+                          row.projectId ? "agreement.delete.filed" : "agreement.delete",
+                        )}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -173,6 +275,10 @@ export default async function AgreementsPage() {
           </div>
         </section>
       )}
+
+      {total > 0 ? (
+        <ListPager total={total} page={params.page} per={params.per} noun="agreements" />
+      ) : null}
     </main>
   );
 }

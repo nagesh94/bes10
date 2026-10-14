@@ -16,7 +16,7 @@ export const ROLE_COPY: Record<
   ADMIN: {
     dot: "bg-[var(--ink)]",
     lines: [
-      { ok: true, text: "Everything an employee can do" },
+      { ok: true, text: "Everything an executive can do" },
       { ok: true, text: "All money — value, payments, subsidy, partner payouts" },
       { ok: true, text: "Users, master data, templates, partner rates" },
       { ok: true, text: "Override a stage gate, with a written reason" },
@@ -50,16 +50,41 @@ export const ROLE_COPY: Record<
   },
 };
 
+/**
+ * EMPLOYEE reads as "Executive" — the office's own word for the job. The
+ * stored enum value is unchanged, so no permission check or migration turns
+ * on a piece of wording.
+ */
 export const ROLE_LABEL: Record<Role, string> = {
   ADMIN: "Admin",
-  EMPLOYEE: "Employee",
+  EMPLOYEE: "Executive",
   INSTALLER: "Installer",
   PARTNER: "Channel partner",
 };
 
+/**
+ * The role chip, as the users board draws it.
+ *
+ * Each pairing is a soft ground with its own text tone from the same family,
+ * which is the one combination that holds up in both themes. `--navy` as
+ * text on `--navy-soft` does not: in dark mode they are within a hair of
+ * each other and the chip reads as an empty pill. `--link` is the readable
+ * member of that family and is what belongs here.
+ */
 export const ROLE_CHIP: Record<Role, string> = {
-  ADMIN: "border border-[var(--navy-border)] bg-[var(--navy)] text-[var(--navy-ink)]",
+  ADMIN: "bg-[var(--orange-soft)] text-[var(--orange-text)]",
   EMPLOYEE: "bg-[var(--navy-soft)] text-[var(--link)]",
-  INSTALLER: "bg-[var(--orange-soft)] text-[var(--orange-text)]",
+  INSTALLER: "bg-[var(--green-soft)] text-[var(--green-text)]",
   PARTNER: "bg-[var(--partner-soft)] text-[var(--partner-text)]",
+};
+
+/**
+ * Chip wording. Shorter than ROLE_LABEL on purpose: a row may carry four of
+ * these, and "Channel partner" is too wide to sit beside three others.
+ */
+export const ROLE_CHIP_LABEL: Record<Role, string> = {
+  ADMIN: "Admin",
+  EMPLOYEE: "Executive",
+  INSTALLER: "Installer",
+  PARTNER: "Partner",
 };

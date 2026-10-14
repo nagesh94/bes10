@@ -9,6 +9,8 @@ import {
   requestPhotoUpload,
   type PhotoType,
 } from "@/app/actions/photos";
+import { useConfirm } from "@/components/shell/confirm";
+import { openFile, saveFile } from "@/lib/documents/open-file";
 
 export interface PhotoItem {
   id: string;
@@ -44,6 +46,7 @@ export function PhotoGrid({
   photos: PhotoItem[];
 }) {
   const router = useRouter();
+  const ask = useConfirm();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -119,11 +122,32 @@ export function PhotoGrid({
 
   async function open(id: string) {
     const res = await getPhotoUrl(id, "original");
-    if (res.ok) window.open(res.url, "_blank", "noopener,noreferrer");
+    if (res.ok) openFile(res.url);
   }
 
+  async function download(id: string) {
+    const res = await getPhotoUrl(id, "original", "attachment");
+    if (res.ok) saveFile(res.url);
+    else setError(res.error);
+  }
+
+  /**
+   * Asking first is new. The × sits on the corner of a thumbnail, on a phone,
+   * in gloves — and it used to delete the photo on the first tap.
+   */
   async function remove(id: string) {
-    await deletePhoto(projectId, id);
+    const answer = await ask({
+      title: "Remove this photo?",
+      body: "It is deleted from the project and cannot be recovered. The photo can be taken again.",
+      confirmLabel: "Remove it",
+    });
+    if (!answer.confirmed) return;
+
+    setBusy("Removing…");
+    setError(null);
+    const result = await deletePhoto(projectId, id);
+    setBusy(null);
+    if (!result.ok) return setError(result.error);
     router.refresh();
   }
 
@@ -164,6 +188,20 @@ export function PhotoGrid({
                 {Number(p.lat).toFixed(4)}°N {Number(p.lng).toFixed(4)}°E
               </figcaption>
             ) : null}
+
+            <button
+              type="button"
+              onClick={() => void download(p.id)}
+              aria-label="Download the full-size photo"
+              title="Save this photo to this computer"
+              className="absolute top-1.5 right-9 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-[rgba(2,13,30,0.72)] text-white"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M12 4v11" />
+                <path d="M7.5 11l4.5 4.5 4.5-4.5" />
+                <path d="M5 19.5h14" />
+              </svg>
+            </button>
 
             <button
               type="button"

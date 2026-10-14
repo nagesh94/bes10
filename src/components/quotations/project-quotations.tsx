@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { quotations } from "@/lib/db/schema";
 import { inr } from "@/lib/quotations/content";
+import { can } from "@/lib/rbac/permissions";
+import { getActor } from "@/lib/session";
 import { ChooseQuotation } from "./choose-quotation";
 import { QuotationRowActions } from "./quotation-actions";
 
@@ -45,8 +47,12 @@ export async function ProjectQuotations({
       isChosen: quotations.isChosen,
     })
     .from(quotations)
-    .where(eq(quotations.projectId, projectId))
+    .where(and(eq(quotations.projectId, projectId), isNull(quotations.deletedAt)))
     .orderBy(asc(quotations.number));
+
+  // Everything listed here is attached to this project, so deleting one is
+  // the admin-only decision rather than the counter-mistake one.
+  const canDelete = can(await getActor(), "quotation.delete.filed");
 
   return (
     <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
@@ -94,7 +100,7 @@ export async function ProjectQuotations({
                   Chosen
                 </span>
               ) : null}
-              <QuotationRowActions id={row.id} hasPdf={Boolean(row.s3Key)} />
+              <QuotationRowActions id={row.id} hasPdf={Boolean(row.s3Key)} canDelete={canDelete} />
             </li>
           ))}
         </ul>

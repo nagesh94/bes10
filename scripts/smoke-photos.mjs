@@ -1,7 +1,7 @@
 /** Several site-survey photos at once, geotagged and stamped. */
 import sharp from "sharp";
 import postgres from "postgres";
-import { ensureBuckets, presignUpload, getTempObject, putDocument, deleteTempObject, presignDownload } from "../src/lib/storage/operations.ts";
+import { ensureBuckets, presignUpload, getTempObject, putDocument, deleteTempObject, getDocumentObject } from "../src/lib/storage/operations.ts";
 import { buildVariants, stampGeo } from "../src/lib/storage/variants.ts";
 import { documentKey } from "../src/lib/storage/client.ts";
 
@@ -44,10 +44,10 @@ const rows = await sql`select id, latitude, longitude, s3_key_thumb from photos 
 rows.length >= 3 ? pass(`${rows.length} rows in the photos table`) : fail(`only ${rows.length} rows`);
 rows.every(r => r.latitude && r.longitude) ? pass("every photo carries coordinates") : fail("a photo has no coordinates");
 
-const thumb = await fetch(await presignDownload(rows[0].s3_key_thumb, 60));
-thumb.ok ? pass("thumbnail loads through a presigned URL") : fail(`thumb ${thumb.status}`);
+const thumb = await getDocumentObject(rows[0].s3_key_thumb);
+thumb.body.byteLength > 0 ? pass("thumbnail reads back from storage") : fail("thumb is empty");
 
-const meta = await sharp(Buffer.from(await (await fetch(await presignDownload(rows[0].s3_key_thumb, 60))).arrayBuffer())).metadata();
+const meta = await sharp(thumb.body).metadata();
 meta.width <= 320 ? pass(`thumb is ${meta.width}×${meta.height}`) : fail(`thumb too big: ${meta.width}`);
 
 await sql.end();

@@ -13,12 +13,12 @@ import { writeAudit } from "@/lib/admin/write-audit";
 import { assertCan, can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { PORTAL_MAX_KB, documentKey } from "@/lib/storage/client";
+import { fileHref } from "@/lib/storage/file-url";
 import {
   deleteDocumentObject,
   deleteTempObject,
   ensureBuckets,
   getTempObject,
-  presignDownload,
   presignUpload,
   putDocument,
 } from "@/lib/storage/operations";
@@ -151,7 +151,12 @@ export async function finaliseUpload(
 }
 
 /**
- * A short-lived link to one variant.
+ * The link to one variant, checked before it is handed out.
+ *
+ * The URL points at this app, not at storage — see `lib/storage/file-url`
+ * for why, and note that the route behind it checks the permission again.
+ * This check stays because it is what lets the page show "Not allowed" in
+ * place of the row's buttons instead of opening a blank tab onto a 403.
  *
  * Opening an Aadhaar document is itself written to the audit log — the
  * architecture treats a read of that file as an event worth recording.
@@ -186,12 +191,13 @@ export async function getDocumentUrl(
     });
   }
 
-  const url = await presignDownload(
-    key,
-    300,
-    disposition === "attachment" ? (doc.fileName ?? documentId) : undefined,
-  );
-  return { ok: true, url };
+  return {
+    ok: true,
+    url: fileHref("document", documentId, {
+      variant,
+      download: disposition === "attachment",
+    }),
+  };
 }
 
 /**
@@ -218,7 +224,7 @@ export async function deleteDocument(
     return {
       ok: false,
       error:
-        "Quotations can't be deleted here. Mark it Declined or Expired, or detach it, from the quotation page.",
+        "Quotations can't be deleted here. Mark it Declined or Expired, detach it, or delete the quotation itself, from the quotation page.",
     };
   }
 

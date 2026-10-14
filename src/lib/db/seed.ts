@@ -563,7 +563,7 @@ async function seedDiscoms(): Promise<string> {
 
 async function seedAdmin(): Promise<string> {
   const existing = await db
-    .select({ id: user.id, role: user.role })
+    .select({ id: user.id, roles: user.roles })
     .from(user)
     .where(eq(user.email, ADMIN_EMAIL))
     .limit(1);
@@ -571,10 +571,16 @@ async function seedAdmin(): Promise<string> {
   if (existing.length > 0) {
     // The account survives a re-run untouched. The one exception is the role:
     // an admin who somehow lost it would lock everybody out of user
-    // management, and repairing that is safe. The password is never reset.
-    if (existing[0]!.role !== "ADMIN") {
-      await db.update(user).set({ role: "ADMIN" }).where(eq(user.email, ADMIN_EMAIL));
-      return "already there (role restored to ADMIN)";
+    // management, and repairing that is safe. Any other roles it has picked
+    // up are kept — adding ADMIN back is the repair, not resetting the set.
+    // The password is never reset.
+    const roles = existing[0]!.roles ?? [];
+    if (!roles.includes("ADMIN")) {
+      await db
+        .update(user)
+        .set({ roles: ["ADMIN", ...roles] })
+        .where(eq(user.email, ADMIN_EMAIL));
+      return "already there (ADMIN restored)";
     }
     return "already there";
   }
@@ -586,12 +592,12 @@ async function seedAdmin(): Promise<string> {
     body: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD, name: ADMIN_NAME },
   });
 
-  // `role` is `input: false` in the auth config, so it cannot be set from a
+  // `roles` is `input: false` in the auth config, so it cannot be set from a
   // sign-up payload — deliberately, since that is what stops anyone from
   // asking for ADMIN. It is written here instead.
   await db
     .update(user)
-    .set({ role: "ADMIN", phone: ADMIN_PHONE, active: true })
+    .set({ roles: ["ADMIN"], phone: ADMIN_PHONE, active: true })
     .where(eq(user.email, ADMIN_EMAIL));
 
   return "created";
