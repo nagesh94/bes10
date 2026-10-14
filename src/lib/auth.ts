@@ -56,7 +56,20 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    autoSignIn: true,
+    /**
+     * Creating an account must never sign anybody in.
+     *
+     * Accounts here are made by an admin for somebody else, on a page the
+     * admin is standing on. Left on, this hands the new person's session to
+     * whoever created it: the cookies plugin writes the new session cookie
+     * over the admin's own, so the admin is signed out and the browser is
+     * suddenly the new user — on the admin screen, which that user cannot
+     * reach. `inviteUser` writes the credential itself and so never passed
+     * through here, but the seed scripts do, and the endpoint below is
+     * mounted whenever email and password are on. Off, account creation
+     * creates an account and nothing else.
+     */
+    autoSignIn: false,
     minPasswordLength: 10,
   },
 
