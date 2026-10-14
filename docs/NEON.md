@@ -113,6 +113,46 @@ and the server moves the file into `documents` after resizing it. That keeps an
 > create them on first use, and Neon supports `CreateBucket` over the S3 API.
 > It runs once per process, not once per upload.
 
+### The temp bucket needs a CORS policy
+
+**This one has already cost a day.** The browser PUTs straight into
+`bhim-crm-temp`, so that bucket has to allow a cross-origin PUT from the app's
+origin. Without the policy the browser refuses the request at the preflight,
+nothing is ever sent, and the only symptom on screen is *"The upload could not
+reach storage."*
+
+Nothing on the server notices. Node does not enforce CORS, so `smoke:storage`,
+`smoke:upload` and a `curl` all pass happily against a bucket that no browser
+can upload to.
+
+It went wrong here in the least visible way possible: `bhim-crm-bucket` was
+created by hand in the Neon console and came out with a policy, while
+`bhim-crm-temp` is created by the app over `CreateBucket`, which copies none.
+The documents bucket is also the one a person checks first — and it looked fine.
+
+```bash
+npm run storage:cors            # apply it, then prove a browser could upload
+npm run storage:cors -- --check # read it back and test, change nothing
+```
+
+The script ends by sending the real preflight a browser sends, against a real
+presigned PUT, for every origin in the policy — the only check that matches
+what a phone on a roof will experience. `smoke:upload` now asserts the same
+thing, and `ensureBuckets` sets the policy on first use, best-effort, logging
+loudly if the credential cannot write it.
+
+Unlike versioning and lifecycle below, Neon does implement `PutBucketCors` and
+`GetBucketCors` — the policy is stored, read back and genuinely honoured. What
+enforces it is the browser, not the provider, which is why it works.
+
+The policy is `PUT` only, from `AUTH_URL`'s origin and `http://localhost:3000`
+— both, in one policy, because this project runs on one `.env` everywhere. Add
+an origin to `UPLOAD_ORIGINS` in
+[operations.ts](../src/lib/storage/operations.ts) and re-run the script if the
+app ever moves to another domain. The documents bucket needs no policy at all:
+the browser never talks to it directly, since every read goes through
+`/api/files/...`.
+
 ### The endpoint is per branch
 
 Buckets belong to a Neon **branch**, not a region, and they are copy-on-write.

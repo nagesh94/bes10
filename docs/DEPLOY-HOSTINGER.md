@@ -222,7 +222,13 @@ sudo -u bhim npm run build
 sudo -u bhim npm run db:migrate:prod   # creates the schema in the local Postgres
 sudo -u bhim npm run db:seed           # admin + every master table
 sudo -u bhim npm run smoke:storage     # proves MinIO works end to end
+sudo -u bhim npm run storage:cors      # lets the browser PUT into the temp bucket
 ```
+
+`storage:cors` is not optional and not covered by `smoke:storage`: without the
+policy every upload fails in the browser while every server-side test passes.
+See [NEON.md](NEON.md#the-temp-bucket-needs-a-cors-policy). Re-run it whenever
+the temp bucket is recreated or the app's domain changes.
 
 The seed prints which database it wrote to — check it says `bhim_crm`.
 

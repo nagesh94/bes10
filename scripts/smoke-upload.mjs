@@ -6,6 +6,7 @@
  */
 import sharp from "sharp";
 import {
+  UPLOAD_ORIGINS,
   deleteDocumentObject,
   deleteTempObject,
   ensureBuckets,
@@ -46,6 +47,33 @@ try {
   const tempKey = `incoming/${projectId}/${crypto.randomUUID()}-khasra.jpg`;
   const url = await presignUpload(tempKey, "image/jpeg");
   url.includes("X-Amz-Signature") ? pass("presigned PUT issued") : fail("url is not signed");
+
+  /**
+   * The preflight, written out by hand because Node will never send one.
+   *
+   * Without this check the rest of the script passes against a bucket that no
+   * browser can upload into — which is precisely what happened: the temp
+   * bucket had no CORS policy, every test here was green, and the only symptom
+   * was "something went wrong during the upload" on screen. A browser sends
+   * this OPTIONS before any cross-origin PUT and refuses to send the PUT at
+   * all unless the answer names the origin.
+   */
+  for (const origin of UPLOAD_ORIGINS) {
+    const preflight = await fetch(url, {
+      method: "OPTIONS",
+      headers: {
+        Origin: origin,
+        "Access-Control-Request-Method": "PUT",
+        "Access-Control-Request-Headers": "content-type",
+      },
+    });
+    preflight.headers.get("access-control-allow-origin")
+      ? pass(`CORS preflight allows a browser on ${origin}`)
+      : fail(
+          `CORS preflight refused ${origin} (${preflight.status}) — the server path below ` +
+            "will still pass, but a browser could not do this upload. Run `npm run storage:cors`.",
+        );
+  }
 
   const put = await fetch(url, {
     method: "PUT",

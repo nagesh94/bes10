@@ -11,6 +11,7 @@ import {
 } from "@/app/actions/photos";
 import { useConfirm } from "@/components/shell/confirm";
 import { openFile, saveFile } from "@/lib/documents/open-file";
+import { putPresigned } from "@/lib/storage/browser-put";
 
 export interface PhotoItem {
   id: string;
@@ -68,12 +69,13 @@ export function PhotoGrid({
         }
       : undefined;
 
-    let done = 0;
+    let started = 0;
+    let uploaded = 0;
     let stampedCount = 0;
 
     for (const file of files) {
-      done += 1;
-      setBusy(`Uploading ${done} of ${files.length}…`);
+      started += 1;
+      setBusy(`Uploading ${started} of ${files.length}…`);
       try {
         const presigned = await requestPhotoUpload(projectId, photoType, file.name, file.type);
         if (!presigned.ok) {
@@ -81,13 +83,9 @@ export function PhotoGrid({
           break;
         }
 
-        const put = await fetch(presigned.uploadUrl, {
-          method: "PUT",
-          body: file,
-          headers: { "Content-Type": file.type },
-        });
+        const put = await putPresigned(presigned.uploadUrl, file);
         if (!put.ok) {
-          setError(`Upload failed on ${file.name} (${put.status}).`);
+          setError(`${file.name}: ${put.error}`);
           break;
         }
 
@@ -102,19 +100,24 @@ export function PhotoGrid({
           setError(saved.error);
           break;
         }
+        uploaded += 1;
         if (saved.stamped) stampedCount += 1;
-      } catch {
+      } catch (err) {
+        // Only a thrown server action lands here — the direct PUT reports its
+        // own failures above. Production redacts the message, so the console
+        // is the only place the reason can be read.
+        console.error(`[photo] upload failed on ${file.name}`, err);
         setError(`Something went wrong on ${file.name}.`);
         break;
       }
     }
 
     setBusy(null);
-    if (done > 0) {
+    if (uploaded > 0) {
       setNotice(
         geo
-          ? `${stampedCount} of ${done} geotagged and stamped.`
-          : `${done} uploaded. Location was unavailable, so nothing was stamped.`,
+          ? `${stampedCount} of ${uploaded} geotagged and stamped.`
+          : `${uploaded} uploaded. Location was unavailable, so nothing was stamped.`,
       );
     }
     router.refresh();

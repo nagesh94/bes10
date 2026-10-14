@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { deleteDocument, finaliseUpload, getDocumentUrl, requestUpload } from "@/app/actions/documents";
 import { useConfirm } from "@/components/shell/confirm";
 import { openFile, saveFile } from "@/lib/documents/open-file";
+import { putPresigned } from "@/lib/storage/browser-put";
 import type { DocType } from "@/lib/documents/types";
 
 export interface ExistingDoc {
@@ -64,13 +65,9 @@ export function UploadSlot({
       }
 
       setBusy("Uploading…");
-      const put = await fetch(presigned.uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type || "application/octet-stream" },
-      });
+      const put = await putPresigned(presigned.uploadUrl, file);
       if (!put.ok) {
-        setError(`Upload failed (${put.status}). Check your connection and try again.`);
+        setError(put.error);
         setBusy(null);
         return;
       }
@@ -97,7 +94,11 @@ export function UploadSlot({
         setNotice(pages ? `Saved · ${pages}` : "Saved");
       }
       router.refresh();
-    } catch {
+    } catch (err) {
+      // Whatever reaches here is a thrown server action — the browser's own
+      // half of the upload reports its failures above. Production redacts the
+      // message, so the console is where it can actually be read.
+      console.error("[upload] failed", err);
       setBusy(null);
       setError("Something went wrong during the upload.");
     }

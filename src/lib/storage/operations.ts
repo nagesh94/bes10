@@ -1,13 +1,102 @@
 import {
   CreateBucketCommand,
   DeleteObjectCommand,
+  GetBucketCorsCommand,
   GetObjectCommand,
   HeadBucketCommand,
+  PutBucketCorsCommand,
   PutObjectCommand,
+  type CORSRule,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { S3_MANAGE_BUCKETS, S3_SSE } from "../env";
+import { PUBLIC_URL, S3_MANAGE_BUCKETS, S3_SSE } from "../env";
 import { BUCKET_DOCUMENTS, BUCKET_TEMP, s3 } from "./client";
+
+/**
+ * The origins a browser is allowed to upload from.
+ *
+ * Both are in one policy rather than switched per environment, because this
+ * project runs on a single .env that is identical on a laptop and on the
+ * server: `PUBLIC_URL` is the production URL in both places (see `lib/env`),
+ * so localhost has to be named alongside it or local uploads break.
+ */
+export const UPLOAD_ORIGINS: string[] = Array.from(
+  new Set([new URL(PUBLIC_URL).origin, "http://localhost:3000"]),
+);
+
+/**
+ * What the temp bucket has to allow for the browser to upload into it.
+ *
+ * PUT only: the browser never reads, lists or deletes here — the server does
+ * that with its own credential. Headers are left open because the signed URL,
+ * not the header list, is what actually guards the object, and a browser may
+ * ask for more than the `Content-Type` this app sends. ETag is exposed so a
+ * future retry/resume has something to compare against.
+ */
+export function uploadCorsRule(): CORSRule {
+  return {
+    AllowedOrigins: UPLOAD_ORIGINS,
+    AllowedMethods: ["PUT"],
+    AllowedHeaders: ["*"],
+    ExposeHeaders: ["ETag"],
+    MaxAgeSeconds: 3000,
+  };
+}
+
+/** Writes the policy unconditionally. Used by `scripts/set-bucket-cors.mjs`. */
+export async function applyUploadCors(): Promise<void> {
+  await s3.send(
+    new PutBucketCorsCommand({
+      Bucket: BUCKET_TEMP,
+      CORSConfiguration: { CORSRules: [uploadCorsRule()] },
+    }),
+  );
+}
+
+export async function readUploadCors(): Promise<CORSRule[] | null> {
+  try {
+    const current = await s3.send(new GetBucketCorsCommand({ Bucket: BUCKET_TEMP }));
+    return current.CORSRules ?? [];
+  } catch {
+    // NoSuchCORSConfiguration (404) is the normal answer for a bucket that
+    // has never had a policy, which is every bucket this app created itself.
+    return null;
+  }
+}
+
+/**
+ * The temp bucket accepts a cross-origin PUT from this app's origins.
+ *
+ * This is the one piece of bucket setup that nothing on the server can notice
+ * is missing. The browser uploads straight into the temp bucket, so that
+ * bucket — and only that bucket — needs a CORS policy; without one the
+ * browser refuses the PUT at the preflight and the file never leaves the
+ * phone. Every smoke test still passes, because Node does not enforce CORS.
+ *
+ * It bit this project exactly that way: the documents bucket was created by
+ * hand in the Neon console and carries a policy, while the temp bucket is
+ * created by the app over `CreateBucket`, which copies no policy at all. So
+ * uploads failed in the browser while every server-side test was green.
+ *
+ * Unlike versioning (see `ensureBuckets`), this one is genuinely enforced —
+ * by the browser rather than by the provider — so setting it is not a call
+ * that reports success while protecting nothing.
+ */
+async function ensureUploadCors(): Promise<void> {
+  const rules = await readUploadCors();
+  const covered =
+    rules !== null &&
+    UPLOAD_ORIGINS.every((origin) =>
+      rules.some(
+        (rule) =>
+          (rule.AllowedOrigins ?? []).some((allowed) => allowed === "*" || allowed === origin) &&
+          (rule.AllowedMethods ?? []).includes("PUT"),
+      ),
+    );
+  if (covered) return;
+
+  await applyUploadCors();
+}
 
 /**
  * The buckets exist.
@@ -43,6 +132,21 @@ export async function ensureBuckets(): Promise<void> {
     } catch {
       await s3.send(new CreateBucketCommand({ Bucket: bucket }));
     }
+  }
+
+  // Best-effort: a credential narrow enough to refuse PutBucketCors must not
+  // take the whole upload down with it, and the policy may well already be
+  // right. But it is said loudly, because the alternative is a technician on
+  // a roof reading "something went wrong".
+  try {
+    await ensureUploadCors();
+  } catch (err) {
+    console.error(
+      `[storage] ${BUCKET_TEMP} has no CORS policy allowing PUT from ` +
+        `${UPLOAD_ORIGINS.join(" or ")}, and it could not be set from here. ` +
+        "Browser uploads will fail until it is — run `npm run storage:cors`.",
+      err,
+    );
   }
 
   bootstrapped = true;

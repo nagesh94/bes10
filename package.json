@@ -19,6 +19,7 @@
     "db:migrate:prod": "node --env-file-if-exists=.env scripts/migrate.mjs",
     "deploy:release": "npm run db:migrate:prod && npm run db:seed",
     "storage:cleanup": "node --env-file-if-exists=.env scripts/cleanup-temp.mjs",
+    "storage:cors": "tsx --env-file-if-exists=.env scripts/set-bucket-cors.mjs",
     "smoke:storage": "tsx --env-file-if-exists=.env scripts/smoke-storage.mjs",
     "db:backup": "node --env-file-if-exists=.env scripts/backup.mjs"
   },
