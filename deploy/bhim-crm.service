@@ -1,5 +1,12 @@
 # /etc/systemd/system/bhim-crm.service
 #
+# SUPERSEDED by deploy/ecosystem.config.js — the app runs under PM2 now.
+# Kept because systemd sandboxes the app in ways PM2 cannot (ProtectSystem,
+# PrivateTmp, the read-only filesystem below); switch back by disabling PM2
+# first. Only one supervisor may run: both will fight over port 3000.
+#
+#   pm2 delete bhim-crm && pm2 save
+#
 #   sudo cp deploy/bhim-crm.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
 #   sudo systemctl enable --now bhim-crm
