@@ -127,7 +127,8 @@ module.exports = {
 
       /**
        * Logs land in ~/.pm2/logs/bhim-crm-{out,error}.log for the user that
-       * ran `pm2 start` — the `bhim` user, so /home/bhim/.pm2/logs.
+       * ran `pm2 start` — the `bhim` user, whose home is /srv/bhim-crm (set by
+       * `useradd -d`, not /home), so /srv/bhim-crm/.pm2/logs.
        * `time` prefixes every line with a timestamp, which the systemd journal
        * used to add for free. Rotation is not built in; install it once:
        *

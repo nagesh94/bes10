@@ -251,7 +251,7 @@ Teach PM2 to come back after a reboot *before* starting the app, because the
 boot unit replays whatever `pm2 save` last wrote. As root:
 
 ```bash
-pm2 startup systemd -u bhim --hp /home/bhim
+pm2 startup systemd -u bhim --hp /srv/bhim-crm
 ```
 
 Now start it, as the `bhim` user that owns the files:
