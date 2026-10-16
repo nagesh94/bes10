@@ -15,6 +15,7 @@ import {
   projects,
 } from "@/lib/db/schema";
 import { can } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 
 const day = (v: Date | null | undefined) => (v ? v.toISOString().slice(0, 10) : "");
@@ -60,21 +61,17 @@ export default async function Stage6Page({ params }: { params: Promise<{ id: str
     .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0];
 
   return (
-    <main className="mx-auto max-w-[920px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Stage 6</span>
-      </nav>
-
-      <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Meter payment</h1>
-      <p className="mb-5 text-sm text-[var(--muted)]">
-        {row.contact.firstName} {row.contact.lastName ?? ""} · the net meter fee is paid on the
-        DISCOM portal, and the receipt is what the meter replacement application is built from.
-      </p>
-
+    <StageShell
+      projectId={id}
+      stageNo={6}
+      width="narrow"
+      note={
+        <>
+          The net meter fee is paid on the
+          DISCOM portal, and the receipt is what the meter replacement application is built from.
+        </>
+      }
+    >
       {connection?.consumerNumber ? (
         <div className="mb-4.5 flex flex-wrap gap-x-8 gap-y-3 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface-2)] px-5 py-4">
           <div>
@@ -151,6 +148,6 @@ export default async function Stage6Page({ params }: { params: Promise<{ id: str
       >
         Back to the stage gate
       </Link>
-    </main>
+    </StageShell>
   );
 }

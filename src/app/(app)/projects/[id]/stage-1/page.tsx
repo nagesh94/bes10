@@ -29,6 +29,8 @@ import type { DocType } from "@/lib/documents/types";
 import { documents as documentsTable } from "@/lib/db/schema";
 import { SECTION_KEYS, isSectionComplete, type SectionKey } from "@/lib/validation/prospect";
 import { can } from "@/lib/rbac/permissions";
+import { SectionStepper } from "@/components/prospect/section-stepper";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 
 const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
@@ -171,6 +173,7 @@ export default async function Stage1Page({
   const active = sectionByKey(activeKey)!;
   const activeIndex = SECTIONS.findIndex((s) => s.key === activeKey);
   const nextKey = activeIndex < SECTIONS.length - 1 ? SECTIONS[activeIndex + 1]!.key : null;
+  const prevKey = activeIndex > 0 ? SECTIONS[activeIndex - 1]!.key : null;
 
   // Only fetched for the section that shows them — presigning a gallery on
   // every page load would be wasted work.
@@ -181,30 +184,26 @@ export default async function Stage1Page({
   const coApplicantUploadsComplete = CO_APPLICANT_SECTION.uploads.every((u) => docFor(u.docType));
 
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/leads" className="no-underline">Leads</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Stage 1</span>
-      </nav>
-
-      <div className="mb-4.5 flex flex-wrap items-end gap-4">
-        <div className="min-w-60 flex-1">
-          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">
-            Onboarding &amp; documentation
-          </h1>
-          <p className="text-sm text-[var(--muted)]">
-            {contact?.firstName} {contact?.lastName ?? ""} · {completeCount} of 8 sections complete
-          </p>
-        </div>
-
-        {/* The customer is in the room while this form is being filled, and
-            this is where they ask for the agreement — so it is produced
-            here rather than only at stage 2. */}
-        {can(actor, "agreement.write") ? <QuickGenerateAgreement projectId={id} /> : null}
-      </div>
+    <StageShell
+      projectId={id}
+      stageNo={1}
+      note="Eight sections, the flag checks, then the payment plan. Each section saves on its own, so the form can be filled over several sittings."
+      badge={
+        <span
+          className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
+            completeCount >= SECTIONS.length
+              ? "bg-[var(--green-soft)] text-[var(--green-text)]"
+              : "bg-[var(--amber-soft)] text-[var(--amber-text)]"
+          }`}
+        >
+          {completeCount} of {SECTIONS.length} sections
+        </span>
+      }
+      /* The customer is in the room while this form is being filled, and
+         this is where they ask for the agreement — so it is produced here
+         rather than only at stage 2. */
+      actions={can(actor, "agreement.write") ? <QuickGenerateAgreement projectId={id} /> : null}
+    >
 
       {openFlags.length > 0 ? (
         <div className="mb-4.5 flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-4 py-3.5">
@@ -225,42 +224,23 @@ export default async function Stage1Page({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-start gap-4.5">
-        <aside className="max-w-72 min-w-56 flex-[1_1_240px] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] p-2.5">
-          {SECTIONS.map((s, i) => {
-            const done = completion[s.key];
-            const isActive = s.key === activeKey;
-            return (
-              <Link
-                key={s.key}
-                href={`/projects/${id}/stage-1?section=${s.key}`}
-                className={`mb-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 no-underline ${
-                  isActive ? "bg-[var(--orange-soft)] ring-[1.5px] ring-[var(--orange)]" : ""
-                }`}
-              >
-                <span
-                  className={`ref flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11.5px] font-bold ${
-                    done
-                      ? "bg-[var(--green)] text-white"
-                      : isActive
-                        ? "bg-[var(--orange)] text-[var(--orange-ink)]"
-                        : "bg-[var(--chip-soft)] text-[var(--muted-soft)]"
-                  }`}
-                >
-                  {done ? "✓" : i + 1}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[13.5px] font-semibold text-[var(--ink)]">{s.title}</span>
-                  <span className="block text-[11.5px] text-[var(--muted)]">
-                    {done ? "Complete" : "Incomplete"}
-                  </span>
-                </span>
-              </Link>
-            );
-          })}
-        </aside>
+      <section className="mb-3.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-3 pt-2.5 pb-2 sm:px-5">
+        <div className="mb-0.5 px-1 text-[12px] font-bold tracking-[0.06em] text-[var(--muted)] uppercase">
+          Prospect form
+        </div>
+        <SectionStepper
+          projectId={id}
+          activeKey={activeKey}
+          steps={SECTIONS.map((s) => ({
+            key: s.key,
+            title: s.title,
+            done: completion[s.key],
+          }))}
+        />
+      </section>
 
-        <section className="min-w-0 flex-[999_1_520px] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
+      <div>
+        <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-5 sm:px-6">
           {activeKey === "aadhaar" && maskedAadhaar ? (
             <p className="mb-4 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3.5 py-2.5 text-[12.5px] text-[var(--muted)]">
               An Aadhaar number from before this policy changed is still on file, ending{" "}
@@ -274,6 +254,7 @@ export default async function Stage1Page({
             section={active}
             values={valuesFor[activeKey]}
             nextKey={nextKey}
+            prevKey={prevKey}
             comboOptions={comboOptions}
             {...(activeKey === "bank"
               ? {
@@ -358,6 +339,6 @@ export default async function Stage1Page({
           ) : null}
         </section>
       </div>
-    </main>
+    </StageShell>
   );
 }

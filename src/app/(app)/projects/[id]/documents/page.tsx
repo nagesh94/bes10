@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { DocumentRowActions } from "@/components/documents/document-row-actions";
@@ -8,6 +7,7 @@ import { DOC_CATEGORIES, DOC_CATEGORY_ORDER, DOC_TYPES, docCategory, isDocType }
 import { isRegenerableDocType } from "@/lib/documents/portal-pack";
 import { fileHref } from "@/lib/storage/file-url";
 import { can } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 
 /**
@@ -53,7 +53,7 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
     .where(eq(projects.id, id))
     .limit(1);
   if (!row) notFound();
-  const { project, contact } = row;
+  const { project } = row;
 
   const docs = await db
     .select()
@@ -88,25 +88,19 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
   }));
   const otherDocs = docs.filter((d) => docCategory(d.docType) === "other");
 
-  const fullName = `${contact.firstName} ${contact.lastName ?? ""}`.trim();
-
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${project.id}`} className="no-underline">{project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span className="ref">Documents</span>
-      </nav>
-
-      <div className="mb-5">
-        <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Documents</h1>
-        <p className="text-sm text-[var(--muted)]">
-          {fullName} · {project.code} · {docs.length} document{docs.length === 1 ? "" : "s"}, {photoRows.length}{" "}
-          photo{photoRows.length === 1 ? "" : "s"}
-        </p>
-      </div>
+    <StageShell
+      projectId={project.id}
+      stageNo={null}
+      title="Documents"
+      note={
+        <>
+          Everything filed against this project, by category — {docs.length} document
+          {docs.length === 1 ? "" : "s"} and {photoRows.length} photo
+          {photoRows.length === 1 ? "" : "s"}.
+        </>
+      }
+    >
 
       <div className="space-y-6">
         {docGroups.map((group) =>
@@ -233,6 +227,6 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
           </div>
         ) : null}
       </div>
-    </main>
+    </StageShell>
   );
 }

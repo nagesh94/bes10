@@ -14,6 +14,7 @@ import { AgreementStep } from "@/components/agreements/agreement-step";
 import { BankFile } from "@/components/documents/bank-file";
 import { QuotationStep } from "@/components/quotations/quotation-step";
 import { can, hasRole } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 import { involvesFinance } from "@/lib/workflow/stages";
 
@@ -110,17 +111,12 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
     {
       n: 3,
       title: "Generate the agreement",
-      body: "Produces the Annexure 2 model agreement as an editable Word file, with the parties and clause 19.1 filled from this project. Download it, give it to the lawyer for the hard copy, then upload the signed scan at step 5.",
+      body: "Produces the Annexure 2 model agreement as an editable Word file, with the parties and clause 19.1 filled from this project. Download it, give it to the lawyer for the hard copy, then upload the signed scan at step 4.",
       docType: "AGREEMENT",
       label: "Vendor agreement",
     },
     {
       n: 4,
-      title: "Print and sign on paper",
-      body: "Both parties sign the printed copy. Nothing in this app is an electronic signature.",
-    },
-    {
-      n: 5,
       title: "Upload the signed scan",
       body: "Scan the wet-signed copy and put it back here. It is stored alongside the original, never in place of it.",
       docType: "AGREEMENT_SIGNED",
@@ -129,22 +125,17 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
     },
   ];
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Stage 2</span>
-      </nav>
-
-      <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Agreement</h1>
-      <p className="mb-5 text-sm text-[var(--muted)]">
-        {row.contact.firstName} {row.contact.lastName ?? ""} · the agreement is signed on paper, so
-        the app produces it and takes the scan back.
-        {financed ? "" : " This is a cash project, so there is no sanction letter."}
-      </p>
-
+    <StageShell
+      projectId={id}
+      stageNo={2}
+      note={
+        <>
+          The agreement is signed on paper, so
+          the app produces it and takes the scan back.
+          {financed ? "" : " This is a cash project, so there is no sanction letter."}
+        </>
+      }
+    >
       {!planLocked ? (
         <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
           <span className="min-w-60 flex-1">
@@ -280,6 +271,6 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
       >
         Back to the stage gate
       </Link>
-    </main>
+    </StageShell>
   );
 }

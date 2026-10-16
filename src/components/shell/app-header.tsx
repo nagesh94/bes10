@@ -1,40 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { can, hasRole, primaryRole, type Actor } from "@/lib/rbac/permissions";
+import { primaryRole, type Actor } from "@/lib/rbac/permissions";
 import { BottomNav } from "./bottom-nav";
+import { initials, type NavItem } from "./nav-items";
 import { NavLinks } from "./nav-links";
 import { SignOutButton } from "./sign-out-button";
 
-export type NavKey =
-  | "dashboard"
-  | "leads"
-  | "projects"
-  | "quotations"
-  | "agreements"
-  | "partners"
-  | "documents"
-  | "admin"
-  | "myJobs"
-  | "myReferrals";
-
-interface NavItem {
-  href: string;
-  key: NavKey;
-  show: boolean;
-}
-
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
+export type { NavKey } from "./nav-items";
 
 /**
- * The app bar.
+ * The app bar — the phone's and the tablet's chrome.
  *
  * Deep module glass in both themes, with the logo's own underline running
  * beneath it as a horizon. A dark bar over a light canvas is what makes the
@@ -42,37 +18,24 @@ function initials(name: string) {
  * it means the phone's status bar is the same colour whichever theme is on.
  *
  * On a phone the row of links is replaced by the tab bar at the bottom,
- * where a thumb can reach it.
+ * where a thumb can reach it. From `lg` up the bar is gone entirely and the
+ * whole menu lives in the rail down the left — a desktop window is wide and
+ * short, so navigation belongs in the dimension there is room in.
  */
-export async function AppHeader({ actor, name }: { actor: Actor; name: string }) {
+export async function AppHeader({
+  actor,
+  name,
+  items,
+}: {
+  actor: Actor;
+  name: string;
+  items: NavItem[];
+}) {
   const t = await getTranslations();
-
-  // The menu is built from the same matrix the server enforces, so a link
-  // never appears for something the action would refuse.
-  const items: NavItem[] = [
-    {
-      href: "/dashboard",
-      key: "dashboard",
-      show: can(actor, "project.write"),
-    },
-    { href: "/leads", key: "leads", show: can(actor, "lead.read") },
-    { href: "/projects", key: "projects", show: can(actor, "project.write") },
-    { href: "/quotations", key: "quotations", show: can(actor, "quotation.read") },
-    { href: "/agreements", key: "agreements", show: can(actor, "agreement.read") },
-    { href: "/partners", key: "partners", show: can(actor, "partner.read") },
-    { href: "/documents", key: "documents", show: can(actor, "document.read") },
-    { href: "/admin/users", key: "admin", show: can(actor, "admin.users") },
-    { href: "/installer", key: "myJobs", show: hasRole(actor, "INSTALLER") },
-    { href: "/my-referrals", key: "myReferrals", show: hasRole(actor, "PARTNER") },
-  ];
-
-  const visible = items
-    .filter((item) => item.show)
-    .map((item) => ({ href: item.href, key: item.key, label: t(`nav.${item.key}`) }));
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[var(--chrome)] pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-40 bg-[var(--chrome)] pt-[env(safe-area-inset-top)] lg:hidden">
         <div className="flex min-h-[58px] items-center gap-5 px-4 md:px-6">
           <Link href="/dashboard" className="flex shrink-0 items-center" aria-label={t("app.name")}>
             <Image
@@ -85,7 +48,7 @@ export async function AppHeader({ actor, name }: { actor: Actor; name: string })
             />
           </Link>
 
-          <NavLinks items={visible} />
+          <NavLinks items={items} />
 
           <div className="ml-auto flex shrink-0 items-center gap-2 md:ml-0 md:gap-2.5">
             {/* One chip, widest role first: an admin who also installs reads
@@ -115,7 +78,7 @@ export async function AppHeader({ actor, name }: { actor: Actor; name: string })
       </header>
 
       <BottomNav
-        items={visible}
+        items={items}
         settingsLabel={t("nav.settings")}
         moreLabel={t("nav.more")}
         signOutLabel={t("auth.signOut")}

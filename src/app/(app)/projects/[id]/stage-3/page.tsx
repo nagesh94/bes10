@@ -18,6 +18,7 @@ import { StructureMembers } from "@/components/installation/structure-members";
 import { loadInstallationComboOptions } from "@/lib/installer/combo-options";
 import { installerIdsFor } from "@/lib/projects/crew";
 import { can } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 
 const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
@@ -71,21 +72,16 @@ export default async function Stage3Page({ params }: { params: Promise<{ id: str
   const isHybrid = install?.isHybrid ?? false;
 
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Stage 3</span>
-      </nav>
-
-      <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Installation</h1>
-      <p className="mb-5 text-sm text-[var(--muted)]">
-        {row.contact.firstName} {row.contact.lastName ?? ""} · everything here prints into the work
-        completion report, so it is recorded as the DISCOM wants to read it.
-      </p>
-
+    <StageShell
+      projectId={id}
+      stageNo={3}
+      note={
+        <>
+          Everything here prints into the work
+          completion report, so it is recorded as the DISCOM wants to read it.
+        </>
+      }
+    >
       {!agreementSigned ? (
         <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
           <span className="min-w-60 flex-1">
@@ -182,6 +178,6 @@ export default async function Stage3Page({ params }: { params: Promise<{ id: str
       >
         Back to the stage gate
       </Link>
-    </main>
+    </StageShell>
   );
 }

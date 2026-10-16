@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { saveSection } from "@/app/actions/prospect";
 import type { SectionKey } from "@/lib/validation/prospect";
 import type { FieldDef, FormSection } from "./fields";
@@ -15,6 +17,7 @@ export function SectionForm({
   section,
   values,
   nextKey,
+  prevKey = null,
   hideTitle = false,
   comboOptions = {},
   blockAdvance = false,
@@ -24,6 +27,8 @@ export function SectionForm({
   section: FormSection;
   values: Record<string, string | boolean>;
   nextKey: SectionKey | null;
+  /** The section before this one, so the stepper moves back as well. */
+  prevKey?: SectionKey | null;
   /** The installer's screens put the section title in the page header. */
   hideTitle?: boolean;
   /** Suggestion lists for "combo" fields, keyed by `FieldDef.comboKey`. */
@@ -196,7 +201,16 @@ export function SectionForm({
         <p className="mt-4 text-[13px] font-semibold text-[var(--green-text)]">Saved.</p>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap gap-2.5">
+      <div className="mt-6 flex flex-wrap items-center gap-2.5">
+        {prevKey ? (
+          <Link
+            href={`/projects/${projectId}/stage-1?section=${prevKey}`}
+            className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--ink)] no-underline"
+          >
+            <ChevronLeft size={16} strokeWidth={2.4} aria-hidden />
+            Back
+          </Link>
+        ) : null}
         <button
           type="submit"
           disabled={pending}
@@ -215,9 +229,10 @@ export function SectionForm({
                 true,
               )
             }
-            className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Save and continue
+            <ChevronRight size={16} strokeWidth={2.4} aria-hidden />
           </button>
         ) : null}
       </div>

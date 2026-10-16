@@ -2,53 +2,42 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import {
-  applicationDetails,
-  contacts,
-  projectStageProgress,
-  projects,
-  rooftopDetails,
-} from "@/lib/db/schema";
+import { projects } from "@/lib/db/schema";
 import { ConvertPanel } from "@/components/projects/convert-panel";
 import { CrewPanel } from "@/components/projects/crew-panel";
-import { ProjectNav } from "@/components/projects/project-nav";
+import { ProjectHeader } from "@/components/projects/project-header";
 import { StageGate } from "@/components/projects/stage-gate";
-import { StageRail } from "@/components/projects/stage-rail";
+import { StageStepper } from "@/components/projects/stage-stepper";
 import { ProjectQuotations } from "@/components/quotations/project-quotations";
-import { flags as flagsTable } from "@/lib/db/schema";
 import { STAGE_BLURBS, STAGE_TITLES, gateLabel } from "@/lib/workflow/labels";
-import { evaluateGate, stageByNo } from "@/lib/workflow/stages";
+import { STAGE_KEYS, evaluateGate, stageByNo } from "@/lib/workflow/stages";
 import { buildSnapshot } from "@/lib/workflow/snapshot";
 import { availableInstallers, crewFor, installerIdsFor } from "@/lib/projects/crew";
+import { loadProjectHeader } from "@/lib/projects/header";
 import { can, canSeeMoney } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 
-const LIFECYCLE_CHIP: Record<string, string> = {
-  LEAD: "bg-[var(--orange-soft)] text-[var(--orange-text)]",
-  PROSPECT: "bg-[var(--navy-soft)] text-[var(--navy)]",
-  CUSTOMER: "bg-[var(--green-soft)] text-[var(--green-text)]",
-};
-
+/**
+ * The project overview.
+ *
+ * Top to bottom in the order the office actually works: who this is, what
+ * was quoted and who is going to site, where the job has got to, and what
+ * is holding the current stage shut. The quotation and the crew sit above
+ * the fold because they are what a customer rings about and what a morning
+ * is planned around — they were in a right-hand column before, below the
+ * stage checklist, which is the one place nobody looks first.
+ */
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const actor = await getActor();
   if (!actor) notFound();
 
-  const [row] = await db
-    .select({
-      project: projects,
-      contact: contacts,
-      application: applicationDetails,
-      rooftop: rooftopDetails,
-    })
-    .from(projects)
-    .innerJoin(contacts, eq(projects.contactId, contacts.id))
-    .leftJoin(applicationDetails, eq(applicationDetails.projectId, projects.id))
-    .leftJoin(rooftopDetails, eq(rooftopDetails.projectId, projects.id))
-    .where(eq(projects.id, id))
-    .limit(1);
+  const [[row], data] = await Promise.all([
+    db.select({ project: projects }).from(projects).where(eq(projects.id, id)).limit(1),
+    loadProjectHeader(id),
+  ]);
 
-  if (!row) notFound();
+  if (!row || !data) notFound();
 
   // Scope check: an installer only sees projects assigned to them.
   if (
@@ -60,11 +49,6 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  const progress = await db
-    .select()
-    .from(projectStageProgress)
-    .where(eq(projectStageProgress.projectId, id));
-
   // Assigning the crew is pipeline work, so an employee does it as well as an
   // admin. The list of candidates is only loaded for someone who may assign.
   const canAssign = can(actor, "project.assign");
@@ -73,96 +57,79 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     canAssign ? availableInstallers() : Promise.resolve([]),
   ]);
 
-  const completed = new Set(
-    progress.filter((p) => p.status === "complete").map((p) => p.stageNo),
-  );
-
-  const { project, contact, application, rooftop } = row;
-  const isLead = project.lifecycleStage === "LEAD";
+  const isLead = data.lifecycleStage === "LEAD";
 
   // The gate is evaluated here only to render the checklist; the server
   // re-evaluates from the database when the button is actually pressed.
-  const currentStage = stageByNo(project.pipelineStage) ?? stageByNo(1)!;
+  const currentStage = stageByNo(data.pipelineStage) ?? stageByNo(1)!;
   const snapshot = await buildSnapshot(id);
   const gate = evaluateGate(currentStage.no, snapshot);
-  const openFlagCount = (
-    await db.select().from(flagsTable).where(eq(flagsTable.projectId, id))
-  ).filter((f) => f.status === "OPEN" || f.status === "IN_PROGRESS").length;
-
-  const fullName = `${contact.firstName} ${contact.lastName ?? ""}`.trim();
-
-  const meta: Array<{ k: string; v: string; mono?: boolean }> = [
-    { k: "Plant size", v: rooftop?.plantKw ? `${rooftop.plantKw} kW` : project.interestedPlantKw || "—" },
-    { k: "Portal ID", v: application?.nationalPortalId ?? "—", mono: true },
-    { k: "Phone", v: contact.phone, mono: true },
-    { k: "Division", v: application?.divisionName ?? "—" },
-  ];
 
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/leads" className="no-underline">Leads</Link>
+    <main className="mx-auto w-full max-w-[1320px] px-4 pt-4 pb-16 sm:px-6">
+      <nav aria-label="Breadcrumb" className="mb-3 text-[12.5px] text-[var(--muted)]">
+        <Link href="/projects" className="no-underline">
+          Projects
+        </Link>
         <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span className="ref">{project.code}</span>
+        <span className="ref">{data.code}</span>
       </nav>
 
-      <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-        <div className="mb-2 flex flex-wrap items-center gap-2.5">
-          <span className="ref text-[13px] font-medium text-[var(--muted)]">{project.code}</span>
-          <span
-            className={`rounded px-1.5 py-0.5 text-[10px] font-bold tracking-[0.08em] uppercase ${
-              LIFECYCLE_CHIP[project.lifecycleStage] ?? ""
-            }`}
-          >
-            {project.lifecycleStage}
-          </span>
-          {application?.isDcr ? (
-            <span className="rounded bg-[var(--green-soft)] px-1.5 py-0.5 text-[10px] font-bold tracking-[0.08em] text-[var(--green-text)] uppercase">
-              DCR
-            </span>
-          ) : null}
+      <ProjectHeader
+        data={data}
+        canSeeMoney={canSeeMoney(actor.roles)}
+        canSeeDocuments={can(actor, "document.read")}
+      />
+
+      {/* Quotation and crew, side by side and at the top: the two things
+          asked about by telephone while the caller waits. */}
+      <div className="mt-3.5 grid items-start gap-3.5 lg:grid-cols-2">
+        {can(actor, "quotation.read") ? (
+          <ProjectQuotations projectId={id} canWrite={can(actor, "quotation.write")} />
+        ) : null}
+        <CrewPanel
+          projectId={id}
+          crew={crew}
+          installers={installers}
+          canAssign={canAssign}
+        />
+      </div>
+
+      {isLead ? (
+        <div className="mt-3.5 flex flex-wrap items-start gap-3.5">
+          <section className="min-w-80 flex-[999_1_480px] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
+            <h2 className="mb-1 text-base font-bold">Still a lead</h2>
+            <p className="text-[13.5px] leading-relaxed text-[var(--muted)]">
+              The pipeline opens once this becomes a prospect. Create the application on the PM
+              Surya Ghar portal, then enter the ID alongside.
+            </p>
+          </section>
+          <div className="min-w-72 flex-[1_1_320px]">
+            <ConvertPanel projectId={id} />
+          </div>
         </div>
-
-        <h1 className="mb-2.5 text-[26px] font-bold tracking-[-0.02em]">{fullName}</h1>
-
-        <div className="flex flex-wrap gap-x-7 gap-y-2">
-          {meta.map((m) => (
-            <div key={m.k}>
-              <div className="text-[12px] font-semibold text-[var(--muted)]">
-                {m.k}
-              </div>
-              <div className={`mt-0.5 text-sm font-semibold ${m.mono ? "ref" : ""}`}>{m.v}</div>
+      ) : (
+        <>
+          <section className="mt-3.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-3 pt-3 pb-2 sm:px-5">
+            <div className="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 px-1">
+              <h2 className="flex-1 text-[12px] font-bold tracking-[0.06em] text-[var(--muted)] uppercase">
+                Pipeline
+              </h2>
+              <span className="ref text-[12px] text-[var(--muted)]">
+                {data.completed.size} of {STAGE_KEYS.length} complete
+              </span>
             </div>
-          ))}
-        </div>
-      </section>
+            <StageStepper
+              projectId={id}
+              pipelineStage={data.pipelineStage}
+              completed={[...data.completed]}
+            />
+          </section>
 
-      <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-        <div className="mb-4 flex flex-wrap items-baseline gap-2">
-          <h2 className="flex-1 text-[15px] font-bold">
-            Project stage
-          </h2>
-          <span className="text-[13px] text-[var(--muted)]">
-            {completed.size} of 9 complete
-          </span>
-        </div>
-        <StageRail currentStage={project.pipelineStage} completed={completed} />
-      </section>
-
-      <div className="flex flex-wrap items-start gap-4.5">
-        <div className="min-w-0 flex-[999_1_520px]">
-          {isLead ? (
-            <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-              <h2 className="mb-1 text-base font-bold">Still a lead</h2>
-              <p className="text-[13.5px] leading-relaxed text-[var(--muted)]">
-                Stage 1 opens once this becomes a prospect. Create the application on the PM Surya
-                Ghar portal, then enter the ID on the right.
-              </p>
-            </section>
-          ) : (
-            <>
+          <div className="mt-3.5 flex flex-wrap items-start gap-3.5">
+            <div className="min-w-80 flex-[999_1_520px]">
               <StageGate
-                projectId={project.id}
+                projectId={id}
                 stageNo={currentStage.no}
                 title={`Stage ${currentStage.no} · ${STAGE_TITLES[currentStage.key]}`}
                 blurb={STAGE_BLURBS[currentStage.key]}
@@ -174,60 +141,43 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 }))}
                 passed={gate.passed}
               />
+            </div>
 
-              {currentStage.no === 1 ? (
-                <div className="mt-4.5 flex flex-wrap gap-2.5">
+            <div className="min-w-72 flex-[1_1_300px] space-y-3.5">
+              <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
+                <h2 className="mb-1 text-[15px] font-bold">Carry on with the work</h2>
+                <p className="mb-3.5 text-[13px] leading-relaxed text-[var(--muted)]">
+                  The pipeline above walks the nine stages in order, forwards or back. The stage
+                  the job is on is stage {currentStage.no}.
+                </p>
+                <Link
+                  href={`/projects/${id}/stage-${currentStage.no}`}
+                  className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
+                >
+                  Open stage {currentStage.no}
+                </Link>
+              </section>
+
+              {data.openFlagCount > 0 ? (
+                <section className="rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4.5">
+                  <h2 className="mb-1 text-[15px] font-bold text-[var(--amber-text)]">
+                    {data.openFlagCount} flag{data.openFlagCount > 1 ? "s" : ""} open
+                  </h2>
+                  <p className="mb-3.5 text-[13px] leading-relaxed text-[var(--amber-body)]">
+                    Stage 1 cannot close until they are resolved or waived.
+                  </p>
                   <Link
-                    href={`/projects/${project.id}/stage-1`}
-                    className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4.5 text-sm font-semibold text-[var(--ink)] no-underline"
+                    href={`/projects/${id}/flags`}
+                    className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
                   >
-                    Open the prospect form
+                    Resolve flags
                   </Link>
-                  {openFlagCount > 0 ? (
-                    <Link
-                      href={`/projects/${project.id}/flags`}
-                      className="inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
-                    >
-                      Resolve {openFlagCount} flag{openFlagCount > 1 ? "s" : ""}
-                    </Link>
-                  ) : null}
-                </div>
+                </section>
               ) : null}
-            </>
-          )}
-        </div>
-
-        <div className="min-w-72 flex-[1_1_320px] space-y-4.5">
-          {isLead ? (
-            <ConvertPanel projectId={project.id} />
-          ) : (
-            <ProjectNav
-              projectId={project.id}
-              currentStage={project.pipelineStage}
-              completed={completed}
-              canSeeMoney={canSeeMoney(actor.roles)}
-              canSeeDocuments={can(actor, "document.read")}
-              openFlagCount={openFlagCount}
-              sectionsComplete={snapshot.prospectSectionsComplete}
-              planLocked={snapshot.paymentPlanLocked}
-            />
-          )}
-
-          {can(actor, "quotation.read") ? (
-            <ProjectQuotations
-              projectId={project.id}
-              canWrite={can(actor, "quotation.write")}
-            />
-          ) : null}
-
-          <CrewPanel
-            projectId={project.id}
-            crew={crew}
-            installers={installers}
-            canAssign={canAssign}
-          />
-        </div>
-      </div>
+            </div>
+          </div>
+        </>
+      )}
     </main>
   );
 }
