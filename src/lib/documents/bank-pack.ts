@@ -75,6 +75,20 @@ export const BANK_PACK_PRINTABLE: BankPackItem[] = [
     pages: 4,
   },
   {
+    docType: "ACKNOWLEDGEMENT",
+    label: "Acknowledgement",
+    source: "portal",
+    hint: "Issued on PM Surya Ghar when the application goes in",
+    pages: 1,
+  },
+  {
+    docType: "FEASIBILITY_REPORT",
+    label: "Feasibility report",
+    source: "portal",
+    hint: "The DISCOM's own report — not the site feasibility report below",
+    pages: 1,
+  },
+  {
     docType: "SITE_FEASIBILITY",
     label: "Site feasibility report",
     source: "portal",
@@ -82,8 +96,8 @@ export const BANK_PACK_PRINTABLE: BankPackItem[] = [
     pages: 2,
   },
   {
-    docType: "ETOKEN_ACK",
-    label: "E-token acknowledgement",
+    docType: "E_TOKEN",
+    label: "E-token",
     source: "portal",
     hint: "Auto-generated on PM Surya Ghar — download and upload it here",
     pages: 1,

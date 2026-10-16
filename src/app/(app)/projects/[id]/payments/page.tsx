@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -10,6 +9,7 @@ import {
 } from "@/components/payments/payment-plan-form";
 import { getMoneyView } from "@/app/actions/payments";
 import { canSeeMoney } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 import { involvesFinance } from "@/lib/workflow/stages";
 
@@ -52,23 +52,13 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
   const subsidyExpected = subsidy?.expectedAmount ? Number(subsidy.expectedAmount) : 0;
 
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Payments</span>
-      </nav>
-
-      <div className="mb-1 flex flex-wrap items-center gap-2.5">
-        <h1 className="text-[25px] font-bold tracking-[-0.02em]">Payment plan</h1>
-        <LockChip />
-      </div>
-      <p className="mb-5 text-sm text-[var(--muted)]">
-        {row.contact.firstName} {row.contact.lastName ?? ""} · employees and installers never see
-        this page.
-      </p>
+    <StageShell
+      projectId={id}
+      stageNo={null}
+      title="Payment plan"
+      note="Employees and installers never see this page."
+      badge={<LockChip />}
+    >
 
       <div className="flex flex-wrap items-start gap-4.5">
         <div className="min-w-0 flex-[999_1_560px] space-y-4.5">
@@ -196,6 +186,6 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
           </section>
         </aside>
       </div>
-    </main>
+    </StageShell>
   );
 }

@@ -338,7 +338,7 @@ This is the core of the system.
 | **GENERATED** | Produced by this app from a template + project data | Agreement — plus whatever the supplied templates turn out to cover |
 | **EXECUTED** | Generated → printed → wet-signed → scanned → re-uploaded | Signed agreement |
 | **EVIDENCE** | Captured in the field | Geotagged site and installation photos |
-| **EXTERNAL** | Downloaded from a government portal, then uploaded here | **Site feasibility report**, **e-token acknowledgement**, **Jan Samarth sanction letter**, DCR certificate, meter receipt, commissioning certificate |
+| **EXTERNAL** | Downloaded from a government portal, then uploaded here | **Acknowledgement**, **feasibility report**, **site feasibility report**, **e-token** (four separate papers, not two), **Jan Samarth sanction letter**, DCR certificate, meter receipt, commissioning certificate |
 | **PHYSICAL** | An object, not a file — it can only be checklisted | Passport photographs, cheques, stamp paper |
 
 **Two documents moved out of GENERATED.** There is no subsidy claim form to produce — the subsidy is applied for on the PM Surya Ghar portal directly. And the NOC is prepared outside the app and uploaded. The generated set is therefore the agreement plus whatever the supplied templates cover; the engine below is unchanged either way.
@@ -349,7 +349,7 @@ Four places the app sends you to, and takes a result back from. None of them has
 
 | Portal | What happens there | What comes back |
 |---|---|---|
-| **PM Surya Ghar** | The application, and the subsidy claim | National Portal ID; subsidy status; **site feasibility report** and **e-token acknowledgement**, both auto-generated there and uploaded back here |
+| **PM Surya Ghar** | The application, and the subsidy claim | National Portal ID; subsidy status; the **acknowledgement**, **feasibility report**, **site feasibility report** and **e-token**, all issued there and uploaded back here |
 | **Jan Samarth** | The bank loan application | **Sanction letter**, uploaded here; lender and sanction number |
 | **MPCZ DISCOM** | Name change; load enhancement | Acknowledgement numbers, revised bill, new sanctioned load |
 | **DCR portal / DISCOM vendor login** | DCR certificate; meter payment | Certificate and number; payment receipt |
@@ -393,9 +393,11 @@ One click prints the whole bank file in order, at full resolution, with a cover 
 | 6 | Bank statement | 6 | Collected |
 | 7 | Quotation | 2 | Collected (priced outside the app) |
 | 8 | Vendor agreement — signed scan | 4 | Generated, then wet-signed and scanned back |
-| 9 | Site feasibility report | 2 | **PM Surya Ghar portal** |
-| 10 | E-token acknowledgement | 1 | **PM Surya Ghar portal** |
-| 11 | Sanction letter | 2 | **Jan Samarth** |
+| 9 | Acknowledgement | 1 | **PM Surya Ghar portal** |
+| 10 | Feasibility report | 1 | **PM Surya Ghar portal** |
+| 11 | Site feasibility report | 2 | **PM Surya Ghar portal** |
+| 12 | E-token | 1 | **PM Surya Ghar portal** |
+| 13 | Sanction letter | 2 | **Jan Samarth** |
 
 **Three items in the bank file cannot be printed**, because they are objects rather than documents:
 
@@ -405,7 +407,7 @@ One click prints the whole bank file in order, at full resolution, with a cover 
 
 These go on the **cover checklist** as hand-attach items. That is the whole point of the cover sheet: the pack prints in one action, and the one thing a printer cannot do is still accounted for, so nobody reaches the bank a cheque short.
 
-The site feasibility report and the e-token acknowledgement are **auto-generated on the PM Surya Ghar portal**, downloaded from there, and uploaded into the app by an employee or admin — same pattern as the DCR certificate and the sanction letter.
+The acknowledgement, the DISCOM's feasibility report, the site feasibility report and the e-token all come **off the PM Surya Ghar portal**, downloaded from there and uploaded into the app by an employee or admin — same pattern as the DCR certificate and the sanction letter. All four are part of the bank file, which is where they are uploaded.
 
 #### The portal upload pack
 

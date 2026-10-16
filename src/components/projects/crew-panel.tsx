@@ -141,14 +141,22 @@ export function CrewPanel({
         </p>
       ) : null}
 
+      {/* Nothing to save is the resting state of this panel, so it rests as
+          a quiet outline rather than a half-lit primary button — the card
+          sits at the top of the project now and a dimmed orange bar across
+          it read as something broken. */}
       {installers.length > 0 ? (
         <button
           type="button"
           onClick={save}
           disabled={pending || !dirty}
-          className="mt-3.5 h-11 w-full cursor-pointer rounded-lg bg-[var(--orange)] text-sm font-bold text-[var(--orange-ink)] disabled:cursor-default disabled:opacity-50"
+          className={`mt-3.5 h-11 w-full rounded-lg text-sm font-bold ${
+            dirty || pending
+              ? "cursor-pointer bg-[var(--orange)] text-[var(--orange-ink)] disabled:opacity-60"
+              : "cursor-default border border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)]"
+          }`}
         >
-          {pending ? "Saving…" : dirty ? "Save the crew" : "Saved"}
+          {pending ? "Saving…" : dirty ? "Save the crew" : "Crew is up to date"}
         </button>
       ) : null}
     </section>

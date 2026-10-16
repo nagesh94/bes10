@@ -19,6 +19,7 @@ import {
 import { DOC_TYPES } from "@/lib/documents/types";
 import { gateMissingFields } from "@/lib/documents/portal-pack";
 import { can } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 
 const day = (v: Date | null | undefined) => (v ? v.toISOString().slice(0, 10) : "");
@@ -81,21 +82,16 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
   });
 
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Stage 8</span>
-      </nav>
-
-      <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Commissioning</h1>
-      <p className="mb-5 text-sm text-[var(--muted)]">
-        {row.contact.firstName} {row.contact.lastName ?? ""} · the net meter is in, the system has
-        been checked, and Annexure-II says so.
-      </p>
-
+    <StageShell
+      projectId={id}
+      stageNo={8}
+      note={
+        <>
+          The net meter is in, the system has
+          been checked, and Annexure-II says so.
+        </>
+      }
+    >
       {!meterRef ? (
         <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
           <span className="min-w-60 flex-1">
@@ -181,6 +177,6 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
       >
         Back to the stage gate
       </Link>
-    </main>
+    </StageShell>
   );
 }

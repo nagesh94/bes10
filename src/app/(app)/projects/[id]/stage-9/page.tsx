@@ -6,6 +6,7 @@ import { FinalPayment, SubsidyForm } from "@/components/money/settlement";
 import { db } from "@/lib/db";
 import { channelPartners, commissions, contacts, projects } from "@/lib/db/schema";
 import { canSeeMoney } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 
 const day = (v: string | Date | null | undefined) => {
@@ -62,27 +63,17 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
   ];
 
   return (
-    <main className="mx-auto max-w-[1100px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Stage 9</span>
-      </nav>
-
-      <div className="mb-5 flex flex-wrap items-end gap-3">
-        <div className="min-w-60 flex-1">
-          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Settlement</h1>
-          <p className="text-sm text-[var(--muted)]">
-            {row.contact.firstName} {row.contact.lastName ?? ""} · the last of the money, then the
-            project closes.
-          </p>
-        </div>
+    <StageShell
+      projectId={id}
+      stageNo={9}
+      width="narrow"
+      note="The last of the money, then the project closes."
+      badge={
         <span className="shrink-0 rounded-full bg-[var(--orange-soft)] px-3 py-1.5 text-[11.5px] font-bold text-[var(--orange-text)]">
           Admin only
         </span>
-      </div>
+      }
+    >
 
       <div className="mb-4.5 flex flex-wrap gap-3">
         {tiles.map(([label, value, colour]) => (
@@ -196,6 +187,6 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
           Back to the stage gate
         </Link>
       </section>
-    </main>
+    </StageShell>
   );
 }

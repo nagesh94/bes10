@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -20,6 +19,7 @@ import { UploadSlot } from "@/components/documents/upload-slot";
 import { attachNameChangeDoc } from "@/app/actions/flags";
 import { documents as documentsTable } from "@/lib/db/schema";
 import { can, hasRole } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 
 const STATUS_CHIP: Record<string, string> = {
@@ -115,19 +115,12 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/leads" className="no-underline">Leads</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}/stage-1`} className="ref no-underline">{project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Flags</span>
-      </nav>
-
-      <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Flags</h1>
-      <p className="mb-5 text-sm text-[var(--muted)]">
-        Raised automatically from the form data. Both have to close before stage 1 does.
-      </p>
+    <StageShell
+      projectId={id}
+      stageNo={null}
+      title="Flags"
+      note="Raised automatically from the form data. Both have to close before stage 1 does."
+    >
 
       {rows.length === 0 ? (
         <div className="rounded-[var(--radius)] border border-[var(--green-border)] bg-[var(--green-soft)] px-6 py-8 text-center">
@@ -310,6 +303,6 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
           </section>
         ) : null}
       </div>
-    </main>
+    </StageShell>
   );
 }

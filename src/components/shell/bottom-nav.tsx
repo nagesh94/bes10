@@ -3,36 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  FileSignature,
-  FileStack,
-  FileText,
-  FolderOpen,
-  Handshake,
-  LayoutDashboard,
-  MoreHorizontal,
-  Settings,
-  Share2,
-  ShieldCheck,
-  UserPlus,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
+import { MoreHorizontal, Settings } from "lucide-react";
+import { NAV_ICON } from "./nav-icons";
 import { isActive } from "./nav-links";
 import { SignOutButton } from "./sign-out-button";
-
-const ICON: Record<string, LucideIcon> = {
-  dashboard: LayoutDashboard,
-  leads: UserPlus,
-  projects: FolderOpen,
-  quotations: FileText,
-  agreements: FileSignature,
-  partners: Handshake,
-  documents: FileStack,
-  admin: ShieldCheck,
-  myJobs: Wrench,
-  myReferrals: Share2,
-};
 
 type Item = { href: string; key: string; label: string };
 
@@ -92,7 +66,7 @@ export function BottomNav({
             <ul className="grid gap-1">
               {[...overflow, { href: "/settings", key: "settings", label: settingsLabel }].map(
                 (item) => {
-                  const Icon = ICON[item.key] ?? Settings;
+                  const Icon = NAV_ICON[item.key] ?? Settings;
                   const active = isActive(path, item.key, item.href);
                   return (
                     <li key={item.key}>
@@ -131,7 +105,7 @@ export function BottomNav({
       >
         <ul className="grid auto-cols-fr grid-flow-col">
           {primary.map((item) => {
-            const Icon = ICON[item.key] ?? LayoutDashboard;
+            const Icon = NAV_ICON[item.key] ?? Settings;
             const active = isActive(path, item.key, item.href);
             return (
               <li key={item.key}>

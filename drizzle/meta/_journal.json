@@ -134,6 +134,13 @@
       "when": 1791969299940,
       "tag": "0018_user_role_drop",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792142099000,
+      "tag": "0019_doc_type_etoken_split",
+      "breakpoints": true
     }
   ]
 }

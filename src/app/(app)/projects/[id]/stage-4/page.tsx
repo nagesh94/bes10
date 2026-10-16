@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { cableMakes, contacts, earthingRecords, materialConsumption, projects } from "@/lib/db/schema";
 import { installerIdsFor } from "@/lib/projects/crew";
 import { can } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 import { PHOTO_LABELS, REQUIRED_PHOTO_TYPES } from "@/lib/workflow/photo-requirements";
 
@@ -66,23 +67,11 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
   const covered = galleries.filter((g) => g.photos.length > 0).length;
 
   return (
-    <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Stage 4</span>
-      </nav>
-
-      <div className="mb-5 flex flex-wrap items-end gap-3">
-        <div className="min-w-60 flex-1">
-          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Site evidence</h1>
-          <p className="text-sm text-[var(--muted)]">
-            {row.contact.firstName} {row.contact.lastName ?? ""} · the photos the portal asks for,
-            the material actually consumed, and the measured earth resistance.
-          </p>
-        </div>
+    <StageShell
+      projectId={id}
+      stageNo={4}
+      note="The photos the portal asks for, the material actually consumed, and the measured earth resistance."
+      badge={
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
             covered >= REQUIRED_PHOTO_TYPES.length
@@ -92,7 +81,8 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
         >
           {covered} of {REQUIRED_PHOTO_TYPES.length} shots
         </span>
-      </div>
+      }
+    >
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-0.5 text-base font-bold">Required photographs</h2>
@@ -161,6 +151,6 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
       >
         Back to the stage gate
       </Link>
-    </main>
+    </StageShell>
   );
 }

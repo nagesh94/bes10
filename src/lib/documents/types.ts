@@ -46,8 +46,17 @@ export const DOC_TYPES = {
   NOC: { label: "NOC certificate", class: "COLLECTED", category: "LEGAL" },
   KHASRA: { label: "Khasra extract", class: "COLLECTED", category: "GENERAL" },
   APPLICANT_PHOTO: { label: "Applicant photo", class: "COLLECTED", category: "GENERAL" },
+  // Four separate PM Surya Ghar / DISCOM downloads, not two. One slot used
+  // to read "e-token acknowledgement", which is a single name for two
+  // different papers: the acknowledgement the portal issues on application,
+  // and the e-token itself. The DISCOM's feasibility report is likewise its
+  // own document, separate from the site feasibility report. Corrected on
+  // the user's instruction, 16 Oct 2026; order here is the order the papers
+  // arrive in.
+  ACKNOWLEDGEMENT: { label: "Acknowledgement", class: "EXTERNAL", category: "DISCOM" },
+  FEASIBILITY_REPORT: { label: "Feasibility report", class: "EXTERNAL", category: "DISCOM" },
   SITE_FEASIBILITY: { label: "Site feasibility report", class: "EXTERNAL", category: "DISCOM" },
-  ETOKEN_ACK: { label: "E-token acknowledgement", class: "EXTERNAL", category: "DISCOM" },
+  E_TOKEN: { label: "E-token", class: "EXTERNAL", category: "DISCOM" },
   SANCTION_LETTER: { label: "Jan Samarth sanction letter", class: "EXTERNAL", category: "BANK" },
   DCR_CERTIFICATE: { label: "DCR certificate", class: "EXTERNAL", category: "DISCOM" },
   METER_RECEIPT: { label: "Meter payment receipt", class: "EXTERNAL", category: "DISCOM" },
@@ -103,7 +112,15 @@ export const DOC_GROUPS = [
   {
     key: "portal",
     label: "Portal",
-    types: ["SITE_FEASIBILITY", "ETOKEN_ACK", "SANCTION_LETTER", "DCR_CERTIFICATE", "METER_RECEIPT"],
+    types: [
+      "ACKNOWLEDGEMENT",
+      "FEASIBILITY_REPORT",
+      "SITE_FEASIBILITY",
+      "E_TOKEN",
+      "SANCTION_LETTER",
+      "DCR_CERTIFICATE",
+      "METER_RECEIPT",
+    ],
   },
   {
     key: "generated",

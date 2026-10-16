@@ -16,6 +16,7 @@ import {
 } from "@/lib/db/schema";
 import { NATIONAL_PORTALS } from "@/lib/portals";
 import { can } from "@/lib/rbac/permissions";
+import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 
 const day = (v: Date | null | undefined) => (v ? v.toISOString().slice(0, 10) : "");
@@ -60,21 +61,17 @@ export default async function Stage5Page({ params }: { params: Promise<{ id: str
   const isDcr = application?.isDcr ?? true;
 
   return (
-    <main className="mx-auto max-w-[920px] px-6 pt-5 pb-14">
-      <nav aria-label="Breadcrumb" className="mb-3.5 text-[13px] text-[var(--muted)]">
-        <Link href="/projects" className="no-underline">Projects</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <Link href={`/projects/${id}`} className="ref no-underline">{row.project.code}</Link>
-        <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>Stage 5</span>
-      </nav>
-
-      <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">DCR certificate</h1>
-      <p className="mb-5 text-sm text-[var(--muted)]">
-        {row.contact.firstName} {row.contact.lastName ?? ""} · raised on the national registry, then
-        recorded here so the subsidy claim can quote it.
-      </p>
-
+    <StageShell
+      projectId={id}
+      stageNo={5}
+      width="narrow"
+      note={
+        <>
+          Raised on the national registry, then
+          recorded here so the subsidy claim can quote it.
+        </>
+      }
+    >
       {!isDcr ? (
         <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-6">
           <h2 className="mb-1 text-base font-bold">Nothing to do on this stage</h2>
@@ -168,6 +165,6 @@ export default async function Stage5Page({ params }: { params: Promise<{ id: str
       >
         Back to the stage gate
       </Link>
-    </main>
+    </StageShell>
   );
 }
