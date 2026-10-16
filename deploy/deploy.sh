@@ -48,7 +48,16 @@ npm run db:seed
 #   15 2 * * * cd /srv/bhim-crm/current && npm run storage:cleanup #     >> /var/log/bhim-cleanup.log 2>&1
 
 echo "==> Restarting"
-sudo systemctl restart bhim-crm
+# startOrReload starts the app the first time and reloads it on every release
+# after that, so this script is the same on day one and on day fifty.
+# `--update-env` is what makes a changed .env take effect: PM2 otherwise keeps
+# the environment the process was first started with, so PORT changes would be
+# silently ignored.
+pm2 startOrReload deploy/ecosystem.config.js --update-env
+
+# Keep the saved list in step with what is running, so a reboot brings back
+# this release rather than whatever PM2 was last told to remember.
+pm2 save
 
 echo "==> Verifying"
 for i in $(seq 1 20); do
@@ -62,5 +71,5 @@ for i in $(seq 1 20); do
 done
 
 echo "Service did not come up. Last 50 log lines:"
-sudo journalctl -u bhim-crm -n 50 --no-pager
+pm2 logs bhim-crm --lines 50 --nostream
 exit 1

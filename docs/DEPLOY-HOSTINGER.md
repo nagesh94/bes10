@@ -240,11 +240,35 @@ The seed prints which database it wrote to — check it says `bhim_crm`.
 
 ## 7. Run it
 
-```bash
-cp deploy/bhim-crm.service /etc/systemd/system/
-systemctl daemon-reload
-systemctl enable --now bhim-crm
+The app runs under **PM2**, configured by `deploy/ecosystem.config.js`. PM2 is
+a global tool, not a project dependency — install it once, as root:
 
+```bash
+npm install -g pm2
+```
+
+Teach PM2 to come back after a reboot *before* starting the app, because the
+boot unit replays whatever `pm2 save` last wrote. As root:
+
+```bash
+pm2 startup systemd -u bhim --hp /home/bhim
+```
+
+Now start it, as the `bhim` user that owns the files:
+
+```bash
+cd /srv/bhim-crm/current
+sudo -u bhim pm2 start deploy/ecosystem.config.js
+sudo -u bhim pm2 save          # writes the list the boot unit replays
+sudo -u bhim pm2 status        # `online`, restarts 0
+
+# Logs are not rotated unless you ask, and this app is chatty.
+sudo -u bhim pm2 install pm2-logrotate
+sudo -u bhim pm2 set pm2-logrotate:max_size 20M
+sudo -u bhim pm2 set pm2-logrotate:retain 14
+```
+
+```bash
 curl -s localhost:3000/api/health
 curl -s "localhost:3000/api/health?deep=1"
 ```
@@ -295,7 +319,7 @@ Now the certificate exists, so the real config loads:
 ```bash
 cp deploy/nginx.conf /etc/nginx/sites-available/bhim-crm
 nginx -t && systemctl reload nginx
-systemctl restart bhim-crm
+sudo -u bhim pm2 restart bhim-crm
 ```
 
 Certbot installs its own renewal timer, so TLS renews itself. Don't buy an
@@ -364,6 +388,10 @@ before the service is touched, so a failed build leaves the running version up.
 | Symptom | Cause |
 |---|---|
 | Service won't start, log names a variable | Missing from `.env`. Production has no fallbacks by design. |
+| App is `stopped` in `pm2 status` after a release | It crashed more than `max_restarts` times inside `min_uptime`. Fix the cause, then `pm2 start bhim-crm`. |
+| Port 3000 already in use | Both supervisors are enabled. `sudo systemctl disable --now bhim-crm` — PM2 owns the app now. |
+| Release ran, old behaviour persists | Reloaded without `--update-env`, so the process kept its old environment. `deploy.sh` passes it. |
+| App back on an old release after a reboot | `pm2 save` was never run, so the boot unit replayed a stale list. |
 | `password authentication failed` | `POSTGRES_PASSWORD` and the password inside `DATABASE_URL` disagree. |
 | Database connection refused | Containers aren't up: `docker compose ps`. |
 | Login does nothing, no error | `AUTH_URL` isn't the exact public `https://` origin, so the secure cookie is rejected. |
@@ -373,8 +401,10 @@ before the service is touched, so a failed build leaves the running version up.
 | Build killed | Swap isn't on (§2). |
 | Backups "succeed" but the bucket is empty | `BACKUP_S3_BUCKET` points at the app's temp bucket, and the cleanup job deleted them. Use a dedicated bucket. |
 
-Logs: `journalctl -u bhim-crm -f` and
-`docker compose logs -f`
+Logs: `pm2 logs bhim-crm` (add `--err` for errors only, `--lines 200` for
+history), `pm2 status` for restart counts, and `docker compose logs -f` for
+Gotenberg. A climbing restart count in `pm2 status` is the first sign of a
+crash loop; `pm2 describe bhim-crm` shows why it was last restarted
 
 ---
 
