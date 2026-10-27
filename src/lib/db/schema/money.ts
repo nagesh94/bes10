@@ -36,13 +36,17 @@ export const paymentPlans = pgTable("payment_plans", {
   totalValue: numeric("total_value", { precision: 14, scale: 2 }),
   cashComponent: numeric("cash_component", { precision: 14, scale: 2 }),
   financeComponent: numeric("finance_component", { precision: 14, scale: 2 }),
-  /** Once locked, editing needs an admin unlock. */
-  lockedAt: timestamp("locked_at"),
-  lockedBy: text("locked_by").references(() => user.id),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-/** Expected inflows. What actual payments are reconciled against. */
+/**
+ * Expected inflows. What actual payments are reconciled against.
+ *
+ * A line is a trigger and an amount — nothing else. There is no label: the
+ * trigger already says what the money is for, and a free-text name on top of
+ * it only ever disagreed with it. Lines are optional; a plan with none is a
+ * total and a split, which is enough to quote and to sign against.
+ */
 export const paymentMilestones = pgTable(
   "payment_milestones",
   {
@@ -50,7 +54,6 @@ export const paymentMilestones = pgTable(
     projectId: text("project_id")
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
-    label: text("label").notNull(),
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
     trigger: milestoneTriggerEnum("trigger").notNull(),
     dueDate: date("due_date"),
@@ -77,6 +80,35 @@ export const paymentsReceived = pgTable(
     recordedAt: timestamp("recorded_at").notNull().defaultNow(),
   },
   (t) => [index("payments_project_idx").on(t.projectId)],
+);
+
+/**
+ * Money handed *to* the customer.
+ *
+ * It happens: the office pays a DISCOM fee on their behalf, or fronts them
+ * cash against a subsidy that has not landed. It is not a discount and not an
+ * expense — it is recoverable, so it is added to what the project owes and is
+ * cleared by an ordinary payment received. The mode enum is shared with
+ * inflows because these are the same instruments; a loan tranche is never one
+ * of them.
+ */
+export const customerAdvances = pgTable(
+  "customer_advances",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+    mode: paymentModeReceivedEnum("mode").notNull(),
+    paidOn: date("paid_on").notNull(),
+    referenceNo: text("reference_no"),
+    /** What it was for. The only way to explain the row a year later. */
+    note: text("note"),
+    recordedBy: text("recorded_by").references(() => user.id),
+    recordedAt: timestamp("recorded_at").notNull().defaultNow(),
+  },
+  (t) => [index("advances_project_idx").on(t.projectId)],
 );
 
 /**

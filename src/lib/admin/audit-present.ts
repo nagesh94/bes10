@@ -43,8 +43,11 @@ const KNOWN: Record<string, { title: string; tag: string; kind: AuditKind }> = {
   "lead.create": { title: "Lead created", tag: "Update", kind: "edit" },
   "lead.convert": { title: "Lead converted to a prospect", tag: "Update", kind: "ok" },
   "payment.plan.save": { title: "Payment plan saved", tag: "Update", kind: "edit" },
-  "payment.plan.lock": { title: "Payment plan locked", tag: "Update", kind: "edit" },
-  "payment.plan.unlock": { title: "Payment plan unlocked", tag: "Update", kind: "edit" },
+  "payment.advance.given": {
+    title: "Money given to the customer",
+    tag: "Update",
+    kind: "edit",
+  },
   "payment.received": { title: "Payment recorded", tag: "Update", kind: "edit" },
   "subsidy.update": { title: "Subsidy updated", tag: "Update", kind: "edit" },
   "flag.waive": { title: "Flag waived", tag: "Override", kind: "override" },

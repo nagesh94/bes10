@@ -9,6 +9,7 @@ import {
   Share2,
   ShieldCheck,
   UserPlus,
+  Wallet,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   projects: FolderOpen,
   quotations: FileText,
   agreements: FileSignature,
+  finance: Wallet,
   partners: Handshake,
   documents: FileStack,
   admin: ShieldCheck,

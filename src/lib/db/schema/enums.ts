@@ -35,19 +35,36 @@ export const flagStatusEnum = pgEnum("flag_status", [
 
 export const paymentModeEnum = pgEnum("payment_mode", ["CASH", "FINANCE", "SPLIT"]);
 
+/**
+ * What makes a scheduled amount fall due.
+ *
+ * PSS1 and PSS2 are the two tranches a bank releases a sanctioned loan in —
+ * commonly 70:30, but the split varies by lender, so only the names are
+ * fixed here. The amounts against them are typed per project.
+ */
 export const milestoneTriggerEnum = pgEnum("milestone_trigger", [
   "UPFRONT",
   "ON_INSTALL",
+  "PSS1",
+  "PSS2",
   "POST_SUBSIDY",
   "ON_LOAN_DISBURSAL",
 ]);
 
+/**
+ * How an amount moved.
+ *
+ * A disbursal arrives as one of the two bank tranches, so those are their own
+ * modes; plain `LOAN_DISBURSAL` is kept for rows written before the split.
+ */
 export const paymentModeReceivedEnum = pgEnum("payment_received_mode", [
   "CASH",
   "UPI",
   "CHEQUE",
   "NEFT",
   "LOAN_DISBURSAL",
+  "LOAN_DISBURSAL_PSS1",
+  "LOAN_DISBURSAL_PSS2",
 ]);
 
 export const subsidyStatusEnum = pgEnum("subsidy_status", [

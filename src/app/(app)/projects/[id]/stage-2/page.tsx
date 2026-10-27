@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   bankAccounts,
@@ -58,14 +58,16 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
       : null;
   };
 
-  // Mode and lock state are workflow facts, not amounts — safe for any role.
+  // Which mode a plan is in, and whether it has a value on it, are workflow
+  // facts rather than amounts — `total_value` is read as a boolean and never
+  // reaches the page, so this is safe for any role.
   const [plan] = await db
-    .select({ mode: paymentPlans.mode, lockedAt: paymentPlans.lockedAt })
+    .select({ mode: paymentPlans.mode, hasValue: sql<boolean>`${paymentPlans.totalValue} > 0` })
     .from(paymentPlans)
     .where(eq(paymentPlans.projectId, id))
     .limit(1);
   const financed = involvesFinance(plan?.mode ?? null);
-  const planLocked = Boolean(plan?.lockedAt);
+  const planSettled = Boolean(plan?.hasValue);
 
   // Whether there is a co-applicant changes what the bank file contains.
   const [bank] = await db
@@ -132,21 +134,20 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
         <>
           The agreement is signed on paper, so
           the app produces it and takes the scan back.
-          {financed ? "" : " This is a cash project, so there is no sanction letter."}
+          {financed ? "" : " This is a cash project, so there is no approval letter."}
         </>
       }
     >
-      {!planLocked ? (
+      {!planSettled ? (
         <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
           <span className="min-w-60 flex-1">
             <strong className="block text-sm font-bold text-[var(--amber-text)]">
-              The payment plan is not locked yet
+              There is no payment plan yet
             </strong>
             <span className="mt-0.5 block text-[13px] leading-relaxed text-[var(--amber-body)]">
               The agreement can still be drawn up — clause 19.1 is filled from the accepted
-              quotation instead, and can be typed over. But until the negotiation is settled
-              and the plan is locked in stage 1, what is signed here and what the office is
-              owed can drift apart.
+              quotation instead, and can be typed over. But until a plan is saved in stage 1,
+              what is signed here and what the office is owed can drift apart.
               {isAdmin ? "" : " An admin settles this."}
             </span>
           </span>

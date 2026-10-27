@@ -36,7 +36,7 @@ import { agreementStatusEnum } from "./enums";
  * office unable to produce a draft for a customer sitting in front of them.
  * Clause 19.1 states a figure that is agreed in conversation, often before
  * anyone opens the plan — so the figure belongs on the agreement, prefilled
- * from the locked plan or the chosen quotation when either exists.
+ * from the saved plan or the chosen quotation when either exists.
  *
  * `project_id` is nullable for the same reason it is on a quotation: a
  * walk-in may be given a draft before there is a project to hang it on.

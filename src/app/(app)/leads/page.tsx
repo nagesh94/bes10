@@ -1,14 +1,33 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { contacts, projects } from "@/lib/db/schema";
 import { can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 
-const LIFECYCLE_CHIP: Record<string, string> = {
-  LEAD: "bg-[var(--orange-soft)] text-[var(--orange-text)]",
-  PROSPECT: "bg-[var(--navy-soft)] text-[var(--navy)]",
-  CUSTOMER: "bg-[var(--green-soft)] text-[var(--green-text)]",
+/**
+ * Leads still being worked.
+ *
+ * A lead that has been converted is a prospect, and a prospect's home is the
+ * pipeline — the lead columns say nothing useful about it any more and it
+ * only pads the list the office works down. The row is the same row either
+ * way, so nothing is lost: /projects shows every lifecycle stage.
+ */
+
+const LEAD_STATUS_CHIP: Record<string, string> = {
+  NEW: "bg-[var(--orange-soft)] text-[var(--orange-text)]",
+  CONTACTED: "bg-[var(--navy-soft)] text-[var(--navy)]",
+  SURVEY_DONE: "bg-[var(--navy-soft)] text-[var(--navy)]",
+  READY_TO_CONVERT: "bg-[var(--green-soft)] text-[var(--green-text)]",
+  LOST: "bg-[var(--chip-soft)] text-[var(--muted)]",
+};
+
+const LEAD_STATUS_LABELS: Record<string, string> = {
+  NEW: "New",
+  CONTACTED: "Contacted",
+  SURVEY_DONE: "Survey done",
+  READY_TO_CONVERT: "Ready to convert",
+  LOST: "Lost",
 };
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -29,11 +48,13 @@ export default async function LeadsPage() {
     );
   }
 
+  // Filtered in the query, not after it: a converted lead must not reach this
+  // page at all, and the limit should be 100 open leads rather than 100 rows
+  // of which some number happen to still be leads.
   const rows = await db
     .select({
       id: projects.id,
       code: projects.code,
-      lifecycleStage: projects.lifecycleStage,
       leadStatus: projects.leadStatus,
       leadSource: projects.leadSource,
       interestedPlantKw: projects.interestedPlantKw,
@@ -46,10 +67,18 @@ export default async function LeadsPage() {
     })
     .from(projects)
     .innerJoin(contacts, eq(projects.contactId, contacts.id))
+    .where(eq(projects.lifecycleStage, "LEAD"))
     .orderBy(desc(projects.createdAt))
     .limit(100);
 
-  const leads = rows.filter((r) => r.lifecycleStage === "LEAD");
+  const open = rows.filter((r) => r.leadStatus !== "LOST").length;
+
+  // Only to tell the two empty states apart: a brand-new install, where the
+  // first lead is still to be created, from an office that has converted
+  // everything it has.
+  const [{ total } = { total: 0 }] = await db
+    .select({ total: count() })
+    .from(projects);
 
   return (
     <main className="mx-auto max-w-[1280px] px-6 pt-7 pb-14">
@@ -57,7 +86,11 @@ export default async function LeadsPage() {
         <div className="min-w-60 flex-1">
           <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">Leads</h1>
           <p className="text-sm text-[var(--muted)]">
-            {leads.length} open · {rows.length} records in total
+            {open} open{rows.length > open ? ` · ${rows.length - open} lost` : ""} · converted
+            leads move to{" "}
+            <Link href="/projects" className="font-semibold text-[var(--navy)] no-underline">
+              Projects
+            </Link>
           </p>
         </div>
         <Link
@@ -70,15 +103,25 @@ export default async function LeadsPage() {
 
       {rows.length === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center">
-          <p className="mb-1 font-semibold">No leads yet</p>
+          <p className="mb-1 font-semibold">{total === 0 ? "No leads yet" : "No open leads"}</p>
           <p className="mb-5 text-sm text-[var(--muted)]">
-            The first one you create becomes BHIM-{new Date().getFullYear()}-0001.
+            {total === 0 ? (
+              <>The first one you create becomes BHIM-{new Date().getFullYear()}-0001.</>
+            ) : (
+              <>
+                Every lead has been converted or lost. Converted ones are in{" "}
+                <Link href="/projects" className="font-semibold text-[var(--navy)] no-underline">
+                  Projects
+                </Link>
+                , under their own project code.
+              </>
+            )}
           </p>
           <Link
             href="/leads/new"
             className="inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
           >
-            Create the first lead
+            {total === 0 ? "Create the first lead" : "Create a lead"}
           </Link>
         </div>
       ) : (
@@ -87,7 +130,7 @@ export default async function LeadsPage() {
             <table className="w-full min-w-[720px] border-collapse">
               <thead>
                 <tr className="bg-[var(--surface-2)]">
-                  {["Project", "Name", "Location", "Interest", "Source", "Stage"].map((h) => (
+                  {["Project", "Name", "Location", "Interest", "Source", "Status"].map((h) => (
                     <th
                       key={h}
                       className="border-b border-[var(--line)] px-5 py-2.5 text-left text-[12px] font-semibold text-[var(--muted)]"
@@ -124,10 +167,10 @@ export default async function LeadsPage() {
                     <td className="px-5 py-3.5 align-middle">
                       <span
                         className={`inline-block rounded-full px-2.5 py-1 text-[11.5px] font-bold ${
-                          LIFECYCLE_CHIP[r.lifecycleStage] ?? ""
+                          LEAD_STATUS_CHIP[r.leadStatus] ?? ""
                         }`}
                       >
-                        {r.lifecycleStage}
+                        {LEAD_STATUS_LABELS[r.leadStatus] ?? r.leadStatus}
                       </span>
                     </td>
                   </tr>

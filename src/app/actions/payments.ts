@@ -1,10 +1,11 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
   auditLog,
+  customerAdvances,
   financeApplications,
   paymentMilestones,
   paymentPlans,
@@ -12,6 +13,12 @@ import {
   projects,
   subsidies,
 } from "@/lib/db/schema";
+import {
+  isScheduleTrigger,
+  type PaidOutMode,
+  type ReceivedMode,
+  type ScheduleTrigger,
+} from "@/lib/payments/schedule";
 import { newId } from "@/lib/projects/code";
 import { assertCan } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
@@ -27,10 +34,15 @@ import { involvesFinance, type PaymentMode } from "@/lib/workflow/stages";
 
 export type MoneyResult = { ok: true } | { ok: false; error: string };
 
+/**
+ * One line of the schedule: when it falls due, and how much.
+ *
+ * There is no label. The trigger says what the money is for, and a free-text
+ * name alongside it was only ever a second answer to the same question.
+ */
 export interface MilestoneInput {
-  label: string;
   amount: string;
-  trigger: "UPFRONT" | "ON_INSTALL" | "POST_SUBSIDY" | "ON_LOAN_DISBURSAL";
+  trigger: ScheduleTrigger;
   dueDate?: string;
 }
 
@@ -38,6 +50,8 @@ const money = (v: string) => {
   const n = Number(String(v).replace(/[,\s₹]/g, ""));
   return Number.isFinite(n) && n >= 0 ? n : null;
 };
+
+const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
 export async function savePaymentPlan(
   projectId: string,
@@ -67,35 +81,35 @@ export async function savePaymentPlan(
   if (Math.abs(cash + finance - total) > 1) {
     return {
       ok: false,
-      error: `Cash and finance add up to ₹${(cash + finance).toLocaleString("en-IN")}, not ₹${total.toLocaleString("en-IN")}.`,
+      error: `Cash and finance add up to ${inr(cash + finance)}, not ${inr(total)}.`,
     };
   }
 
-  const parsed: Array<MilestoneInput & { value: number }> = [];
+  const parsed: Array<{ amount: number; trigger: ScheduleTrigger; dueDate?: string }> = [];
   for (const m of input.milestones) {
-    const amount = money(m.amount);
-    if (!m.label.trim()) return { ok: false, error: "Every milestone needs a label." };
-    if (amount === null || amount <= 0) {
-      return { ok: false, error: `"${m.label}" needs an amount.` };
+    // A blank line is someone who added a row and changed their mind, not an
+    // error: the schedule is optional, so an empty one is simply dropped.
+    if (!String(m.amount).trim()) continue;
+    if (!isScheduleTrigger(m.trigger)) {
+      return { ok: false, error: "Pick a trigger for every scheduled line." };
     }
-    parsed.push({ ...m, value: amount });
+    const amount = money(m.amount);
+    if (amount === null || amount <= 0) {
+      return { ok: false, error: "Every scheduled line needs an amount above zero." };
+    }
+    parsed.push({ amount, trigger: m.trigger, ...(m.dueDate ? { dueDate: m.dueDate } : {}) });
   }
 
-  const milestoneSum = parsed.reduce((s, m) => s + m.value, 0);
-  if (parsed.length > 0 && Math.abs(milestoneSum - total) > 1) {
+  // The schedule may fall short of the total — a plan that bills the balance
+  // once the subsidy lands is left open on purpose, and a bank's split of its
+  // own tranches is not ours to make add up. It may never exceed the total;
+  // that is a typo, and it would quote a customer more than was agreed.
+  const scheduled = parsed.reduce((s, m) => s + m.amount, 0);
+  if (scheduled - total > 1) {
     return {
       ok: false,
-      error: `Milestones add up to ₹${milestoneSum.toLocaleString("en-IN")}, not ₹${total.toLocaleString("en-IN")}.`,
+      error: `The schedule comes to ${inr(scheduled)}, more than the project value of ${inr(total)}.`,
     };
-  }
-
-  const existing = await db
-    .select()
-    .from(paymentPlans)
-    .where(eq(paymentPlans.projectId, projectId))
-    .limit(1);
-  if (existing[0]?.lockedAt) {
-    return { ok: false, error: "This plan is locked. Unlock it before editing." };
   }
 
   await db.transaction(async (tx) => {
@@ -111,13 +125,19 @@ export async function savePaymentPlan(
       .values({ projectId, ...set })
       .onConflictDoUpdate({ target: paymentPlans.projectId, set });
 
+    // A payment already recorded against a line must not keep a foreign key
+    // to a row that is about to go. The schedule is retyped freely now that
+    // saving is the whole act, so this happens often.
+    await tx
+      .update(paymentsReceived)
+      .set({ milestoneId: null })
+      .where(eq(paymentsReceived.projectId, projectId));
     await tx.delete(paymentMilestones).where(eq(paymentMilestones.projectId, projectId));
     if (parsed.length) {
       await tx.insert(paymentMilestones).values(
         parsed.map((m, i) => ({
           projectId,
-          label: m.label.trim(),
-          amount: String(m.value),
+          amount: String(m.amount),
           trigger: m.trigger,
           dueDate: m.dueDate || null,
           sortOrder: i,
@@ -136,75 +156,13 @@ export async function savePaymentPlan(
       entityType: "payment_plan",
       entityId: projectId,
       projectId,
-      after: { ...set, milestones: parsed.length },
+      after: { ...set, scheduledLines: parsed.length },
     });
   });
 
   revalidatePath(`/projects/${projectId}/payments`);
   revalidatePath(`/projects/${projectId}`);
-  return { ok: true };
-}
-
-export async function lockPaymentPlan(projectId: string): Promise<MoneyResult> {
-  const actor = await getActor();
-  assertCan(actor, "money.write");
-
-  const [plan] = await db
-    .select()
-    .from(paymentPlans)
-    .where(eq(paymentPlans.projectId, projectId))
-    .limit(1);
-  if (!plan) return { ok: false, error: "There is no plan to lock yet." };
-  if (plan.lockedAt) return { ok: false, error: "Already locked." };
-
-  const [count] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(paymentMilestones)
-    .where(eq(paymentMilestones.projectId, projectId));
-  if ((count?.n ?? 0) === 0) {
-    return { ok: false, error: "Add at least one milestone before locking." };
-  }
-
-  await db
-    .update(paymentPlans)
-    .set({ lockedAt: new Date(), lockedBy: actor.id })
-    .where(eq(paymentPlans.projectId, projectId));
-
-  await db.insert(auditLog).values({
-    actorId: actor.id,
-    action: "payment.plan.lock",
-    entityType: "payment_plan",
-    entityId: projectId,
-    projectId,
-  });
-
-  revalidatePath(`/projects/${projectId}/payments`);
-  revalidatePath(`/projects/${projectId}`);
-  return { ok: true };
-}
-
-export async function unlockPaymentPlan(projectId: string, reason: string): Promise<MoneyResult> {
-  const actor = await getActor();
-  assertCan(actor, "money.write");
-  if (reason.trim().length < 10) {
-    return { ok: false, error: "Unlocking a locked plan needs a written reason." };
-  }
-
-  await db
-    .update(paymentPlans)
-    .set({ lockedAt: null, lockedBy: null })
-    .where(eq(paymentPlans.projectId, projectId));
-
-  await db.insert(auditLog).values({
-    actorId: actor.id,
-    action: "payment.plan.unlock",
-    entityType: "payment_plan",
-    entityId: projectId,
-    projectId,
-    reason: reason.trim(),
-  });
-
-  revalidatePath(`/projects/${projectId}/payments`);
+  revalidatePath("/finance");
   return { ok: true };
 }
 
@@ -212,7 +170,7 @@ export async function recordPayment(
   projectId: string,
   input: {
     amount: string;
-    mode: "CASH" | "UPI" | "CHEQUE" | "NEFT" | "LOAN_DISBURSAL";
+    mode: ReceivedMode;
     receivedOn: string;
     referenceNo?: string;
     milestoneId?: number;
@@ -246,6 +204,56 @@ export async function recordPayment(
   });
 
   revalidatePath(`/projects/${projectId}/payments`);
+  revalidatePath("/finance");
+  return { ok: true };
+}
+
+/**
+ * Money handed to the customer.
+ *
+ * Neither a discount nor an expense — it comes back, so it is added to what
+ * the project owes and is cleared by an ordinary payment received. Recording
+ * it here is the only thing that keeps the outstanding figure true.
+ */
+export async function recordCustomerAdvance(
+  projectId: string,
+  input: {
+    amount: string;
+    mode: PaidOutMode;
+    paidOn: string;
+    referenceNo?: string;
+    note?: string;
+  },
+): Promise<MoneyResult> {
+  const actor = await getActor();
+  assertCan(actor, "money.write");
+
+  const amount = money(input.amount);
+  if (amount === null || amount <= 0) return { ok: false, error: "Enter the amount given." };
+  if (!input.paidOn) return { ok: false, error: "Enter the date it was given." };
+
+  await db.insert(customerAdvances).values({
+    id: newId("adv"),
+    projectId,
+    amount: String(amount),
+    mode: input.mode,
+    paidOn: input.paidOn,
+    referenceNo: input.referenceNo?.trim() || null,
+    note: input.note?.trim() || null,
+    recordedBy: actor.id,
+  });
+
+  await db.insert(auditLog).values({
+    actorId: actor.id,
+    action: "payment.advance.given",
+    entityType: "customer_advance",
+    entityId: projectId,
+    projectId,
+    after: { amount, mode: input.mode, paidOn: input.paidOn, note: input.note?.trim() || null },
+  });
+
+  revalidatePath(`/projects/${projectId}/payments`);
+  revalidatePath("/finance");
   return { ok: true };
 }
 
@@ -270,6 +278,7 @@ export async function saveFinance(
     .onConflictDoUpdate({ target: financeApplications.projectId, set });
 
   revalidatePath(`/projects/${projectId}/payments`);
+  revalidatePath("/finance");
   return { ok: true };
 }
 
@@ -307,6 +316,7 @@ export async function saveSubsidy(
   });
 
   revalidatePath(`/projects/${projectId}/payments`);
+  revalidatePath("/finance");
   return { ok: true };
 }
 
@@ -315,7 +325,11 @@ export async function getMoneyView(projectId: string) {
   const actor = await getActor();
   assertCan(actor, "money.read");
 
-  const [plan] = await db.select().from(paymentPlans).where(eq(paymentPlans.projectId, projectId)).limit(1);
+  const [plan] = await db
+    .select()
+    .from(paymentPlans)
+    .where(eq(paymentPlans.projectId, projectId))
+    .limit(1);
   const milestones = await db
     .select()
     .from(paymentMilestones)
@@ -325,15 +339,25 @@ export async function getMoneyView(projectId: string) {
     .select()
     .from(paymentsReceived)
     .where(eq(paymentsReceived.projectId, projectId));
+  const advances = await db
+    .select()
+    .from(customerAdvances)
+    .where(eq(customerAdvances.projectId, projectId))
+    .orderBy(customerAdvances.paidOn);
   const [finance] = await db
     .select()
     .from(financeApplications)
     .where(eq(financeApplications.projectId, projectId))
     .limit(1);
-  const [subsidy] = await db.select().from(subsidies).where(eq(subsidies.projectId, projectId)).limit(1);
+  const [subsidy] = await db
+    .select()
+    .from(subsidies)
+    .where(eq(subsidies.projectId, projectId))
+    .limit(1);
   const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
 
   const totalReceived = received.reduce((s, r) => s + Number(r.amount), 0);
+  const totalGiven = advances.reduce((s, a) => s + Number(a.amount), 0);
   const totalValue = plan?.totalValue ? Number(plan.totalValue) : 0;
 
   return {
@@ -341,19 +365,13 @@ export async function getMoneyView(projectId: string) {
     plan: plan ?? null,
     milestones,
     received,
+    advances,
     finance: finance ?? null,
     subsidy: subsidy ?? null,
     totalReceived,
-    outstanding: Math.max(totalValue - totalReceived, 0),
+    totalGiven,
+    // Money handed to the customer is recoverable, so the project owes it
+    // back on top of its value.
+    outstanding: Math.max(totalValue + totalGiven - totalReceived, 0),
   };
-}
-
-/** A tiny read used by the stage gate. Admin-only like everything else here. */
-export async function isPlanLocked(projectId: string): Promise<boolean> {
-  const [plan] = await db
-    .select({ lockedAt: paymentPlans.lockedAt })
-    .from(paymentPlans)
-    .where(and(eq(paymentPlans.projectId, projectId)))
-    .limit(1);
-  return Boolean(plan?.lockedAt);
 }

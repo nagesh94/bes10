@@ -17,16 +17,16 @@ import { getActor } from "@/lib/session";
  * arrive filled, and from the Agreements tab they do not. Everything after
  * that is the same form, which is why there is one page rather than two.
  *
- * Crucially this page no longer refuses when the payment plan is unlocked.
- * It fills the cost from the locked plan if there is one, from the chosen
- * quotation if there is not, and otherwise leaves it to be typed — because
- * the figure in clause 19.1 is agreed in conversation, often before anyone
- * opens the plan.
+ * Crucially this page never refuses for want of a payment plan. It fills the
+ * cost from the saved plan if there is one, from the chosen quotation if
+ * there is not, and otherwise leaves it to be typed — because the figure in
+ * clause 19.1 is agreed in conversation, often before anyone opens the
+ * plan.
  */
 
 const SOURCE_LINE: Record<string, string> = {
-  plan: "filled from the locked payment plan.",
-  quotation: "filled from the accepted quotation — the payment plan is not locked yet.",
+  plan: "filled from the saved payment plan.",
+  quotation: "filled from the accepted quotation — there is no payment plan yet.",
   typed: "the parties are filled in; type the cost that was agreed.",
 };
 

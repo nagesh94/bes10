@@ -36,13 +36,12 @@ export const GATE_LABELS: Record<string, string> = {
   // Stage 1
   prospectForm: "Prospect form complete",
   flagsResolved: "Flags resolved or waived",
-  paymentPlanLocked: "Payment plan locked",
+  paymentPlanSaved: "Payment plan saved",
   // Stage 2
   quotation: "Quotation uploaded",
   customerSignature: "Customer signature on file",
   agreementGenerated: "Agreement generated",
   agreementSigned: "Signed scan uploaded",
-  sanctionLetter: "Jan Samarth sanction letter uploaded",
   digitalApprovalLetter: "Digital approval letter uploaded",
   // Stage 3
   installationRecord: "Installation record complete",

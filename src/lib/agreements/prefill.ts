@@ -8,6 +8,7 @@ import {
   quotationMilestones,
   quotations,
 } from "@/lib/db/schema";
+import { TRIGGER_SHORT } from "@/lib/payments/schedule";
 import {
   apportion,
   type AgreementFormValues,
@@ -18,13 +19,13 @@ import {
 /**
  * What a new agreement starts out saying, given a project.
  *
- * The order is the order of authority. A **locked payment plan** is the
+ * The order is the order of authority. A **saved payment plan** is the
  * figure the admin has settled, so it wins. Failing that the project's
  * **chosen quotation** is the price the customer was actually offered and
  * usually accepted. Failing both, the parties are filled in and the cost is
  * left to be typed — which is the whole point of the change: the office can
  * draw up a draft for someone sitting in front of them without waiting for
- * an admin to lock a plan.
+ * an admin to settle a plan.
  *
  * Nothing here is binding. Every field it fills stays editable on the form,
  * because the number in clause 19.1 is agreed in conversation and the paper
@@ -99,14 +100,14 @@ export async function prefillFromProject(
   values.consumerName = [row.contact.firstName, row.contact.lastName].filter(Boolean).join(" ");
   values.consumerAddress = [row.contact.address, row.contact.pinCode].filter(Boolean).join(", ");
 
-  // ── The locked plan, if there is one ──
+  // ── The payment plan, if there is one ──
   const [plan] = await db
     .select()
     .from(paymentPlans)
     .where(eq(paymentPlans.projectId, projectId))
     .limit(1);
 
-  if (plan?.lockedAt && Number(plan.totalValue) > 0) {
+  if (plan && Number(plan.totalValue) > 0) {
     const milestones = await db
       .select()
       .from(paymentMilestones)
@@ -116,8 +117,11 @@ export async function prefillFromProject(
     if (milestones.length > 0) {
       values.totalValue = String(Number(plan.totalValue));
       values.valueSource = "plan";
+      // The plan's lines carry a trigger, not a name. The agreement prints a
+      // name, so the trigger's own wording is it — one less place for the two
+      // documents to disagree.
       values.milestones = milestones.map((m) => ({
-        label: m.label,
+        label: TRIGGER_SHORT[m.trigger],
         amount: String(Number(m.amount)),
       }));
       return {

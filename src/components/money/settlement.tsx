@@ -3,6 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { recordPayment, saveSubsidy } from "@/app/actions/payments";
+import {
+  RECEIVED_MODES,
+  RECEIVED_MODE_LABELS,
+  type ReceivedMode,
+} from "@/lib/payments/schedule";
 
 const cell =
   "h-11 w-full rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[14px] text-[var(--ink)] outline-none focus:border-[var(--orange)]";
@@ -163,7 +168,7 @@ export function FinalPayment({
   const router = useRouter();
   const [v, setV] = useState({
     amount: "",
-    mode: "NEFT" as "CASH" | "UPI" | "CHEQUE" | "NEFT" | "LOAN_DISBURSAL",
+    mode: "NEFT" as ReceivedMode,
     referenceNo: "",
     receivedOn: "",
   });
@@ -201,8 +206,8 @@ export function FinalPayment({
             }
             className={cell}
           >
-            {(["NEFT", "UPI", "CHEQUE", "CASH", "LOAN_DISBURSAL"] as const).map((m) => (
-              <option key={m} value={m}>{m.replace(/_/g, " ").toLowerCase()}</option>
+            {RECEIVED_MODES.map((m) => (
+              <option key={m} value={m}>{RECEIVED_MODE_LABELS[m]}</option>
             ))}
           </select>
         </div>

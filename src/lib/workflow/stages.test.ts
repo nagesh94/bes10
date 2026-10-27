@@ -11,14 +11,13 @@ import {
 const complete: ProjectSnapshot = {
   prospectSectionsComplete: 8,
   openFlagCount: 0,
-  paymentPlanLocked: true,
+  paymentPlanSaved: true,
   paymentMode: "SPLIT",
 
   quotationUploaded: true,
   customerSignatureUploaded: true,
   agreementGenerated: true,
   agreementSignedScanUploaded: true,
-  sanctionLetterUploaded: true,
   digitalApprovalLetterUploaded: true,
 
   installationRecorded: true,
@@ -72,41 +71,31 @@ describe("stage 1 — onboarding", () => {
     expect(evaluateGate(1, spoil({ openFlagCount: 1 })).passed).toBe(false);
   });
 
-  it("stays shut until the payment plan is locked", () => {
-    expect(evaluateGate(1, spoil({ paymentPlanLocked: false })).passed).toBe(false);
+  it("stays shut until the payment plan is saved", () => {
+    expect(evaluateGate(1, spoil({ paymentPlanSaved: false })).passed).toBe(false);
   });
 });
 
 describe("stage 2 — finance is conditional", () => {
-  it("requires the sanction letter on a split project", () => {
-    const r = evaluateGate(2, spoil({ paymentMode: "SPLIT", sanctionLetterUploaded: false }));
-    expect(r.passed).toBe(false);
-    expect(r.outstanding.map((i) => i.id)).toContain("sanctionLetter");
-  });
-
-  it("requires it on a fully financed project", () => {
-    expect(
-      evaluateGate(2, spoil({ paymentMode: "FINANCE", sanctionLetterUploaded: false })).passed,
-    ).toBe(false);
-  });
-
-  it("requires the digital approval letter too", () => {
+  it("requires the digital approval letter on a split project", () => {
     const r = evaluateGate(2, spoil({ paymentMode: "SPLIT", digitalApprovalLetterUploaded: false }));
     expect(r.passed).toBe(false);
     expect(r.outstanding.map((i) => i.id)).toContain("digitalApprovalLetter");
   });
 
-  it("never asks for either on a cash project", () => {
+  it("requires it on a fully financed project", () => {
+    expect(
+      evaluateGate(2, spoil({ paymentMode: "FINANCE", digitalApprovalLetterUploaded: false }))
+        .passed,
+    ).toBe(false);
+  });
+
+  it("never asks for it on a cash project", () => {
     const r = evaluateGate(
       2,
-      spoil({
-        paymentMode: "CASH",
-        sanctionLetterUploaded: false,
-        digitalApprovalLetterUploaded: false,
-      }),
+      spoil({ paymentMode: "CASH", digitalApprovalLetterUploaded: false }),
     );
     expect(r.passed).toBe(true);
-    expect(r.items.map((i) => i.id)).not.toContain("sanctionLetter");
     expect(r.items.map((i) => i.id)).not.toContain("digitalApprovalLetter");
   });
 

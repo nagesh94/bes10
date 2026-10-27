@@ -103,17 +103,10 @@ export const BANK_PACK_PRINTABLE: BankPackItem[] = [
     pages: 1,
   },
   {
-    docType: "SANCTION_LETTER",
-    label: "Jan Samarth sanction letter",
-    source: "portal",
-    hint: "Downloaded from Jan Samarth once the loan clears",
-    pages: 2,
-  },
-  {
     docType: "DIGITAL_APPROVAL_LETTER",
     label: "Digital approval letter",
     source: "portal",
-    hint: "The other Jan Samarth download — issued with the sanction, filed after it",
+    hint: "Downloaded from Jan Samarth once the loan clears",
     pages: 1,
   },
 ];

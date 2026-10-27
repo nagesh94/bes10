@@ -7,6 +7,7 @@ export type NavKey =
   | "projects"
   | "quotations"
   | "agreements"
+  | "finance"
   | "partners"
   | "documents"
   | "admin"
@@ -35,6 +36,7 @@ export async function visibleNavItems(actor: Actor): Promise<NavItem[]> {
     { href: "/projects", key: "projects", show: can(actor, "project.write") },
     { href: "/quotations", key: "quotations", show: can(actor, "quotation.read") },
     { href: "/agreements", key: "agreements", show: can(actor, "agreement.read") },
+    { href: "/finance", key: "finance", show: can(actor, "money.read") },
     { href: "/partners", key: "partners", show: can(actor, "partner.read") },
     { href: "/documents", key: "documents", show: can(actor, "document.read") },
     { href: "/admin/users", key: "admin", show: can(actor, "admin.users") },

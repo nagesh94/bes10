@@ -57,10 +57,10 @@ export const DOC_TYPES = {
   FEASIBILITY_REPORT: { label: "Feasibility report", class: "EXTERNAL", category: "DISCOM" },
   SITE_FEASIBILITY: { label: "Site feasibility report", class: "EXTERNAL", category: "DISCOM" },
   E_TOKEN: { label: "E-token", class: "EXTERNAL", category: "DISCOM" },
-  SANCTION_LETTER: { label: "Jan Samarth sanction letter", class: "EXTERNAL", category: "BANK" },
-  // The second Jan Samarth paper on a financed project: the portal issues a
-  // digital approval letter alongside the sanction letter, and the bank file
-  // is short without it. Added on the user's instruction, 27 Oct 2026.
+  // The Jan Samarth paper on a financed project. The portal also issues a
+  // sanction letter, which used to have a slot of its own here — asking for
+  // both was asking twice, so it was dropped on the user's instruction,
+  // 27 Oct 2026, and anything filed under it was re-filed as this.
   DIGITAL_APPROVAL_LETTER: {
     label: "Digital approval letter",
     class: "EXTERNAL",
@@ -125,7 +125,6 @@ export const DOC_GROUPS = [
       "FEASIBILITY_REPORT",
       "SITE_FEASIBILITY",
       "E_TOKEN",
-      "SANCTION_LETTER",
       "DIGITAL_APPROVAL_LETTER",
       "DCR_CERTIFICATE",
       "METER_RECEIPT",

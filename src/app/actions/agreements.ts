@@ -44,9 +44,9 @@ import {
  *
  * The cost is **typed on the form**, not read from the payment plan. It
  * used to be read from the plan, which meant the agreement could not be
- * produced at all until an admin had locked one — the office could not hand
+ * produced at all until an admin had settled one — the office could not hand
  * a draft to a customer sitting in the room. The form is prefilled from the
- * locked plan when there is one, and from the chosen quotation when there
+ * saved plan when there is one, and from the chosen quotation when there
  * is not (see `lib/agreements/prefill.ts`), but what prints is what was
  * typed, because the figure in clause 19.1 is agreed in conversation.
  *

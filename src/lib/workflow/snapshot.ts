@@ -15,6 +15,7 @@ import {
   materialConsumption,
   otherDetails,
   panelSerials,
+  customerAdvances,
   paymentPlans,
   paymentsReceived,
   photos,
@@ -174,11 +175,11 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
     photoRows.filter((p) => required.has(p.photoType)).map((p) => p.photoType),
   ).size;
 
-  // Whether a plan is locked, and which mode it is, are workflow facts, not
+  // Whether a plan exists, and which mode it is, are workflow facts, not
   // amounts — the gate needs both and neither reveals a figure. No monetary
   // column is selected here, which is why this read is not admin-gated.
   const [planRow] = await db
-    .select({ mode: paymentPlans.mode, lockedAt: paymentPlans.lockedAt })
+    .select({ mode: paymentPlans.mode, updatedAt: paymentPlans.updatedAt })
     .from(paymentPlans)
     .where(eq(paymentPlans.projectId, projectId))
     .limit(1);
@@ -204,17 +205,23 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
     .from(paymentsReceived)
     .where(eq(paymentsReceived.projectId, projectId));
 
+  // Money handed to the customer is recoverable, so stage 9 cannot close on
+  // it either: it is owed back on top of the project value.
+  const [advanceRow] = await db
+    .select({ sum: sql<number>`coalesce(sum(${customerAdvances.amount}), 0)::float` })
+    .from(customerAdvances)
+    .where(eq(customerAdvances.projectId, projectId));
+
   return {
     prospectSectionsComplete,
     openFlagCount: flagCount?.n ?? 0,
-    paymentPlanLocked: Boolean(planRow?.lockedAt),
+    paymentPlanSaved: (outstandingRow?.total ?? 0) > 0,
     paymentMode,
 
     quotationUploaded: has("QUOTATION"),
     customerSignatureUploaded: has("CUSTOMER_SIGNATURE"),
     agreementGenerated: has("AGREEMENT"),
     agreementSignedScanUploaded: has("AGREEMENT_SIGNED"),
-    sanctionLetterUploaded: has("SANCTION_LETTER"),
     digitalApprovalLetterUploaded: has("DIGITAL_APPROVAL_LETTER"),
 
     installationRecorded,
@@ -247,7 +254,7 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
     wantsSubsidy: a?.wantsSubsidy ?? true,
     subsidyReceived: subsidyRow?.status === "RECEIVED",
     outstandingBalance: Math.max(
-      (outstandingRow?.total ?? 0) - (receivedRow?.sum ?? 0),
+      (outstandingRow?.total ?? 0) + (advanceRow?.sum ?? 0) - (receivedRow?.sum ?? 0),
       0,
     ),
   };

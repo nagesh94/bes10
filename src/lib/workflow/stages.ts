@@ -36,7 +36,8 @@ export interface ProjectSnapshot {
   // Stage 1
   prospectSectionsComplete: number; // of 8
   openFlagCount: number;
-  paymentPlanLocked: boolean;
+  /** A plan exists with a value on it. There is no lock to wait for. */
+  paymentPlanSaved: boolean;
   paymentMode: PaymentMode | null;
 
   // Stage 2
@@ -44,9 +45,7 @@ export interface ProjectSnapshot {
   customerSignatureUploaded: boolean;
   agreementGenerated: boolean;
   agreementSignedScanUploaded: boolean;
-  /** Only meaningful when the plan involves finance. */
-  sanctionLetterUploaded: boolean;
-  /** The second Jan Samarth paper. Finance-only, like the sanction letter. */
+  /** The Jan Samarth paper. Only meaningful when the plan involves finance. */
   digitalApprovalLetterUploaded: boolean;
 
   // Stage 3
@@ -109,7 +108,7 @@ export interface StageDefinition {
 /**
  * Whether the project involves a bank loan at all.
  *
- * A CASH project has no Jan Samarth application, no sanction letter and no
+ * A CASH project has no Jan Samarth application, no approval letter and no
  * bank loan pack. None of that is hidden — it simply does not exist for that
  * project, so it is never gated on.
  */
@@ -131,7 +130,7 @@ export const STAGES: StageDefinition[] = [
     gate: (p) => [
       ok("prospectForm", p.prospectSectionsComplete >= 8, `${p.prospectSectionsComplete} of 8`),
       ok("flagsResolved", p.openFlagCount === 0, p.openFlagCount > 0 ? `${p.openFlagCount} open` : undefined),
-      ok("paymentPlanLocked", p.paymentPlanLocked),
+      ok("paymentPlanSaved", p.paymentPlanSaved),
     ],
   },
   {
@@ -146,7 +145,6 @@ export const STAGES: StageDefinition[] = [
       ];
       // Conditional: cash projects never see these.
       if (involvesFinance(p.paymentMode)) {
-        items.push(ok("sanctionLetter", p.sanctionLetterUploaded));
         items.push(ok("digitalApprovalLetter", p.digitalApprovalLetterUploaded));
       }
       return items;

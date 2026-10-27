@@ -4,11 +4,13 @@ import { db } from "@/lib/db";
 import { contacts, documents as documentsTable, projects } from "@/lib/db/schema";
 import {
   FinanceForm,
+  GiveMoneyForm,
   PaymentPlanForm,
   RecordPaymentForm,
 } from "@/components/payments/payment-plan-form";
 import { UploadSlot } from "@/components/documents/upload-slot";
 import { getMoneyView } from "@/app/actions/payments";
+import { RECEIVED_MODE_LABELS, TRIGGER_SHORT, type ReceivedMode } from "@/lib/payments/schedule";
 import { can, canSeeMoney } from "@/lib/rbac/permissions";
 import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
@@ -45,9 +47,9 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
     .limit(1);
   if (!row) notFound();
 
-  // The two Jan Samarth papers. Both are uploaded with the documents too —
-  // this is the second door, for whoever is already on this page when the
-  // loan clears. The newest row of each type wins, as everywhere else.
+  // The Jan Samarth paper. It is uploaded with the documents too — this is
+  // the second door, for whoever is already on this page when the loan
+  // clears. The newest row of its type wins, as everywhere else.
   const loanDocs = await db
     .select()
     .from(documentsTable)
@@ -70,10 +72,12 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
   };
 
   const view = await getMoneyView(id);
-  const { plan, milestones, received, finance, subsidy, totalReceived, outstanding } = view;
+  const { plan, milestones, received, advances, finance, subsidy, totalReceived, totalGiven, outstanding } =
+    view;
 
   const totalValue = plan?.totalValue ? Number(plan.totalValue) : 0;
-  const pct = totalValue > 0 ? Math.min(Math.round((totalReceived / totalValue) * 100), 100) : 0;
+  const collectible = totalValue + totalGiven;
+  const pct = collectible > 0 ? Math.min(Math.round((totalReceived / collectible) * 100), 100) : 0;
   const showFinance = involvesFinance(plan?.mode ?? null);
   const subsidyExpected = subsidy?.expectedAmount ? Number(subsidy.expectedAmount) : 0;
 
@@ -92,18 +96,15 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
             <h2 className="mb-4 text-base font-bold">How is the customer paying?</h2>
             <PaymentPlanForm
               projectId={id}
-              locked={Boolean(plan?.lockedAt)}
               initial={{
                 mode: (plan?.mode ?? "CASH") as "CASH" | "FINANCE" | "SPLIT",
                 totalValue: plan?.totalValue ?? "",
                 cashComponent: plan?.cashComponent ?? "",
                 financeComponent: plan?.financeComponent ?? "",
                 milestones: milestones.map((m) => ({
-                  label: m.label,
                   amount: m.amount,
                   trigger: m.trigger,
                 })),
-                finance: null,
               }}
             />
           </section>
@@ -114,9 +115,10 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
                 <h2 className="flex-1 text-base font-bold">Finance — Jan Samarth</h2>
               </div>
               <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-                The loan is applied for on Jan Samarth, not here. Both papers the portal issues —
-                the sanction letter and the digital approval letter — can be filed from the
-                documents side too, which an employee can do without seeing the amount below.
+                The loan is applied for on Jan Samarth, not here. The digital approval letter the
+                portal issues can be filed from the documents side too, which an employee can do
+                without seeing the amount below. The money itself arrives in two parts, PSS1 and
+                PSS2 — record each one as it lands.
               </p>
               <a
                 href="https://www.jansamarth.in/"
@@ -146,24 +148,16 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
               />
 
               <div className="mt-5 space-y-2.5 border-t border-[var(--line-soft)] pt-4.5">
-                <h3 className="text-[13.5px] font-bold">Papers from the portal</h3>
+                <h3 className="text-[13.5px] font-bold">Paper from the portal</h3>
                 <p className="text-[12.5px] leading-relaxed text-[var(--muted)]">
-                  Jan Samarth hands out both of these as downloads. They live nowhere but that
-                  login unless they are filed here, so upload them as they come.
+                  Jan Samarth hands this out as a download. It lives nowhere but that login unless
+                  it is filed here, so upload it as it comes.
                 </p>
-                <UploadSlot
-                  projectId={id}
-                  docType="SANCTION_LETTER"
-                  label="Jan Samarth sanction letter"
-                  hint="Downloaded from Jan Samarth once the loan clears"
-                  existing={existingDoc("SANCTION_LETTER")}
-                  canDelete={canDeleteDocs}
-                />
                 <UploadSlot
                   projectId={id}
                   docType="DIGITAL_APPROVAL_LETTER"
                   label="Digital approval letter"
-                  hint="The other Jan Samarth download, issued with the sanction"
+                  hint="Downloaded from Jan Samarth once the loan clears"
                   existing={existingDoc("DIGITAL_APPROVAL_LETTER")}
                   canDelete={canDeleteDocs}
                 />
@@ -173,9 +167,8 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
             <section className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-5">
               <h2 className="mb-1 text-base font-bold text-[var(--muted)]">Finance</h2>
               <p className="text-[13px] text-[var(--muted)]">
-                This is a cash project, so there is no Jan Samarth application, no sanction letter,
-                no digital approval letter and no bank loan pack. Switch the mode above if that
-                changes.
+                This is a cash project, so there is no Jan Samarth application, no digital approval
+                letter and no bank loan pack. Switch the mode above if that changes.
               </p>
             </section>
           )}
@@ -190,9 +183,34 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
                   <span className="ref min-w-28 flex-1 text-sm font-semibold">
                     {inr(Number(r.amount))}
                   </span>
-                  <span className="text-[13px] text-[var(--muted)]">{r.mode}</span>
+                  <span className="text-[13px] text-[var(--muted)]">
+                    {RECEIVED_MODE_LABELS[r.mode as ReceivedMode] ?? r.mode}
+                  </span>
                   <span className="ref text-[12.5px] text-[var(--muted)]">{r.referenceNo ?? "—"}</span>
                   <span className="ref text-[12.5px] text-[var(--muted)]">{r.receivedOn}</span>
+                </div>
+              ))}
+            </section>
+          ) : null}
+
+          {advances.length ? (
+            <section className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
+              <div className="border-b border-[var(--line)] px-6 py-4">
+                <h2 className="text-base font-bold">Given to the customer</h2>
+                <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">
+                  Recoverable, so every line here is added to what the project owes.
+                </p>
+              </div>
+              {advances.map((a) => (
+                <div key={a.id} className="flex flex-wrap items-center gap-3 border-b border-[var(--line-soft)] px-6 py-3.5">
+                  <span className="ref min-w-28 text-sm font-semibold text-[var(--red-text)]">
+                    − {inr(Number(a.amount))}
+                  </span>
+                  <span className="min-w-32 flex-1 text-[13px] text-[var(--muted)]">
+                    {a.note ?? RECEIVED_MODE_LABELS[a.mode as ReceivedMode] ?? a.mode}
+                  </span>
+                  <span className="ref text-[12.5px] text-[var(--muted)]">{a.referenceNo ?? "—"}</span>
+                  <span className="ref text-[12.5px] text-[var(--muted)]">{a.paidOn}</span>
                 </div>
               ))}
             </section>
@@ -206,6 +224,7 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
             </h2>
             {[
               ["Project value", inr(totalValue)],
+              ...(totalGiven ? [["Given to the customer", `+ ${inr(totalGiven)}`]] : []),
               ["Received", inr(totalReceived)],
               ...(subsidyExpected ? [["Subsidy expected", `− ${inr(subsidyExpected)}`]] : []),
             ].map(([k, v]) => (
@@ -224,8 +243,9 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
               <span className="block h-full rounded-full bg-[var(--green)]" style={{ width: `${pct}%` }} />
             </div>
             <p className="mt-3 text-[12px] leading-relaxed opacity-70">
-              The subsidy is credited to the customer's own account, not to BHIM — it reduces what
-              they are out of pocket, never what they owe us.
+              The subsidy is credited to the customer&rsquo;s own account, not to BHIM — it reduces
+              what they are out of pocket, never what they owe us. Money we hand them does the
+              opposite: it is owed back on top of the project value.
             </p>
           </section>
 
@@ -233,8 +253,20 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
             <h2 className="mb-3.5 text-sm font-bold">Record a payment</h2>
             <RecordPaymentForm
               projectId={id}
-              milestones={milestones.map((m) => ({ id: m.id, label: m.label }))}
+              milestones={milestones.map((m) => ({
+                id: m.id,
+                label: `${TRIGGER_SHORT[m.trigger]} · ${inr(Number(m.amount))}`,
+              }))}
             />
+          </section>
+
+          <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
+            <h2 className="mb-1 text-sm font-bold">Money the other way</h2>
+            <p className="mb-3.5 text-[12.5px] leading-relaxed text-[var(--muted)]">
+              A fee paid on their behalf, or cash fronted against a subsidy that has not landed.
+              It is not a discount — it goes on to the outstanding figure until it comes back.
+            </p>
+            <GiveMoneyForm projectId={id} />
           </section>
         </aside>
       </div>

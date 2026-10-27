@@ -16,10 +16,10 @@ import { UseThisAgreement } from "./use-this-agreement";
  * lawyer outside the app.
  *
  * This replaced a single "Generate agreement" button that was disabled
- * until an admin had locked the payment plan — which left the office unable
+ * until an admin had settled the payment plan — which left the office unable
  * to produce a draft for a customer in the room, since clause 19.1 was read
  * from the plan. The cost is now typed on the agreement itself, prefilled
- * from the locked plan or the chosen quotation when either exists, so there
+ * from the saved plan or the chosen quotation when either exists, so there
  * is nothing left to wait for.
  *
  * States amounts, so the caller checks `agreement.read` before rendering it.
@@ -128,8 +128,8 @@ export async function AgreementStep({
       <p className="mt-2.5 text-[11.5px] leading-relaxed text-[var(--muted)]">
         A Word file, not a PDF — the lawyer edits it to prepare the hard copy, and the signed,
         notarised scan is uploaded separately. The parties are filled from this project; clause
-        19.1 is filled from the locked payment plan, or from the chosen quotation when the plan
-        is not locked yet, and can be changed either way.
+        19.1 is filled from the saved payment plan, or from the chosen quotation when there is
+        no plan yet, and can be changed either way.
         {rows.length > 1
           ? " A project can hold several drafts, but only the one on file is counted here and printed in the bank loan pack."
           : ""}

@@ -56,7 +56,7 @@ Concretely, this means:
 
 - `/projects/[id]/payments`, the payment-negotiation page, the partner payout screens and stage 9 settlement are **admin-only routes**, not pages with some fields hidden.
 - The *Outstanding* figure on the pipeline dashboard, the Payments card and the commission on the Referred-by card are **omitted from the response** for non-admins.
-- The **document side of finance stays with employees.** Uploading the Jan Samarth sanction letter, assembling the bank loan pack and printing it are document work, so an employee does all of it — they just never see the loan amount or the project value while doing so. That split is deliberate: documents are operational, amounts are commercial.
+- The **document side of finance stays with employees.** Uploading the Jan Samarth digital approval letter, assembling the bank loan pack and printing it are document work, so an employee does all of it — they just never see the loan amount or the project value while doing so. That split is deliberate: documents are operational, amounts are commercial.
 
 **Design rule:** a permission matrix in one module (`lib/rbac/permissions.ts`), checked by a single `can(user, action, resource)` guard. Never scattered role checks.
 
@@ -83,7 +83,7 @@ Concretely, this means:
 
 | # | Stage | Completion gate |
 |---|---|---|
-| 1 | **Onboarding & documentation** | 8-section prospect form complete, all flags resolved, payment plan locked |
+| 1 | **Onboarding & documentation** | 8-section prospect form complete, all flags resolved, payment plan saved |
 | 2 | **Agreement** | Quotation uploaded, agreement generated → printed → wet-signed by both parties → scanned → uploaded |
 | 3 | **Installation** | Installation record complete, incl. battery block if hybrid |
 | 4 | **Post-installation** | All required geotagged photos present + material consumption recorded |
@@ -165,16 +165,20 @@ load_change_request   flag_id, current_sanctioned_kw, required_kw,
 
 ```
 payment_plan          project_id, mode (CASH | FINANCE | SPLIT),
-                      total_project_value, cash_component, finance_component,
-                      locked_at, locked_by
+                      total_project_value, cash_component, finance_component
 
-payment_milestones    plan_id, label, amount, trigger
-                      (UPFRONT | ON_INSTALL | POST_SUBSIDY | ON_LOAN_DISBURSAL),
-                      due_date, status
+payment_milestones    project_id, amount, trigger
+                      (UPFRONT | ON_INSTALL | PSS1 | PSS2 |
+                       POST_SUBSIDY | ON_LOAN_DISBURSAL),
+                      due_date, sort_order
 
 payments_received     project_id, milestone_id, amount, mode
-                      (CASH|UPI|CHEQUE|NEFT|LOAN_DISBURSAL),
+                      (CASH|UPI|CHEQUE|NEFT|
+                       LOAN_DISBURSAL_PSS1|LOAN_DISBURSAL_PSS2),
                       received_on, reference_no, proof_document_id, recorded_by
+
+customer_advances     project_id, amount, mode, paid_on, reference_no,
+                      note, recorded_by
 
 finance_application   project_id, bank_name, loan_amount, application_no,
                       status, sanctioned_on, disbursed_on
@@ -338,7 +342,7 @@ This is the core of the system.
 | **GENERATED** | Produced by this app from a template + project data | Agreement — plus whatever the supplied templates turn out to cover |
 | **EXECUTED** | Generated → printed → wet-signed → scanned → re-uploaded | Signed agreement |
 | **EVIDENCE** | Captured in the field | Geotagged site and installation photos |
-| **EXTERNAL** | Downloaded from a government portal, then uploaded here | **Acknowledgement**, **feasibility report**, **site feasibility report**, **e-token** (four separate papers, not two), **Jan Samarth sanction letter**, DCR certificate, meter receipt, commissioning certificate |
+| **EXTERNAL** | Downloaded from a government portal, then uploaded here | **Acknowledgement**, **feasibility report**, **site feasibility report**, **e-token** (four separate papers, not two), **Jan Samarth digital approval letter**, DCR certificate, meter receipt, commissioning certificate |
 | **PHYSICAL** | An object, not a file — it can only be checklisted | Passport photographs, cheques, stamp paper |
 
 **Two documents moved out of GENERATED.** There is no subsidy claim form to produce — the subsidy is applied for on the PM Surya Ghar portal directly. And the NOC is prepared outside the app and uploaded. The generated set is therefore the agreement plus whatever the supplied templates cover; the engine below is unchanged either way.
@@ -350,7 +354,7 @@ Four places the app sends you to, and takes a result back from. None of them has
 | Portal | What happens there | What comes back |
 |---|---|---|
 | **PM Surya Ghar** | The application, and the subsidy claim | National Portal ID; subsidy status; the **acknowledgement**, **feasibility report**, **site feasibility report** and **e-token**, all issued there and uploaded back here |
-| **Jan Samarth** | The bank loan application | **Sanction letter**, uploaded here; lender and sanction number |
+| **Jan Samarth** | The bank loan application | **Digital approval letter**, uploaded here; lender and sanction number; the money itself in two releases, PSS1 and PSS2 |
 | **MPCZ DISCOM** | Name change; load enhancement | Acknowledgement numbers, revised bill, new sanctioned load |
 | **DCR portal / DISCOM vendor login** | DCR certificate; meter payment | Certificate and number; payment receipt |
 
@@ -407,7 +411,7 @@ One click prints the whole bank file in order, at full resolution, with a cover 
 
 These go on the **cover checklist** as hand-attach items. That is the whole point of the cover sheet: the pack prints in one action, and the one thing a printer cannot do is still accounted for, so nobody reaches the bank a cheque short.
 
-The acknowledgement, the DISCOM's feasibility report, the site feasibility report and the e-token all come **off the PM Surya Ghar portal**, downloaded from there and uploaded into the app by an employee or admin — same pattern as the DCR certificate and the sanction letter. All four are part of the bank file, which is where they are uploaded.
+The acknowledgement, the DISCOM's feasibility report, the site feasibility report and the e-token all come **off the PM Surya Ghar portal**, downloaded from there and uploaded into the app by an employee or admin — same pattern as the DCR certificate and the digital approval letter. All four are part of the bank file, which is where they are uploaded.
 
 #### The portal upload pack
 
@@ -437,10 +441,20 @@ payment_plan ──► payment_milestones (expected inflows)
                         │ reconciled against
                         ▼
                  payments_received (actual, with proof upload)
+                        ▲
+                        │ cleared by
+                        │
+                 customer_advances (money handed to the customer)
                         │
                         ▼
                  outstanding_balance (computed)
 ```
+
+Outstanding is the project value **plus** anything handed to the customer, less
+what has come in. An advance is neither a discount nor an expense: the office
+pays a fee on their behalf or fronts cash against a subsidy that has not
+landed, and it is owed back, so it belongs on the balance rather than in a
+ledger of its own.
 
 Under PM Surya Ghar the subsidy (CFA) is credited to the **customer's** bank account, not the vendor's. That is precisely why `subsidy.status → RECEIVED` is the event that triggers collection of the customer's remaining balance.
 
@@ -607,7 +621,7 @@ lib/
 |---|---|
 | **0** | Docker Compose (Postgres, MinIO, Mailpit), scaffold, theming tokens, English + Hindi catalogues, auth + TOTP, RBAC, user management, master data, app shell |
 | **1** | Leads, projects, Stage 1 eight-section form, flag engine, conversion to Prospect |
-| **2** | Payment plan, payments received, Jan Samarth + sanction letter, Stage 2 agreement + quotation upload |
+| **2** | Payment plan, payments received, Jan Samarth + approval letter, Stage 2 agreement + quotation upload |
 | **2b** | Channel partners, referral attribution, commission accrual and payouts, partner portal |
 | **3** | Stage 3 installation, Stage 4 photos with geotagging, offline queue |
 | **4** | Document engine — templates, generation, variants, bank and portal packs |

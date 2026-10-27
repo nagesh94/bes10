@@ -44,11 +44,11 @@ function Err({ name, errors }: { name: string; errors: Record<string, string[]> 
 const digits = (value: string) => value.replace(/[^\d.]/g, "");
 
 const SOURCE_NOTE: Record<string, string> = {
-  plan: "Filled from the locked payment plan. Change it here if the agreement says something else — this form is what prints.",
+  plan: "Filled from the saved payment plan. Change it here if the agreement says something else — this form is what prints.",
   quotation:
-    "Filled from the quotation this customer accepted; there is no locked payment plan yet. Change it here if a different figure was agreed.",
+    "Filled from the quotation this customer accepted; there is no payment plan yet. Change it here if a different figure was agreed.",
   typed:
-    "Nothing to fill it from — no locked payment plan and no chosen quotation — so type what was agreed.",
+    "Nothing to fill it from — no payment plan and no chosen quotation — so type what was agreed.",
 };
 
 export function AgreementForm({
