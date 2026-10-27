@@ -9,12 +9,11 @@ import { installerIdsFor } from "@/lib/projects/crew";
 import { assertCan, can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { documentKey } from "@/lib/storage/client";
-import { fileHref } from "@/lib/storage/file-url";
+import { fileHref, uploadHref } from "@/lib/storage/file-url";
 import {
   deleteTempObject,
   ensureBuckets,
   getTempObject,
-  presignUpload,
   putDocument,
 } from "@/lib/storage/operations";
 import { buildVariants, stampGeo } from "@/lib/storage/variants";
@@ -70,7 +69,7 @@ export async function requestPhotoUpload(
   await ensureBuckets();
   const safe = fileName.replace(/[^A-Za-z0-9._-]/g, "_").slice(-80);
   const tempKey = `incoming/${projectId}/${crypto.randomUUID()}-${safe}`;
-  return { ok: true, uploadUrl: await presignUpload(tempKey, contentType), tempKey };
+  return { ok: true, uploadUrl: uploadHref("photo", tempKey), tempKey };
 }
 
 export type PhotoFinalise =

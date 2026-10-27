@@ -46,6 +46,8 @@ export interface ProjectSnapshot {
   agreementSignedScanUploaded: boolean;
   /** Only meaningful when the plan involves finance. */
   sanctionLetterUploaded: boolean;
+  /** The second Jan Samarth paper. Finance-only, like the sanction letter. */
+  digitalApprovalLetterUploaded: boolean;
 
   // Stage 3
   installationRecorded: boolean;
@@ -142,9 +144,10 @@ export const STAGES: StageDefinition[] = [
         ok("agreementGenerated", p.agreementGenerated),
         ok("agreementSigned", p.agreementSignedScanUploaded),
       ];
-      // Conditional: cash projects never see this.
+      // Conditional: cash projects never see these.
       if (involvesFinance(p.paymentMode)) {
         items.push(ok("sanctionLetter", p.sanctionLetterUploaded));
+        items.push(ok("digitalApprovalLetter", p.digitalApprovalLetterUploaded));
       }
       return items;
     },

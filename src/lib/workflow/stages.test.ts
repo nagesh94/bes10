@@ -19,6 +19,7 @@ const complete: ProjectSnapshot = {
   agreementGenerated: true,
   agreementSignedScanUploaded: true,
   sanctionLetterUploaded: true,
+  digitalApprovalLetterUploaded: true,
 
   installationRecorded: true,
   panelSerialsCaptured: 9,
@@ -89,10 +90,24 @@ describe("stage 2 — finance is conditional", () => {
     ).toBe(false);
   });
 
-  it("never asks for it on a cash project", () => {
-    const r = evaluateGate(2, spoil({ paymentMode: "CASH", sanctionLetterUploaded: false }));
+  it("requires the digital approval letter too", () => {
+    const r = evaluateGate(2, spoil({ paymentMode: "SPLIT", digitalApprovalLetterUploaded: false }));
+    expect(r.passed).toBe(false);
+    expect(r.outstanding.map((i) => i.id)).toContain("digitalApprovalLetter");
+  });
+
+  it("never asks for either on a cash project", () => {
+    const r = evaluateGate(
+      2,
+      spoil({
+        paymentMode: "CASH",
+        sanctionLetterUploaded: false,
+        digitalApprovalLetterUploaded: false,
+      }),
+    );
     expect(r.passed).toBe(true);
     expect(r.items.map((i) => i.id)).not.toContain("sanctionLetter");
+    expect(r.items.map((i) => i.id)).not.toContain("digitalApprovalLetter");
   });
 
   it("knows which modes involve a bank", () => {

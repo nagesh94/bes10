@@ -215,6 +215,7 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
     agreementGenerated: has("AGREEMENT"),
     agreementSignedScanUploaded: has("AGREEMENT_SIGNED"),
     sanctionLetterUploaded: has("SANCTION_LETTER"),
+    digitalApprovalLetterUploaded: has("DIGITAL_APPROVAL_LETTER"),
 
     installationRecorded,
     panelSerialsCaptured: serialCount[0]?.n ?? 0,

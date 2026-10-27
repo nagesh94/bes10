@@ -21,8 +21,12 @@
 export type FileKind = "document" | "photo" | "quotation" | "agreement";
 export type FileVariant = "original" | "portal" | "thumb";
 
+/** The two things a browser may send up. Quotations and agreements are generated. */
+export type UploadKind = "document" | "photo";
+
 const KINDS: readonly FileKind[] = ["document", "photo", "quotation", "agreement"];
 const VARIANTS: readonly FileVariant[] = ["original", "portal", "thumb"];
+const UPLOAD_KINDS: readonly UploadKind[] = ["document", "photo"];
 
 export function isFileKind(value: string): value is FileKind {
   return (KINDS as readonly string[]).includes(value);
@@ -30,6 +34,45 @@ export function isFileKind(value: string): value is FileKind {
 
 export function isFileVariant(value: string): value is FileVariant {
   return (VARIANTS as readonly string[]).includes(value);
+}
+
+export function isUploadKind(value: string): value is UploadKind {
+  return (UPLOAD_KINDS as readonly string[]).includes(value);
+}
+
+/**
+ * Where the browser sends a file, which is this app and never the bucket.
+ *
+ * The mirror of `fileHref`, and for the same reason it exists. Uploads used
+ * to go straight from the browser to a presigned storage URL, which made them
+ * the one thing in the app that needed the *user's* network to reach the
+ * storage host — and on a network whose resolver refuses that host, every
+ * other feature kept working while uploads failed. Pointing at our own origin
+ * removes that dependency, and takes the storage endpoint and the access-key
+ * id out of the browser at the same time.
+ *
+ * Like `fileHref`, this is not a bearer token: `PUT /api/uploads` re-checks
+ * the session and the permission against the project named in the key.
+ */
+export function uploadHref(kind: UploadKind, tempKey: string): string {
+  const query = new URLSearchParams({ kind, key: tempKey });
+  return `/api/uploads?${query.toString()}`;
+}
+
+/**
+ * The key the browser is allowed to write, and the project it belongs to.
+ *
+ * Both server actions mint `incoming/<projectId>/<uuid>-<name>`, and the
+ * upload route re-derives the project from the key so the permission check
+ * covers the project the bytes will actually land under — not one the caller
+ * claims separately. Anything that is not exactly this shape is refused, so a
+ * crafted key cannot climb out of `incoming/` or carry a path segment of its
+ * own.
+ */
+const TEMP_KEY = /^incoming\/([0-9a-zA-Z_-]+)\/[0-9a-fA-F-]{36}-[A-Za-z0-9._-]{1,80}$/;
+
+export function projectIdFromTempKey(key: string): string | null {
+  return TEMP_KEY.exec(key)?.[1] ?? null;
 }
 
 /**

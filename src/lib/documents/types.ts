@@ -58,6 +58,14 @@ export const DOC_TYPES = {
   SITE_FEASIBILITY: { label: "Site feasibility report", class: "EXTERNAL", category: "DISCOM" },
   E_TOKEN: { label: "E-token", class: "EXTERNAL", category: "DISCOM" },
   SANCTION_LETTER: { label: "Jan Samarth sanction letter", class: "EXTERNAL", category: "BANK" },
+  // The second Jan Samarth paper on a financed project: the portal issues a
+  // digital approval letter alongside the sanction letter, and the bank file
+  // is short without it. Added on the user's instruction, 27 Oct 2026.
+  DIGITAL_APPROVAL_LETTER: {
+    label: "Digital approval letter",
+    class: "EXTERNAL",
+    category: "BANK",
+  },
   DCR_CERTIFICATE: { label: "DCR certificate", class: "EXTERNAL", category: "DISCOM" },
   METER_RECEIPT: { label: "Meter payment receipt", class: "EXTERNAL", category: "DISCOM" },
 
@@ -118,6 +126,7 @@ export const DOC_GROUPS = [
       "SITE_FEASIBILITY",
       "E_TOKEN",
       "SANCTION_LETTER",
+      "DIGITAL_APPROVAL_LETTER",
       "DCR_CERTIFICATE",
       "METER_RECEIPT",
     ],

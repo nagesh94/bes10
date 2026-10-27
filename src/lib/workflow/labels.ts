@@ -43,6 +43,7 @@ export const GATE_LABELS: Record<string, string> = {
   agreementGenerated: "Agreement generated",
   agreementSigned: "Signed scan uploaded",
   sanctionLetter: "Jan Samarth sanction letter uploaded",
+  digitalApprovalLetter: "Digital approval letter uploaded",
   // Stage 3
   installationRecord: "Installation record complete",
   panelSerials: "Every panel serial captured",

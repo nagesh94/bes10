@@ -11,7 +11,7 @@ import {
 } from "@/app/actions/photos";
 import { useConfirm } from "@/components/shell/confirm";
 import { openFile, saveFile } from "@/lib/documents/open-file";
-import { putPresigned } from "@/lib/storage/browser-put";
+import { putUpload } from "@/lib/storage/browser-put";
 
 export interface PhotoItem {
   id: string;
@@ -83,7 +83,7 @@ export function PhotoGrid({
           break;
         }
 
-        const put = await putPresigned(presigned.uploadUrl, file);
+        const put = await putUpload(presigned.uploadUrl, file);
         if (!put.ok) {
           setError(`${file.name}: ${put.error}`);
           break;

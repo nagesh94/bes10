@@ -13,13 +13,12 @@ import { writeAudit } from "@/lib/admin/write-audit";
 import { assertCan, can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { PORTAL_MAX_KB, documentKey } from "@/lib/storage/client";
-import { fileHref } from "@/lib/storage/file-url";
+import { fileHref, uploadHref } from "@/lib/storage/file-url";
 import {
   deleteDocumentObject,
   deleteTempObject,
   ensureBuckets,
   getTempObject,
-  presignUpload,
   putDocument,
 } from "@/lib/storage/operations";
 import { buildVariants } from "@/lib/storage/variants";
@@ -43,9 +42,11 @@ export async function requestUpload(
 
   const safe = fileName.replace(/[^A-Za-z0-9._-]/g, "_").slice(-80);
   const tempKey = `incoming/${projectId}/${crypto.randomUUID()}-${safe}`;
-  const uploadUrl = await presignUpload(tempKey, contentType);
 
-  return { ok: true, uploadUrl, tempKey };
+  // Our own route, not a presigned storage URL: see `uploadHref`. It carries
+  // no signature and expires on nothing, because the route re-checks this
+  // same permission when the bytes arrive.
+  return { ok: true, uploadUrl: uploadHref("document", tempKey), tempKey };
 }
 
 export type FinaliseResult =
@@ -141,6 +142,9 @@ export async function finaliseUpload(
   revalidatePath(`/projects/${projectId}/documents`);
   revalidatePath(`/projects/${projectId}/stage-1`);
   revalidatePath(`/projects/${projectId}/flags`);
+  // The payment page carries the two Jan Samarth papers, so a sanction letter
+  // filed from the documents side has to show there too.
+  revalidatePath(`/projects/${projectId}/payments`);
   return {
     ok: true,
     documentId,

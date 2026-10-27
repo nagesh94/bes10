@@ -9,6 +9,7 @@ import {
   type CORSRule,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import type { Readable } from "node:stream";
 import { PUBLIC_URL, S3_MANAGE_BUCKETS, S3_SSE } from "../env";
 import { BUCKET_DOCUMENTS, BUCKET_TEMP, s3 } from "./client";
 
@@ -192,6 +193,40 @@ export async function streamDocumentObject(key: string): Promise<{
     contentType: res.ContentType ?? "application/octet-stream",
     contentLength: res.ContentLength ?? null,
   };
+}
+
+/**
+ * Writes the browser's upload into the temp bucket, streaming.
+ *
+ * This replaced the presigned PUT the browser used to make itself. That PUT
+ * was the only thing in the app that required the *user's own* network to
+ * reach the storage host, and some consumer resolvers answer REFUSED for
+ * `*.c-3.ap-southeast-1.aws.neon.tech` while serving everything else — so the
+ * app looked healthy on those networks and only uploads failed, with the one
+ * error `fetch` gives for a request that never left the browser.
+ *
+ * The body is a stream and `contentLength` is required rather than inferred:
+ * S3 needs the length up front, and taking it from the request header is what
+ * keeps a 12 MB rooftop photo flowing through this process instead of sitting
+ * in it in one piece. The caller has already checked that the length is
+ * present, sane and within the cap — this function trusts it, because by the
+ * time the bytes are moving there is nothing useful left to do about it.
+ */
+export async function putTempObject(
+  key: string,
+  contentType: string,
+  body: Readable,
+  contentLength: number,
+): Promise<void> {
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: BUCKET_TEMP,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      ContentLength: contentLength,
+    }),
+  );
 }
 
 export async function getTempObject(key: string): Promise<{ body: Buffer; contentType: string }> {

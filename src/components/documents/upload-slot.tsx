@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { deleteDocument, finaliseUpload, getDocumentUrl, requestUpload } from "@/app/actions/documents";
 import { useConfirm } from "@/components/shell/confirm";
 import { openFile, saveFile } from "@/lib/documents/open-file";
-import { putPresigned } from "@/lib/storage/browser-put";
+import { putUpload } from "@/lib/storage/browser-put";
 import type { DocType } from "@/lib/documents/types";
 
 export interface ExistingDoc {
@@ -65,7 +65,7 @@ export function UploadSlot({
       }
 
       setBusy("Uploading…");
-      const put = await putPresigned(presigned.uploadUrl, file);
+      const put = await putUpload(presigned.uploadUrl, file);
       if (!put.ok) {
         setError(put.error);
         setBusy(null);

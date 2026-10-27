@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { contacts, projects } from "@/lib/db/schema";
+import { contacts, documents as documentsTable, projects } from "@/lib/db/schema";
 import {
   FinanceForm,
   PaymentPlanForm,
   RecordPaymentForm,
 } from "@/components/payments/payment-plan-form";
+import { UploadSlot } from "@/components/documents/upload-slot";
 import { getMoneyView } from "@/app/actions/payments";
-import { canSeeMoney } from "@/lib/rbac/permissions";
+import { can, canSeeMoney } from "@/lib/rbac/permissions";
 import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
 import { involvesFinance } from "@/lib/workflow/stages";
@@ -34,6 +35,7 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
   // This is an admin-only route, not a page with fields hidden. An employee
   // never reaches the query at all.
   if (!actor || !canSeeMoney(actor.roles)) notFound();
+  const canDeleteDocs = can(actor, "document.delete");
 
   const [row] = await db
     .select({ project: projects, contact: contacts })
@@ -42,6 +44,30 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
     .where(eq(projects.id, id))
     .limit(1);
   if (!row) notFound();
+
+  // The two Jan Samarth papers. Both are uploaded with the documents too —
+  // this is the second door, for whoever is already on this page when the
+  // loan clears. The newest row of each type wins, as everywhere else.
+  const loanDocs = await db
+    .select()
+    .from(documentsTable)
+    .where(and(eq(documentsTable.projectId, id), isNull(documentsTable.deletedAt)));
+  const latest = (docType: string) =>
+    loanDocs
+      .filter((d) => d.docType === docType)
+      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0];
+  const existingDoc = (docType: string) => {
+    const doc = latest(docType);
+    return doc
+      ? {
+          id: doc.id,
+          fileName: doc.fileName,
+          sizeBytes: doc.sizeBytes,
+          uploadedAt: doc.uploadedAt,
+          hasPortal: Boolean(doc.s3KeyPortal),
+        }
+      : null;
+  };
 
   const view = await getMoneyView(id);
   const { plan, milestones, received, finance, subsidy, totalReceived, outstanding } = view;
@@ -88,8 +114,9 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
                 <h2 className="flex-1 text-base font-bold">Finance — Jan Samarth</h2>
               </div>
               <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-                The loan is applied for on Jan Samarth, not here. The sanction letter is uploaded
-                with the documents — an employee can do that without seeing the amount below.
+                The loan is applied for on Jan Samarth, not here. Both papers the portal issues —
+                the sanction letter and the digital approval letter — can be filed from the
+                documents side too, which an employee can do without seeing the amount below.
               </p>
               <a
                 href="https://www.jansamarth.in/"
@@ -117,13 +144,38 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
                   status: finance?.status ?? "NOT_APPLIED",
                 }}
               />
+
+              <div className="mt-5 space-y-2.5 border-t border-[var(--line-soft)] pt-4.5">
+                <h3 className="text-[13.5px] font-bold">Papers from the portal</h3>
+                <p className="text-[12.5px] leading-relaxed text-[var(--muted)]">
+                  Jan Samarth hands out both of these as downloads. They live nowhere but that
+                  login unless they are filed here, so upload them as they come.
+                </p>
+                <UploadSlot
+                  projectId={id}
+                  docType="SANCTION_LETTER"
+                  label="Jan Samarth sanction letter"
+                  hint="Downloaded from Jan Samarth once the loan clears"
+                  existing={existingDoc("SANCTION_LETTER")}
+                  canDelete={canDeleteDocs}
+                />
+                <UploadSlot
+                  projectId={id}
+                  docType="DIGITAL_APPROVAL_LETTER"
+                  label="Digital approval letter"
+                  hint="The other Jan Samarth download, issued with the sanction"
+                  existing={existingDoc("DIGITAL_APPROVAL_LETTER")}
+                  canDelete={canDeleteDocs}
+                />
+              </div>
             </section>
           ) : (
             <section className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-5">
               <h2 className="mb-1 text-base font-bold text-[var(--muted)]">Finance</h2>
               <p className="text-[13px] text-[var(--muted)]">
-                This is a cash project, so there is no Jan Samarth application, no sanction letter
-                and no bank loan pack. Switch the mode above if that changes.
+                This is a cash project, so there is no Jan Samarth application, no sanction letter,
+                no digital approval letter and no bank loan pack. Switch the mode above if that
+                changes.
               </p>
             </section>
           )}

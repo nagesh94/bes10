@@ -184,6 +184,21 @@ export const S3_SSE = opt("S3_SSE");
 export const GOTENBERG_URL = need("GOTENBERG_URL", "http://localhost:3001");
 export const PORTAL_MAX_FILE_KB = Number(opt("PORTAL_MAX_FILE_KB") ?? 2048);
 
+/**
+ * The largest file `PUT /api/uploads` will accept, in KB.
+ *
+ * Not the same thing as PORTAL_MAX_FILE_KB, which caps the *downscaled*
+ * variant the DISCOM portal accepts. This caps what comes off the phone, and
+ * the two are far apart on purpose: the smoke test's "like a real phone
+ * photo" source is 12 MB and a 48 MP handset can beat that, while the portal
+ * copy of it is under 1 MB.
+ *
+ * The presigned PUT this replaced had no limit at all — the bucket accepted
+ * whatever the signature covered — so this is a new floor under the feature,
+ * not a tightening of one.
+ */
+export const UPLOAD_MAX_KB = Number(opt("UPLOAD_MAX_KB") ?? 32768);
+
 // ── App ───────────────────────────────────────────────────────────────────
 
 export const APP_URL = opt("NEXT_PUBLIC_APP_URL") ?? AUTH_URL;

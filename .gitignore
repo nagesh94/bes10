@@ -5,6 +5,7 @@ out/
 build/
 
 .env
+.env*.local
 *.pem
 
 *.tsbuildinfo
