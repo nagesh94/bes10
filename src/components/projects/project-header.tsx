@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileStack, Flag, IndianRupee } from "lucide-react";
+import { ClipboardList, FileStack, Flag, IndianRupee } from "lucide-react";
 import type { ProjectHeaderData } from "@/lib/projects/header";
 
 /* PROSPECT reads with --link rather than --navy: on a dark ground the navy
@@ -101,6 +101,13 @@ export function ProjectHeader({
               Payment plan
             </Link>
           ) : null}
+          {/* Next to the payment plan on purpose: the two questions asked
+              over the telephone are what they owe and what we hold on them,
+              and the second one was spread over nine stages until now. */}
+          <Link href={`/projects/${data.id}/summary`} className={chip}>
+            <ClipboardList size={15} strokeWidth={2} aria-hidden />
+            Summary
+          </Link>
         </div>
       </div>
 
