@@ -108,8 +108,8 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
             />
             <p className="min-w-60 flex-1 text-[12.5px] leading-relaxed text-[var(--muted)]">
               {agreement.isPrimary
-                ? `This is ${row.projectCode}’s agreement — filed into its documents and printed in the bank loan pack.`
-                : `A draft on ${row.projectCode}. Another agreement is the one on file, so this is not filed or printed. Using this one swaps them; neither is deleted.`}
+                ? `On file for ${row.projectCode}.`
+                : `Draft on ${row.projectCode} — not on file.`}
             </p>
           </div>
         ) : null}

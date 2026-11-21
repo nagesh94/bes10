@@ -150,7 +150,7 @@ export function NewLeadForm({
             <Err name="partnerId" />
             {partners.length === 0 ? (
               <p className="mt-1 text-xs text-[var(--muted)]">
-                No active partners yet — add one from the Channel partners page.
+No active partners yet.
               </p>
             ) : null}
           </div>

@@ -13,7 +13,20 @@ type Key = keyof InstallationInput;
 const BLOCKS: Array<{
   title: string;
   note: string;
-  fields: Array<{ key: Key; label: string; placeholder?: string; mono?: boolean; comboKey?: string }>;
+  fields: Array<{
+    key: Key;
+    label: string;
+    placeholder?: string;
+    mono?: boolean;
+    comboKey?: string;
+    /**
+     * Pre-filled into an empty field instead of sitting behind it as grey
+     * placeholder text. Only for the distribution boxes, where the same four
+     * answers were being retyped on every job and a greyed-out suggestion was
+     * being read as if it had been entered. Still editable.
+     */
+    defaultValue?: string;
+  }>;
 }> = [
   {
     title: "Panels",
@@ -41,14 +54,14 @@ const BLOCKS: Array<{
     title: "ACDB and DCDB",
     note: "Distribution boxes on either side of the inverter.",
     fields: [
-      { key: "acdbMake", label: "ACDB make", placeholder: "Havells" },
-      { key: "acdbSizeType", label: "ACDB size & type", placeholder: "5 kW moisture proof" },
-      { key: "acdbSpd", label: "AC surge protection", placeholder: "Single SPD" },
-      { key: "acdbMcb", label: "MCB / isolator", placeholder: "Isolators 1" },
-      { key: "dcdbMake", label: "DCDB make", placeholder: "Havells" },
-      { key: "dcdbSizeType", label: "DCDB size & type", placeholder: "5 kW moisture proof" },
-      { key: "dcdbSpd", label: "DC surge protection", placeholder: "Single SPD" },
-      { key: "dcdbMcb", label: "MCB / isolator", placeholder: "Isolators 1" },
+      { key: "acdbMake", label: "ACDB make", defaultValue: "Havells" },
+      { key: "acdbSizeType", label: "ACDB size & type", defaultValue: "5 kW moisture proof" },
+      { key: "acdbSpd", label: "AC surge protection", defaultValue: "Single SPD" },
+      { key: "acdbMcb", label: "MCB / isolator", defaultValue: "Isolators 1" },
+      { key: "dcdbMake", label: "DCDB make", defaultValue: "Havells" },
+      { key: "dcdbSizeType", label: "DCDB size & type", defaultValue: "5 kW moisture proof" },
+      { key: "dcdbSpd", label: "DC surge protection", defaultValue: "Single SPD" },
+      { key: "dcdbMcb", label: "MCB / isolator", defaultValue: "Isolators 1" },
     ],
   },
 ];
@@ -64,7 +77,20 @@ export function InstallationForm({
   comboOptions?: Record<string, string[]>;
 }) {
   const router = useRouter();
-  const [v, setV] = useState<InstallationInput>(initial);
+  // Fields carrying a default start filled, so what is on screen is what gets
+  // saved. A field that already has something recorded is never overwritten.
+  const [v, setV] = useState<InstallationInput>(() => {
+    const seeded = { ...initial };
+    for (const block of BLOCKS) {
+      for (const f of block.fields) {
+        if (!f.defaultValue) continue;
+        if (String(seeded[f.key] ?? "").trim() === "") {
+          (seeded as Record<string, unknown>)[f.key] = f.defaultValue;
+        }
+      }
+    }
+    return seeded;
+  });
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);

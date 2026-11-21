@@ -1,12 +1,12 @@
 import type { PhotoType } from "@/app/actions/photos";
 
 /**
- * The six shots the DISCOM and the national portal both expect after
+ * The shots the DISCOM and the national portal both expect after
  * installation.
  *
  * This list is the single source of truth: the stage 4 gate counts how many
  * of these types are covered, and the stage 4 page renders one grid per
- * entry. Adding a seventh requirement is one line, and the gate follows.
+ * entry. Adding another requirement is one line, and the gate follows.
  *
  * SITE_SURVEY is deliberately absent — those are taken before the sale, at
  * stage 1, and must not count towards completion here.
@@ -14,6 +14,7 @@ import type { PhotoType } from "@/app/actions/photos";
 export const REQUIRED_PHOTO_TYPES = [
   "CUSTOMER_WITH_PANEL",
   "CUSTOMER_WITH_INVERTER",
+  "INVERTER_SERIAL",
   "EARTHING_AC",
   "EARTHING_DC",
   "EARTHING_PIT",
@@ -30,6 +31,10 @@ export const PHOTO_LABELS: Record<RequiredPhotoType, { label: string; hint: stri
   CUSTOMER_WITH_INVERTER: {
     label: "Customer with the inverter",
     hint: "The consumer beside the mounted inverter",
+  },
+  INVERTER_SERIAL: {
+    label: "Inverter serial number",
+    hint: "The rating plate, close enough to read the serial",
   },
   EARTHING_AC: { label: "AC earthing", hint: "The AC side earthing connection" },
   EARTHING_DC: { label: "DC earthing", hint: "The DC side earthing connection" },

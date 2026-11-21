@@ -89,8 +89,7 @@ export default async function Stage3Page({ params }: { params: Promise<{ id: str
               No signed agreement on file
             </strong>
             <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
-              Work normally starts after both parties have signed. You can record the installation
-              either way, but the signed scan has to reach stage 2 before this project can close.
+              Needed before this project can close.
             </span>
           </span>
           <Link

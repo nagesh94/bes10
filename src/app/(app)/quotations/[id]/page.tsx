@@ -153,8 +153,8 @@ export default async function QuotationPage({ params }: { params: Promise<{ id: 
             />
             <p className="min-w-60 flex-1 text-[12.5px] leading-relaxed text-[var(--muted)]">
               {quotation.isChosen
-                ? `This is ${row.projectCode}’s quotation — filed into its documents and printed in the bank loan pack.`
-                : `An alternative offer on ${row.projectCode}. Another quotation is the chosen one, so this is not filed or printed. Choosing this one swaps them; neither is deleted.`}
+                ? `Chosen for ${row.projectCode}.`
+                : `Alternative offer on ${row.projectCode} — not chosen.`}
             </p>
           </div>
         ) : null}

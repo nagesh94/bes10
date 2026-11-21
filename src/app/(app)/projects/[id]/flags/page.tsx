@@ -119,15 +119,12 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
       projectId={id}
       stageNo={null}
       title="Flags"
-      note="Raised automatically from the form data. Both have to close before stage 1 does."
+      note="Both close before stage 1"
     >
 
       {rows.length === 0 ? (
         <div className="rounded-[var(--radius)] border border-[var(--green-border)] bg-[var(--green-soft)] px-6 py-8 text-center">
           <p className="font-semibold text-[var(--green-text)]">No flags on this project.</p>
-          <p className="mt-1 text-[13px] text-[var(--muted)]">
-            The four names agree and the sanctioned load clears the plant size.
-          </p>
         </div>
       ) : null}
 
@@ -272,10 +269,8 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
 
-              <p className="mb-4.5 text-[13.5px] leading-relaxed text-[var(--muted)]">
-                Sanctioned load must be greater than the plant size. A {loadDetail.plantKw ?? "—"} kW
-                plant will not pass DISCOM inspection on a {loadDetail.sanctionedKw ?? "—"} kW
-                connection.
+              <p className="mb-4.5 text-[13.5px] text-[var(--muted)]">
+                Sanctioned load must exceed the plant size.
               </p>
 
               <PortalLink

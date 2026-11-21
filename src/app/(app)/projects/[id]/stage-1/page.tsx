@@ -187,7 +187,7 @@ export default async function Stage1Page({
     <StageShell
       projectId={id}
       stageNo={1}
-      note="Eight sections, the flag checks, then the payment plan. Each section saves on its own, so the form can be filled over several sittings."
+      note="Each section saves on its own"
       badge={
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -243,9 +243,7 @@ export default async function Stage1Page({
         <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-5 sm:px-6">
           {activeKey === "aadhaar" && maskedAadhaar ? (
             <p className="mb-4 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3.5 py-2.5 text-[12.5px] text-[var(--muted)]">
-              An Aadhaar number from before this policy changed is still on file, ending{" "}
-              <span className="ref">{maskedAadhaar}</span>. The number is no longer collected — only
-              the name, address and upload below.
+              Aadhaar on file, ending <span className="ref">{maskedAadhaar}</span>. No longer collected.
             </p>
           ) : null}
 
@@ -332,7 +330,7 @@ export default async function Stage1Page({
                 projectId={id}
                 photoType="SITE_SURVEY"
                 label="Site photographs"
-                hint="As many as the roof needs — one or twenty. Taken on site, they are geotagged and the coordinates are stamped into the corner."
+                hint="Geotagged, taken on site"
                 photos={surveyPhotos}
               />
             </div>

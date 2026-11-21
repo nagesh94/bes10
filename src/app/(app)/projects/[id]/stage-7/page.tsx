@@ -120,8 +120,7 @@ export default async function Stage7Page({ params }: { params: Promise<{ id: str
               No installation record yet
             </strong>
             <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
-              Every one of these documents states what went on the roof — the module model, the
-              serials, the inverter. Without stage 3 there is nothing to put in them.
+              Stage 3 fills these documents.
             </span>
           </span>
           <Link

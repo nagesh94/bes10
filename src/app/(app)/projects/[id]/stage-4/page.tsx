@@ -5,7 +5,15 @@ import { getPhotoThumbUrls } from "@/app/actions/photos";
 import { PhotoGrid } from "@/components/documents/photo-grid";
 import { EarthingForm, MaterialForm } from "@/components/installation/material-form";
 import { db } from "@/lib/db";
-import { cableMakes, contacts, earthingRecords, materialConsumption, projects } from "@/lib/db/schema";
+import {
+  cableMakes,
+  contacts,
+  earthingRecords,
+  installations,
+  materialConsumption,
+  projects,
+  siteSurveys,
+} from "@/lib/db/schema";
 import { installerIdsFor } from "@/lib/projects/crew";
 import { can } from "@/lib/rbac/permissions";
 import { StageShell } from "@/components/projects/stage-shell";
@@ -50,6 +58,18 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
     .where(eq(earthingRecords.projectId, id))
     .limit(1);
 
+  const [install] = await db
+    .select({ pipesUsed: installations.pipesUsed })
+    .from(installations)
+    .where(eq(installations.projectId, id))
+    .limit(1);
+
+  const [survey] = await db
+    .select({ pipesRequired: siteSurveys.pipesRequired })
+    .from(siteSurveys)
+    .where(eq(siteSurveys.projectId, id))
+    .limit(1);
+
   const cableMakeRows = await db
     .select({ name: cableMakes.name })
     .from(cableMakes)
@@ -70,7 +90,7 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
     <StageShell
       projectId={id}
       stageNo={4}
-      note="The photos the portal asks for, the material actually consumed, and the measured earth resistance."
+      note="Photos, material and earth resistance"
       badge={
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -86,10 +106,8 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-0.5 text-base font-bold">Required photographs</h2>
-        <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-          Six distinct shots are needed — six copies of one of them will not do. Take them on the
-          phone with location switched on and the coordinates are burned into the corner of each
-          image, which is what the portal wants to see.
+        <p className="mb-4 text-[13px] text-[var(--muted)]">
+          {REQUIRED_PHOTO_TYPES.length} distinct shots, location on.
         </p>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(290px,1fr))] gap-4">
@@ -126,6 +144,8 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
               coreType: str(m.coreType),
               conductor: str(m.conductor),
             }))}
+            initialPipesUsed={str(install?.pipesUsed)}
+            pipesRequired={survey?.pipesRequired ?? null}
             cableMakeOptions={cableMakeRows.map((r) => r.name)}
           />
         </section>

@@ -188,8 +188,7 @@ export default async function FinancePage() {
         <div className="min-w-60 flex-1">
           <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Finance</h1>
           <p className="text-sm text-[var(--muted)]">
-            Every project&rsquo;s money in one place. Admin-only, and read-only — act on a job
-            from the job.
+            Read-only
           </p>
         </div>
         <span className="ref shrink-0 rounded-full bg-[var(--amber-soft)] px-3 py-1.5 text-[12px] font-bold text-[var(--amber-text)]">
@@ -199,8 +198,7 @@ export default async function FinancePage() {
 
       {plans.length === 0 ? (
         <p className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 py-14 text-center text-[13.5px] text-[var(--muted)]">
-          No payment plan has been saved on any project yet. The first one gives this page
-          something to add up.
+          No payment plan saved yet.
         </p>
       ) : (
         <>
@@ -233,11 +231,6 @@ export default async function FinancePage() {
                 style={{ width: `${Math.min(collectedPct, 100)}%` }}
               />
             </div>
-            <p className="mt-3 text-[12px] leading-relaxed opacity-70">
-              Collectible is the booked value plus money handed to customers, because that comes
-              back too. The subsidy is credited to the customer&rsquo;s own account, so it never
-              appears here as an inflow of ours.
-            </p>
           </section>
 
           <div className="mb-4.5 grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4.5">
@@ -327,7 +320,7 @@ export default async function FinancePage() {
           >
             {chasing.length === 0 ? (
               <p className="px-5 py-8 text-center text-[13px] text-[var(--muted)]">
-                Nothing outstanding anywhere. Every saved plan is collected in full.
+                Nothing outstanding.
               </p>
             ) : (
               <ul>

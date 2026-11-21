@@ -114,11 +114,8 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
               <div className="mb-1 flex flex-wrap items-baseline gap-2">
                 <h2 className="flex-1 text-base font-bold">Finance — Jan Samarth</h2>
               </div>
-              <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-                The loan is applied for on Jan Samarth, not here. The digital approval letter the
-                portal issues can be filed from the documents side too, which an employee can do
-                without seeing the amount below. The money itself arrives in two parts, PSS1 and
-                PSS2 — record each one as it lands.
+              <p className="mb-4 text-[13px] text-[var(--muted)]">
+                Applied for on Jan Samarth, released as PSS1 and PSS2.
               </p>
               <a
                 href="https://www.jansamarth.in/"
@@ -149,10 +146,6 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
 
               <div className="mt-5 space-y-2.5 border-t border-[var(--line-soft)] pt-4.5">
                 <h3 className="text-[13.5px] font-bold">Paper from the portal</h3>
-                <p className="text-[12.5px] leading-relaxed text-[var(--muted)]">
-                  Jan Samarth hands this out as a download. It lives nowhere but that login unless
-                  it is filed here, so upload it as it comes.
-                </p>
                 <UploadSlot
                   projectId={id}
                   docType="DIGITAL_APPROVAL_LETTER"
@@ -166,10 +159,7 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
           ) : (
             <section className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-5">
               <h2 className="mb-1 text-base font-bold text-[var(--muted)]">Finance</h2>
-              <p className="text-[13px] text-[var(--muted)]">
-                This is a cash project, so there is no Jan Samarth application, no digital approval
-                letter and no bank loan pack. Switch the mode above if that changes.
-              </p>
+              <p className="text-[13px] text-[var(--muted)]">Cash project — no loan paperwork.</p>
             </section>
           )}
 
@@ -197,9 +187,7 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
             <section className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
               <div className="border-b border-[var(--line)] px-6 py-4">
                 <h2 className="text-base font-bold">Given to the customer</h2>
-                <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">
-                  Recoverable, so every line here is added to what the project owes.
-                </p>
+                <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">Recoverable.</p>
               </div>
               {advances.map((a) => (
                 <div key={a.id} className="flex flex-wrap items-center gap-3 border-b border-[var(--line-soft)] px-6 py-3.5">
@@ -242,11 +230,6 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
               <span className="block h-full rounded-full bg-[var(--green)]" style={{ width: `${pct}%` }} />
             </div>
-            <p className="mt-3 text-[12px] leading-relaxed opacity-70">
-              The subsidy is credited to the customer&rsquo;s own account, not to BHIM — it reduces
-              what they are out of pocket, never what they owe us. Money we hand them does the
-              opposite: it is owed back on top of the project value.
-            </p>
           </section>
 
           <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
@@ -262,10 +245,7 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
 
           <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
             <h2 className="mb-1 text-sm font-bold">Money the other way</h2>
-            <p className="mb-3.5 text-[12.5px] leading-relaxed text-[var(--muted)]">
-              A fee paid on their behalf, or cash fronted against a subsidy that has not landed.
-              It is not a discount — it goes on to the outstanding figure until it comes back.
-            </p>
+            <p className="mb-3.5 text-[12.5px] text-[var(--muted)]">Recoverable, not a discount.</p>
             <GiveMoneyForm projectId={id} />
           </section>
         </aside>

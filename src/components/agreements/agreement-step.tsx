@@ -125,14 +125,8 @@ export async function AgreementStep({
         </ul>
       ) : null}
 
-      <p className="mt-2.5 text-[11.5px] leading-relaxed text-[var(--muted)]">
-        A Word file, not a PDF — the lawyer edits it to prepare the hard copy, and the signed,
-        notarised scan is uploaded separately. The parties are filled from this project; clause
-        19.1 is filled from the saved payment plan, or from the chosen quotation when there is
-        no plan yet, and can be changed either way.
-        {rows.length > 1
-          ? " A project can hold several drafts, but only the one on file is counted here and printed in the bank loan pack."
-          : ""}
+      <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">
+        A Word file, filled from this project.
       </p>
 
       {rows.length > 0 && !filed ? (
@@ -140,8 +134,7 @@ export async function AgreementStep({
           role="alert"
           className="mt-2.5 rounded-lg border border-[var(--amber-border)] bg-[var(--amber-surface)] px-3.5 py-2.5 text-[12.5px] font-medium text-[var(--amber-text)]"
         >
-          None of these is on file, so this project has no agreement in its documents and the
-          bank loan pack has nothing to print. Pick one.
+          None of these is on file. Pick one.
         </p>
       ) : null}
     </div>

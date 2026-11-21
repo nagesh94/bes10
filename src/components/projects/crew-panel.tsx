@@ -84,14 +84,11 @@ export function CrewPanel({
           {selected.length} on the crew
         </span>
       </div>
-      <p className="mb-3.5 text-[12.5px] leading-relaxed text-[var(--muted)]">
-        Everyone ticked gets this job on their phone, with the site survey and the
-        post-installation form. More than one is fine.
-      </p>
+      <p className="mb-3.5 text-[12.5px] text-[var(--muted)]">Tick anyone on this job.</p>
 
       {installers.length === 0 ? (
         <p className="text-[13.5px] text-[var(--muted)]">
-          No installer accounts yet. An admin creates them under Admin → Users.
+No installer accounts yet.
         </p>
       ) : (
         <ul className="list-none space-y-1.5 p-0">

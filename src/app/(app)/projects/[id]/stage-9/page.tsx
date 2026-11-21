@@ -112,9 +112,7 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
       {commissionRows.length > 0 ? (
         <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
           <h2 className="mb-0.5 text-base font-bold">Referral commission</h2>
-          <p className="mb-3.5 text-[13px] text-[var(--muted)]">
-            Paid from the Channel partners page, where the whole ledger lives.
-          </p>
+          <p className="mb-3.5 text-[13px] text-[var(--muted)]">Paid from Channel partners.</p>
           {commissionRows.map((c) => (
             <div
               key={c.commission.id}
@@ -176,10 +174,7 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
             </li>
           ))}
         </ul>
-        <p className="mb-3.5 text-[13px] leading-relaxed text-[var(--muted)]">
-          Closing is done from the stage gate, which is also where an admin can override if a
-          project has to close with something still open.
-        </p>
+        <p className="mb-3.5 text-[13px] text-[var(--muted)]">Closed from the stage gate.</p>
         <Link
           href={`/projects/${id}`}
           className="inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"

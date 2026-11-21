@@ -39,9 +39,6 @@ export function BankFile({
       <div className="flex flex-wrap items-center gap-2.5 border-b border-[var(--line)] bg-[var(--surface-2)] px-6 py-4">
         <div className="min-w-60 flex-1">
           <h2 className="text-[17px] font-bold">Bank file</h2>
-          <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">
-            The soft copy the bank needs. Phase 4 prints the whole thing in one click.
-          </p>
         </div>
         <span
           className={`ref rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -128,15 +125,11 @@ export function BankFile({
               </span>
             </div>
           ))}
-          <p className="mt-2 text-[11.5px] leading-relaxed text-[var(--amber-body)]">
-            These are objects, not files, so they cannot be printed. They appear on the cover
-            checklist instead.
-          </p>
+          <p className="mt-2 text-[11.5px] text-[var(--amber-body)]">Not printable.</p>
         </div>
 
         <p className="mt-4 text-[12.5px] text-[var(--muted)]">
-          Around <span className="ref">{estimatedPages(hasCoApplicant)} pages</span> once printed, plus the cover
-          checklist. Exact counts come from the real files.
+          About <span className="ref">{estimatedPages(hasCoApplicant)} pages</span> once printed.
         </p>
       </div>
     </section>

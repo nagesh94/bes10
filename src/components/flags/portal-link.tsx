@@ -16,7 +16,7 @@ export function PortalLink({
   if (!href) {
     return (
       <p className="mb-5 rounded-[9px] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-4 py-3.5 text-[13px] text-[var(--muted)]">
-        No portal URL is set for this DISCOM yet — an admin can add it under Master data.
+No portal URL set for this DISCOM.
       </p>
     );
   }

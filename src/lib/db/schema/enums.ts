@@ -123,6 +123,7 @@ export const templateEngineEnum = pgEnum("template_engine", [
 export const photoTypeEnum = pgEnum("photo_type", [
   "CUSTOMER_WITH_PANEL",
   "CUSTOMER_WITH_INVERTER",
+  "INVERTER_SERIAL",
   "EARTHING_AC",
   "EARTHING_DC",
   "EARTHING_PIT",

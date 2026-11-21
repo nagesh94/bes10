@@ -170,20 +170,15 @@ export default async function AgreementsPage({
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
           <p className="mb-1 font-semibold">Nothing matches</p>
           <p className="text-sm text-[var(--muted)]">
-            No agreement answers that search or those filters.{" "}
             <Link href="/agreements" className="font-semibold">
-              Clear them
-            </Link>{" "}
-            to see the whole list.
+              Clear filters
+            </Link>
           </p>
         </div>
       ) : total === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center">
           <p className="mb-1 font-semibold">No agreements yet</p>
-          <p className="mb-5 text-sm text-[var(--muted)]">
-            The app builds the model agreement as a Word file for the lawyer to edit. It can be
-            drawn up for a walk-in with no project, and attached to one later.
-          </p>
+          <p className="mb-5 text-sm text-[var(--muted)]">Built as a Word file.</p>
           <Link
             href="/agreements/new"
             className="inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"

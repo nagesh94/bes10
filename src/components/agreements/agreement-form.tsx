@@ -131,10 +131,6 @@ export function AgreementForm({
       {/* ── The parties ── */}
       <section className={sectionBox}>
         <h2 className="mb-1 text-base font-bold">First party — the consumer</h2>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">
-          Printed in the opening recital and again in the signature block. The title is left off
-          rather than guessed when it is not known.
-        </p>
 
         <div className="grid gap-4 sm:grid-cols-[110px_1fr]">
           <div>
@@ -197,10 +193,9 @@ export function AgreementForm({
           <Err name="executionDate" errors={errors} />
         </div>
 
-        <p className="mt-4 text-[12px] leading-relaxed text-[var(--muted)]">
-          The second party — BHIM Energy Solutions and its registered office — is taken from the
-          company branch record and printed as it stands today.
-          {projectCode ? ` This agreement is attached to ${projectCode}.` : ""}
+        <p className="mt-4 text-[12px] text-[var(--muted)]">
+          Second party taken from the company branch record.
+          {projectCode ? ` Attached to ${projectCode}.` : ""}
         </p>
       </section>
 
@@ -238,9 +233,6 @@ export function AgreementForm({
       {/* ── The instalments ── */}
       <section className={sectionBox}>
         <h2 className="mb-1 text-base font-bold">Clause 19.1 (i)(ii)(iii) — the instalments</h2>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">
-          Each one prints as a rupee figure with its share of the cost worked out beside it.
-        </p>
 
         <div className="overflow-x-auto rounded-[9px] border border-[var(--line)]">
           <div className="grid min-w-[520px] grid-cols-[32px_2.4fr_1fr_64px_40px] items-center gap-2 border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
@@ -355,10 +347,7 @@ export function AgreementForm({
               ? "Save and rebuild the .docx"
               : "Generate agreement"}
         </button>
-        <span className="text-[12.5px] text-[var(--muted)]">
-          A Word file, not a PDF — the lawyer edits it to prepare the hard copy. The signed,
-          notarised scan is uploaded separately and never replaces this one.
-        </span>
+        <span className="text-[12.5px] text-[var(--muted)]">Generates a Word file.</span>
       </div>
     </form>
   );

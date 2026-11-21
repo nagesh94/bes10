@@ -143,12 +143,7 @@ export function PaymentPlanForm({
           {inr(scheduledSum)} of {inr(totalNum)}
         </span>
       </div>
-      <p className="mb-3 text-[12.5px] text-[var(--muted)]">
-        Optional. Each line is an amount and what makes it fall due — PSS1 and PSS2 are the two
-        parts a bank releases the loan in, and the split between them is the lender&rsquo;s, so type
-        whatever they have sanctioned. A schedule that stops short of the total is fine; the rest
-        is simply the balance.
-      </p>
+      <p className="mb-3 text-[12.5px] text-[var(--muted)]">Optional. An amount and what makes it fall due.</p>
 
       <div className="mb-3 space-y-2.5">
         {milestones.map((m, i) => (
@@ -196,10 +191,6 @@ export function PaymentPlanForm({
       <button type="button" disabled={pending} onClick={save} className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60">
         {pending ? "Saving…" : "Save plan"}
       </button>
-      <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">
-        Saving ticks the last line on the stage 1 gate. It can be changed again at any time —
-        the plan follows the negotiation, and every save is audit-logged.
-      </p>
     </div>
   );
 }

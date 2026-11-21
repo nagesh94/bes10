@@ -39,9 +39,7 @@ export function ConvertPanel({ projectId }: { projectId: string }) {
     <section className="overflow-hidden rounded-[var(--radius)] border border-[var(--orange-border)] bg-[var(--surface)]">
       <div className="border-b border-[var(--orange-border)] bg-[var(--amber-surface)] px-5 py-4">
         <h2 className="text-base font-bold">Convert to prospect</h2>
-        <p className="mt-0.5 text-[12.5px] text-[var(--amber-body)]">
-          Create the application on PM Surya Ghar first, then paste its ID here.
-        </p>
+        <p className="mt-0.5 text-[12.5px] text-[var(--amber-body)]">Paste the portal ID.</p>
       </div>
 
       <form onSubmit={onSubmit} noValidate className="p-5">
@@ -69,9 +67,7 @@ export function ConvertPanel({ projectId }: { projectId: string }) {
         >
           {pending ? "Converting…" : "Convert to prospect"}
         </button>
-        <p className="mt-2.5 text-[11.5px] leading-relaxed text-[var(--muted)]">
-          Nothing is retyped — the same record keeps its code and history, and stage 1 opens.
-        </p>
+        <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">Keeps its code and history.</p>
       </form>
     </section>
   );

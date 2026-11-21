@@ -16,6 +16,7 @@ import {
   installations,
   materialConsumption,
   panelSerials,
+  siteSurveys,
   structureMembers,
 } from "@/lib/db/schema";
 import { loadInstallationComboOptions } from "@/lib/installer/combo-options";
@@ -45,6 +46,11 @@ export default async function InstallerInstallationPage({
     .select()
     .from(installations)
     .where(eq(installations.projectId, id))
+    .limit(1);
+  const [survey] = await db
+    .select({ pipesRequired: siteSurveys.pipesRequired })
+    .from(siteSurveys)
+    .where(eq(siteSurveys.projectId, id))
     .limit(1);
   const comboOptions = await loadInstallationComboOptions();
   const serials = await db
@@ -94,7 +100,7 @@ export default async function InstallerInstallationPage({
       <BackLink href={`/installer/${id}`} label={customerName(job.contact)} />
       <PageTitle
         title="Post-installation details"
-        sub="Everything here prints into the work completion report, so record it the way the DISCOM reads it."
+        sub="Prints into the work completion report."
       />
 
       <div className="space-y-3">
@@ -173,10 +179,8 @@ export default async function InstallerInstallationPage({
               {covered}/{REQUIRED_PHOTO_TYPES.length}
             </StatePill>
           </div>
-          <p className="mb-3.5 text-[13px] leading-relaxed text-[var(--muted)]">
-            Six distinct shots — six copies of one of them will not do. Keep location switched on
-            and the coordinates are burned into the corner of each image, which is what the portal
-            wants to see.
+          <p className="mb-3.5 text-[13px] text-[var(--muted)]">
+            {REQUIRED_PHOTO_TYPES.length} distinct shots, location on.
           </p>
 
           <div className="space-y-3">
@@ -212,6 +216,8 @@ export default async function InstallerInstallationPage({
               coreType: str(m.coreType),
               conductor: str(m.conductor),
             }))}
+            initialPipesUsed={str(install?.pipesUsed)}
+            pipesRequired={survey?.pipesRequired ?? null}
             cableMakeOptions={cableMakeRows.map((r) => r.name)}
           />
         </FieldSection>

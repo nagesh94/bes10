@@ -122,9 +122,7 @@ export default async function MasterPage({
   return (
     <main className="mx-auto max-w-[1280px] px-6 pt-[26px] pb-14">
       <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Master data & templates</h1>
-      <p className="mb-5 max-w-[760px] text-sm text-[var(--muted)]">
-        Everything here is editable without a deploy. Add a panel model or a new agreement wording and it is live for the next project.
-      </p>
+      <p className="mb-5 text-sm text-[var(--muted)]">Editable without a deploy.</p>
 
       <div className="flex flex-wrap items-start gap-[18px]">
         <aside className="w-full max-w-[280px] min-w-[210px] flex-[1_1_230px] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] p-[9px]">
@@ -313,9 +311,6 @@ function Catalog({
             <div key={company.id} className="border-b border-[var(--line-soft)] px-5 py-4">
               <div className="text-sm font-semibold">{company.name}</div>
               <div className="ref mt-0.5 text-xs text-[var(--muted)]">{company.code}</div>
-              <p className="mt-2 mb-0 text-[12.5px] text-[var(--muted)]">
-                These addresses are what the name-change and load flags link to. A new zone does not need a deploy.
-              </p>
               <DiscomLinksForm company={company} />
               <div className="mt-4">
                 {own.length === 0 ? (

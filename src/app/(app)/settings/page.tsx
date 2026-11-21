@@ -62,20 +62,13 @@ export default async function SettingsPage() {
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-1 text-base font-bold">{t("common.appearance")}</h2>
-        <p className="mb-4.5 text-[13px] text-[var(--muted)]">
-          System follows your phone or laptop. Installers often pick dark for early-morning and
-          evening site visits.
-        </p>
+        <p className="mb-4.5 text-[13px] text-[var(--muted)]">System follows your device.</p>
         <ThemePicker initial={theme} />
       </section>
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-1 text-base font-bold">{t("common.language")}</h2>
-        <p className="mb-4.5 text-[13px] leading-relaxed text-[var(--muted)]">
-          Changes labels, buttons and messages. Reference numbers, serials, IFSC codes and amounts
-          always stay as they are, because they get retyped into government portals exactly as
-          shown.
-        </p>
+        <p className="mb-4.5 text-[13px] text-[var(--muted)]">Labels only — numbers stay as they are.</p>
         <LanguagePicker initial={locale === "hi" ? "hi" : "en"} />
 
         <div className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3.5 py-3">
@@ -96,19 +89,12 @@ export default async function SettingsPage() {
               <div className="mt-0.5 text-sm font-semibold">{t("stages.settlement")}</div>
             </div>
           </div>
-          <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">
-            Switch to हिंदी and the labels change; the two numbers do not.
-          </p>
         </div>
       </section>
 
       <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-3 text-base font-bold">Security</h2>
         <PasswordForm />
-        <p className="mt-3.5 text-[12.5px] leading-relaxed text-[var(--muted)]">
-          Sign-in is email and password for now. Two-factor can be added later without changing how
-          anyone signs in today.
-        </p>
       </section>
     </main>
   );

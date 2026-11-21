@@ -95,27 +95,22 @@ export default async function NewAgreementPage({
         <p className="text-sm text-[var(--muted)]">
           {projectCode
             ? `For ${projectCode} — ${SOURCE_LINE[source] ?? SOURCE_LINE.typed}`
-            : "Not linked to any project — it can be attached to one later."}
+            : "Not linked to a project"}
         </p>
       </div>
 
       {stillNeeded.length > 0 ? (
         <p className="mb-5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-4 py-3 text-[13px] leading-relaxed text-[var(--amber-body)]">
-          <strong className="font-bold text-[var(--amber-text)]">
-            Not enough on file to write it unattended.
-          </strong>{" "}
-          Everything this project knows is filled in below — add{" "}
+          <strong className="font-bold text-[var(--amber-text)]">Still needed:</strong>{" "}
           {stillNeeded.length === 1
             ? stillNeeded[0]
             : `${stillNeeded.slice(0, -1).join(", ")} and ${stillNeeded.at(-1)}`}
-          , then generate.
         </p>
       ) : null}
 
       {!branch ? (
         <p className="rounded-[var(--radius)] border border-[var(--red-border)] bg-[var(--red-surface)] px-4 py-3.5 text-[13.5px] font-medium text-[var(--red-text)]">
-          No company branch is set up, so the agreement has no second party to name. Add one
-          under Admin first.
+          No company branch is set up. Add one under Admin first.
         </p>
       ) : (
         <AgreementForm mode="create" initial={initial} projectCode={projectCode} />

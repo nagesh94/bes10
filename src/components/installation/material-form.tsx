@@ -29,14 +29,21 @@ const CONDUCTOR_OPTIONS = ["copper", "aluminium"];
 export function MaterialForm({
   projectId,
   initial,
+  initialPipesUsed = "",
+  pipesRequired = null,
   cableMakeOptions = [],
 }: {
   projectId: string;
   initial: MaterialInput[];
+  /** Count already recorded, as a string so the input stays controlled. */
+  initialPipesUsed?: string;
+  /** The survey estimate, shown beside the input when there is one. */
+  pipesRequired?: number | null;
   /** From the cable-makes master list. Typing one not on the list is still allowed. */
   cableMakeOptions?: string[];
 }) {
   const router = useRouter();
+  const [pipesUsed, setPipesUsed] = useState(initialPipesUsed);
   const [rows, setRows] = useState<MaterialInput[]>(
     initial.length
       ? initial
@@ -69,10 +76,7 @@ export function MaterialForm({
   return (
     <div>
       <h3 className="mb-0.5 text-base font-bold">Material used</h3>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">
-        The actual runs, not the survey estimate. These print straight into the work completion
-        report.
-      </p>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">Actual runs, not the estimate.</p>
 
       <div className="space-y-3">
         {rows.map((r, i) => (
@@ -193,6 +197,24 @@ export function MaterialForm({
         ) : null;
       })()}
 
+      <div className="mt-4 max-w-[200px]">
+        <label className={labelCls} htmlFor="pipesUsed">Pipes used</label>
+        <input
+          id="pipesUsed"
+          value={pipesUsed}
+          onChange={(e) => {
+            setPipesUsed(e.target.value.replace(/[^0-9]/g, ""));
+            setSaved(false);
+          }}
+          inputMode="numeric"
+          placeholder="6"
+          className={`${cell} ref`}
+        />
+        {pipesRequired !== null ? (
+          <p className="mt-1.5 text-[11.5px] text-[var(--muted)]">{pipesRequired} on the survey</p>
+        ) : null}
+      </div>
+
       {error ? (
         <p role="alert" className="mt-3.5 text-[13px] font-medium text-[var(--red-text)]">{error}</p>
       ) : null}
@@ -204,7 +226,7 @@ export function MaterialForm({
           onClick={async () => {
             setPending(true);
             setError(null);
-            const result = await saveMaterial(projectId, rows);
+            const result = await saveMaterial(projectId, rows, pipesUsed);
             setPending(false);
             if (!result.ok) return setError(result.error);
             setSaved(true);
@@ -218,6 +240,20 @@ export function MaterialForm({
     </div>
   );
 }
+
+/**
+ * What an untouched earthing record starts on, pre-filled into the fields
+ * rather than hinted behind them.
+ *
+ * The resistance is a reading taken with a meter on site, so whoever is
+ * standing there has to overwrite it with the figure they actually measured —
+ * the default is a starting point, not a measurement.
+ */
+const EARTHING_DEFAULTS = {
+  resistanceOhms: "1.2",
+  wireSize: "4",
+  wireType: "Copper and G.I.",
+};
 
 /** Measured on site. Under 2 Ω or the DISCOM will not pass it. */
 export function EarthingForm({
@@ -235,7 +271,15 @@ export function EarthingForm({
   };
 }) {
   const router = useRouter();
-  const [v, setV] = useState(initial);
+  // The three text fields start on the usual answers rather than showing them
+  // as grey placeholder text, which was being read as if it had been filled
+  // in. A field with something already recorded against it is left alone.
+  const [v, setV] = useState(() => ({
+    ...initial,
+    resistanceOhms: initial.resistanceOhms.trim() || EARTHING_DEFAULTS.resistanceOhms,
+    wireSize: initial.wireSize.trim() || EARTHING_DEFAULTS.wireSize,
+    wireType: initial.wireType.trim() || EARTHING_DEFAULTS.wireType,
+  }));
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -270,7 +314,6 @@ export function EarthingForm({
               value={v.resistanceOhms}
               onChange={(e) => set({ resistanceOhms: e.target.value.replace(/[^0-9.]/g, "") })}
               inputMode="decimal"
-              placeholder="1.2"
               className={`${cell} ref ${measured ? (passes ? "border-[var(--green)]" : "border-[var(--red-text)]") : ""}`}
             />
             <span className="shrink-0 text-sm text-[var(--muted)]">Ω</span>
@@ -292,13 +335,12 @@ export function EarthingForm({
             value={v.wireSize}
             onChange={(e) => set({ wireSize: e.target.value.replace(/[^0-9.]/g, "") })}
             inputMode="decimal"
-            placeholder="4"
             className={`${cell} ref`}
           />
         </div>
         <div>
           <label className={labelCls} htmlFor="wireType">Wire type</label>
-          <input id="wireType" value={v.wireType} onChange={(e) => set({ wireType: e.target.value })} placeholder="Copper and G.I." className={cell} />
+          <input id="wireType" value={v.wireType} onChange={(e) => set({ wireType: e.target.value })} className={cell} />
         </div>
       </div>
 

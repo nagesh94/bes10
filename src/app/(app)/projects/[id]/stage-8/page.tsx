@@ -99,9 +99,7 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
               No net meter payment on file
             </strong>
             <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
-              The certificate states the system was checked{" "}
-              <em>with installation of bi-directional meter</em>. If the meter is not in yet, this
-              is early.
+              The certificate assumes the meter is in.
             </span>
           </span>
           <Link
@@ -136,11 +134,7 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
 
       <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-0.5 text-base font-bold">The signed certificate</h2>
-        <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-          Three parties sign it — the beneficiary, our representative, and the DISCOM&apos;s nodal
-          officer. The scan that comes back is filed separately and never replaces the copy we
-          generated; both are kept.
-        </p>
+        <p className="mb-4 text-[13px] text-[var(--muted)]">Three signatures needed.</p>
         <div className="max-w-[420px]">
           <UploadSlot
             projectId={id}
@@ -163,10 +157,8 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
         </div>
         {install?.installationDate ? (
           <p className="mt-4 text-[12px] text-[var(--muted-soft)]">
-            The certificate reads back the installation date recorded at stage 3
-            {" "}({install.installationDate}) and the capacity
-            {install.totalCapacityKw ? ` (${install.totalCapacityKw} kWp)` : ""}. Correct those at
-            stage 3 and regenerate if either is wrong.
+            From stage 3: {install.installationDate}
+            {install.totalCapacityKw ? ` · ${install.totalCapacityKw} kWp` : ""}
           </p>
         ) : null}
       </section>

@@ -46,6 +46,11 @@ export const installations = pgTable("installations", {
   structureCompany: text("structure_company"),
   legCount: integer("leg_count"),
 
+  // Stage 4. A plain count, unlike the cable runs in `material_consumption`,
+  // which carry a make, size, core and conductor each. Recorded against the
+  // survey's `pipes_required` estimate.
+  pipesUsed: integer("pipes_used"),
+
   // Distribution boxes
   acdbMake: text("acdb_make"),
   acdbSizeType: text("acdb_size_type"),

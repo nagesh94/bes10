@@ -75,11 +75,7 @@ export default async function Stage5Page({ params }: { params: Promise<{ id: str
       {!isDcr ? (
         <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-6">
           <h2 className="mb-1 text-base font-bold">Nothing to do on this stage</h2>
-          <p className="mb-4 text-[13.5px] leading-relaxed text-[var(--muted)]">
-            This project is marked non-DCR, so no domestic content certificate applies and the gate
-            passes without one. A non-DCR project is not eligible for the central subsidy — if that
-            is wrong, the DCR flag is on the prospect form.
-          </p>
+          <p className="mb-4 text-[13.5px] text-[var(--muted)]">Non-DCR — no certificate needed.</p>
           <Link
             href={`/projects/${id}/stage-1`}
             className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4.5 text-[13.5px] font-bold text-[var(--navy-text)] no-underline"
@@ -106,8 +102,7 @@ export default async function Stage5Page({ params }: { params: Promise<{ id: str
                 No panel model recorded yet
               </strong>
               <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
-                The certificate is raised against a specific model. Record the installation at stage
-                3 first, or the certificate may be raised against the wrong one.
+                Record the installation at stage 3 first.
               </span>
             </div>
           )}
@@ -122,9 +117,7 @@ export default async function Stage5Page({ params }: { params: Promise<{ id: str
 
           <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
             <h2 className="mb-0.5 text-base font-bold">The certificate</h2>
-            <p className="mb-4 text-[13px] text-[var(--muted)]">
-              Download it from the registry and upload the file here. Photo or PDF both work.
-            </p>
+            <p className="mb-4 text-[13px] text-[var(--muted)]">Photo or PDF.</p>
             <div className="max-w-[420px]">
               <UploadSlot
                 projectId={id}

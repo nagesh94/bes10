@@ -151,9 +151,6 @@ export function StageGate({
                 Cancel
               </button>
             </div>
-            <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">
-              Recorded in the audit log and on the project's stage history, against your name.
-            </p>
           </div>
         ) : (
           <div className="mt-4.5 flex flex-wrap gap-2.5">
@@ -180,10 +177,8 @@ export function StageGate({
         )}
 
         {!passed && !overriding ? (
-          <p className="mt-3 text-[12.5px] leading-relaxed text-[var(--muted)]">
-            {outstandingCount} line{outstandingCount === 1 ? "" : "s"} still open. You can move on
-            without {outstandingCount === 1 ? "it" : "them"} — you will be asked why, and the
-            answer stays on the project.
+          <p className="mt-3 text-[12.5px] text-[var(--muted)]">
+            {outstandingCount} line{outstandingCount === 1 ? "" : "s"} still open.
           </p>
         ) : null}
       </div>

@@ -54,10 +54,7 @@ export function SubsidyForm({
   return (
     <div>
       <h2 className="mb-0.5 text-base font-bold">Subsidy</h2>
-      <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-        Claimed on the PM Surya Ghar portal and paid straight to the consumer&apos;s bank account.
-        This records what actually happened there.
-      </p>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">Paid to the consumer&apos;s account.</p>
 
       <div className="mb-4">
         <div className={labelCls}>Status</div>
@@ -128,8 +125,7 @@ export function SubsidyForm({
 
       {shortfall > 0 ? (
         <p className="mb-3 rounded-lg bg-[var(--amber-surface)] px-3.5 py-2.5 text-[12.5px] font-medium text-[var(--amber-text)]">
-          ₹{shortfall.toLocaleString("en-IN")} less than expected arrived. Worth checking before
-          this project is closed.
+          ₹{shortfall.toLocaleString("en-IN")} less than expected arrived.
         </p>
       ) : null}
 
@@ -178,10 +174,10 @@ export function FinalPayment({
   return (
     <div>
       <h2 className="mb-0.5 text-base font-bold">Final payment</h2>
-      <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
+      <p className="mb-4 text-[13px] text-[var(--muted)]">
         {outstanding > 0
-          ? `₹${outstanding.toLocaleString("en-IN")} still to come in before this project can close.`
-          : "Nothing outstanding. Anything recorded here would be an overpayment."}
+          ? `₹${outstanding.toLocaleString("en-IN")} still to come in.`
+          : "Nothing outstanding."}
       </p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">

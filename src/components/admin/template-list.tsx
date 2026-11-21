@@ -35,7 +35,7 @@ export function TemplateList({
 
       {templates.length === 0 ? (
         <p className="px-5 py-8 text-sm text-[var(--muted)]">
-          No templates yet. Upload a Word file or a flat PDF to start a version.
+          No templates yet.
         </p>
       ) : (
         templates.map((template) => (
@@ -68,11 +68,6 @@ export function TemplateList({
         ))
       )}
 
-      <div className="bg-[var(--surface-2)] px-5 py-[15px]">
-        <p className="m-0 text-[12.5px] leading-relaxed text-[var(--muted)]">
-          Word templates are the ones your team can edit directly. Flat government PDFs are filled by coordinates, so changing one needs a developer.
-        </p>
-      </div>
     </section>
   );
 }

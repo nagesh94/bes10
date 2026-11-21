@@ -327,7 +327,7 @@ export async function loadProjectSummary(
   );
 
   sections.push(
-    section("project", "Project", "How it came in and who is carrying it.", [
+    section("project", "Project", "Source and owner.", [
       { label: "Project code", value: txt(project.code), mono: true },
       { label: "Lifecycle", value: label(LIFECYCLE, project.lifecycleStage) },
       { label: "Pipeline stage", value: `${project.pipelineStage} of 9` },
@@ -361,7 +361,7 @@ export async function loadProjectSummary(
   );
 
   sections.push(
-    section("rooftop", "Rooftop", "Plant size as applied for, and where the roof is.", [
+    section("rooftop", "Rooftop", "Size and location.", [
       { label: "Plant size", value: withUnit(rooftop?.plantKw, "kW") },
       { label: "Asked for as a lead", value: txt(project.interestedPlantKw) },
       { label: "Latitude", value: txt(rooftop?.latitude), mono: true },
@@ -387,7 +387,7 @@ export async function loadProjectSummary(
     );
 
     sections.push(
-      section("bank", "Bank", "Where the subsidy lands — the customer's account, never ours.", [
+      section("bank", "Bank", "Where the subsidy lands.", [
         { label: "Bank name", value: txt(bank?.bankName) },
         { label: "Account holder", value: txt(bank?.accountHolderName) },
         { label: "Account number", value: txt(bank?.accountNumber), mono: true },
@@ -399,7 +399,7 @@ export async function loadProjectSummary(
 
     if (bank?.hasCoApplicant || coApplicant) {
       sections.push(
-        section("coApplicant", "Co-applicant", "The bank wants the same identity set from them.", [
+        section("coApplicant", "Co-applicant", "Same identity set.", [
           { label: "Full name", value: txt(coApplicant?.name) },
           { label: "Relationship", value: txt(coApplicant?.relationship) },
           { label: "Phone", value: txt(coApplicant?.phone), mono: true },
@@ -421,7 +421,7 @@ export async function loadProjectSummary(
   );
 
   sections.push(
-    section("equipment", "Equipment chosen", "Agreed at stage 1 and printed into the papers.", [
+    section("equipment", "Equipment chosen", "Agreed at stage 1.", [
       { label: "Panel type", value: txt(other?.panelType) },
       { label: "Panel company", value: txt(other?.panelCompany) },
       { label: "Panel model", value: txt(other?.panelModelNo) },
@@ -430,7 +430,7 @@ export async function loadProjectSummary(
   );
 
   sections.push(
-    section("survey", "Site survey", "Estimated runs, measured before the work.", [
+    section("survey", "Site survey", "Estimated runs.", [
       { label: "AC cable", value: withUnit(survey?.acCableLengthM, "m") },
       { label: "DC cable", value: withUnit(survey?.dcCableLengthM, "m") },
       { label: "Earthing", value: withUnit(survey?.earthingLengthM, "m") },
@@ -483,6 +483,7 @@ export async function loadProjectSummary(
       { label: "ACDB SPD / MCB", value: join([install?.acdbSpd, install?.acdbMcb], " / ") },
       { label: "DCDB", value: join([install?.dcdbMake, install?.dcdbSizeType], " · ") },
       { label: "DCDB SPD / MCB", value: join([install?.dcdbSpd, install?.dcdbMcb], " / ") },
+      { label: "Pipes used", value: txt(install?.pipesUsed) },
       { label: "Module serials scanned", value: serialRows.length ? String(serialRows.length) : DASH },
     ]),
   );
@@ -563,7 +564,7 @@ export async function loadProjectSummary(
     const totalGiven = advanceRows.reduce((s, a) => s + Number(a.amount), 0);
 
     sections.push(
-      section("money", "Money", "Admin only — the same figures as the payment plan.", [
+      section("money", "Money", "Admin only.", [
         { label: "Payment mode", value: label(PAYMENT_MODE, plan?.mode) },
         { label: "Project value", value: inr(plan?.totalValue) },
         { label: "Cash component", value: inr(plan?.cashComponent) },

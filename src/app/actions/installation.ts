@@ -311,8 +311,15 @@ export interface MaterialInput {
 export async function saveMaterial(
   projectId: string,
   rows: MaterialInput[],
+  /** A plain count, saved onto the installation row beside the cable runs. */
+  pipesUsed = "",
 ): Promise<InstallResult> {
   const actor = await assertFieldAccess(projectId, "evidence.write");
+
+  if (pipesUsed.trim() && !/^[0-9]+$/.test(pipesUsed.trim())) {
+    return { ok: false, error: "Pipes used must be a whole number." };
+  }
+  const pipes = int(pipesUsed);
 
   const used = new Set<string>();
   for (const r of rows) {
@@ -344,13 +351,19 @@ export async function saveMaterial(
   await db.transaction(async (tx) => {
     await tx.delete(materialConsumption).where(eq(materialConsumption.projectId, projectId));
     if (clean.length) await tx.insert(materialConsumption).values(clean);
+    // The installation row is created at stage 3, but material can be entered
+    // first, so this upserts rather than updates.
+    await tx
+      .insert(installations)
+      .values({ projectId, pipesUsed: pipes })
+      .onConflictDoUpdate({ target: installations.projectId, set: { pipesUsed: pipes } });
     await tx.insert(auditLog).values({
       actorId: actor.id,
       action: "evidence.material",
       entityType: "installation",
       entityId: projectId,
       projectId,
-      after: { runs: clean.length },
+      after: { runs: clean.length, pipesUsed: pipes },
     });
   });
 

@@ -142,9 +142,6 @@ function PartnerPicker({
         ))}
       </select>
       <Err name="partnerId" errors={errors} />
-      <p className="mt-1.5 text-[11.5px] text-[var(--muted-soft)]">
-        A partner login with no partner record attached would see an empty page.
-      </p>
     </div>
   );
 }
@@ -313,7 +310,7 @@ export function CreateUser({ partners }: { partners: PartnerOption[] }) {
           id="u-pass"
           label="Temporary password"
           placeholder="at least 10 characters"
-          hint="Shown once after you create the account. Give it to them directly."
+          hint="Shown once after creation"
           value={v.password}
           onChange={(password) => setV((o) => ({ ...o, password }))}
           errors={errors}
@@ -349,8 +346,7 @@ export function CreateUser({ partners }: { partners: PartnerOption[] }) {
         <div className="mt-3 mb-3 rounded-lg border border-[var(--green-border)] bg-[var(--green-soft)] px-3.5 py-3 text-[13px] text-[var(--green-text)]">
           <p className="m-0 font-semibold">{done.email} created.</p>
           <p className="mt-1 mb-0">
-            Password, shown once: <span className="ref font-semibold">{done.password}</span> — pass
-            it on yourself; it is not stored anywhere readable.
+            Password, shown once: <span className="ref font-semibold">{done.password}</span>
           </p>
         </div>
       ) : null}
@@ -566,7 +562,7 @@ export function UserList({
                   <Err name="roles" errors={errors} />
                   {u.isSelf ? (
                     <p className="mt-1.5 text-[11.5px] text-[var(--muted-soft)]">
-                      Your own admin role is fixed here — another admin can change it for you.
+                      Your own admin role is fixed.
                     </p>
                   ) : null}
                 </div>

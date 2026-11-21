@@ -106,7 +106,7 @@ export default async function InstallerJobPage({ params }: { params: Promise<{ i
           href={`/installer/${id}/survey`}
           step="1"
           title="Site survey"
-          blurb="The runs you measured on the roof before the work starts — cable, earthing, LA and pipes."
+          blurb="Measured runs before the work starts."
           state={surveyState}
           status={
             surveyState === "done" ? "Filled in" : surveyState === "part" ? "Started" : "Not started"
@@ -116,7 +116,7 @@ export default async function InstallerJobPage({ params }: { params: Promise<{ i
           href={`/installer/${id}/installation`}
           step="2"
           title="Post-installation details"
-          blurb="What actually went on the roof, the panel serials, the six photographs, material used and the earth resistance."
+          blurb="Serials, photographs and material used."
           state={postState}
           status={
             postState === "done"

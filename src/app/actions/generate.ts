@@ -50,8 +50,6 @@ import {
   putDocument,
 } from "@/lib/storage/operations";
 
-const DOCX_MIME =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 const PDF_MIME = "application/pdf";
 
 export type GenerateOneResult =
@@ -421,25 +419,31 @@ export async function generateDocument(
     };
   }
 
+  // Everything filed here is a PDF. These documents are printed, signed and
+  // uploaded to the portal, never edited after generation, and a .docx in the
+  // documents list was one more thing to convert by hand before it could go up
+  // — on a phone it would not open at all. The .docx is still what the
+  // builders produce; it is now an intermediate that Gotenberg converts on the
+  // way to storage, the same step the submission pack merge already used.
   let buffer: Buffer;
-  let mimeType: string;
-  let extension: string;
   if (docType === "SUBMISSION_PACK") {
     try {
       buffer = await buildSubmissionPack(projectId, ctx, isDcr);
     } catch (cause) {
       return { ok: false, error: cause instanceof Error ? cause.message : String(cause) };
     }
-    mimeType = PDF_MIME;
-    extension = "pdf";
   } else {
-    buffer = await render(docType, ctx);
-    mimeType = DOCX_MIME;
-    extension = "docx";
+    const docx = await render(docType, ctx);
+    try {
+      buffer = await convertDocxToPdf(docx, `${SLUG[docType]}.docx`);
+    } catch (cause) {
+      return { ok: false, error: cause instanceof Error ? cause.message : String(cause) };
+    }
   }
+  const mimeType = PDF_MIME;
 
   await ensureBuckets();
-  const fileName = `${ctx.projectCode}-${SLUG[docType]}.${extension}`;
+  const fileName = `${ctx.projectCode}-${SLUG[docType]}.pdf`;
   const key = documentKey(projectId, docType, "original", fileName);
   await putDocument(key, buffer, mimeType);
 

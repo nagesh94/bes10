@@ -62,9 +62,7 @@ export default async function AdminUsersPage() {
         <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Users</h1>
         <p className="text-sm text-[var(--muted)]">
           {users.length} {users.length === 1 ? "account" : "accounts"}
-          {disabled > 0 ? `, ${disabled} disabled` : ""}. An account can hold several roles, and
-          each one only ever adds to what the person reaches. The server enforces them on every
-          action — not just in the menu.
+          {disabled > 0 ? `, ${disabled} disabled` : ""}
         </p>
       </div>
 
@@ -87,10 +85,7 @@ export default async function AdminUsersPage() {
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-0.5 text-base font-bold">Add someone</h2>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">
-          Tick every role that applies. Set a temporary password and give it to them directly — it
-          is hashed on the way in and cannot be read back from here afterwards.
-        </p>
+        <p className="mb-4 text-[13px] text-[var(--muted)]">Set a temporary password.</p>
         <CreateUser partners={options} />
       </section>
 

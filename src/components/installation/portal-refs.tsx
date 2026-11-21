@@ -27,9 +27,7 @@ export function PanelSerialsCopyBox({ serials }: { serials: string[] }) {
           {serials.length}
         </span>
       </div>
-      <p className="mb-3 text-[13px] text-[var(--muted)]">
-        One per line, in the order captured at stage 3 — copy and paste into the registry form.
-      </p>
+      <p className="mb-3 text-[13px] text-[var(--muted)]">One per line.</p>
       <textarea
         readOnly
         rows={Math.min(Math.max(serials.length, 3), 10)}
@@ -70,10 +68,7 @@ export function DcrDetails({
   return (
     <div>
       <h2 className="mb-0.5 text-base font-bold">Certificate details</h2>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">
-        Copy these off the certificate itself. The number prints into the subsidy claim, so a
-        transposed digit is caught here rather than at the portal.
-      </p>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">Copy from the certificate.</p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         <div>
@@ -149,10 +144,7 @@ export function MeterPayment({
   return (
     <div>
       <h2 className="mb-0.5 text-base font-bold">Payment details</h2>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">
-        The reference from the portal's own receipt. Without it the meter installation cannot be
-        chased when the DISCOM says it has no record.
-      </p>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">From the portal receipt.</p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
         {fields.map(([key, label, placeholder, mono]) => (

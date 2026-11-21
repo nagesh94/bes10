@@ -99,10 +99,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         <div className="mt-3.5 flex flex-wrap items-start gap-3.5">
           <section className="min-w-80 flex-[999_1_480px] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
             <h2 className="mb-1 text-base font-bold">Still a lead</h2>
-            <p className="text-[13.5px] leading-relaxed text-[var(--muted)]">
-              The pipeline opens once this becomes a prospect. Create the application on the PM
-              Surya Ghar portal, then enter the ID alongside.
-            </p>
+            <p className="text-[13.5px] text-[var(--muted)]">Convert to open the pipeline.</p>
           </section>
           <div className="min-w-72 flex-[1_1_320px]">
             <ConvertPanel projectId={id} />
@@ -146,10 +143,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             <div className="min-w-72 flex-[1_1_300px] space-y-3.5">
               <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
                 <h2 className="mb-1 text-[15px] font-bold">Carry on with the work</h2>
-                <p className="mb-3.5 text-[13px] leading-relaxed text-[var(--muted)]">
-                  The pipeline above walks the nine stages in order, forwards or back. The stage
-                  the job is on is stage {currentStage.no}.
-                </p>
+                <p className="mb-3.5 text-[13px] text-[var(--muted)]">On stage {currentStage.no}.</p>
                 <Link
                   href={`/projects/${id}/stage-${currentStage.no}`}
                   className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"

@@ -221,9 +221,7 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
         {docs.length === 0 && photoRows.length === 0 ? (
           <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 py-12 text-center">
             <p className="mb-1 text-[15px] font-semibold">Nothing here yet</p>
-            <p className="text-[13.5px] text-[var(--muted)]">
-              No documents or photos have been uploaded or generated for this project.
-            </p>
+            <p className="text-[13.5px] text-[var(--muted)]">Nothing uploaded or generated.</p>
           </div>
         ) : null}
       </div>

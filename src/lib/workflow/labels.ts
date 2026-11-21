@@ -21,13 +21,13 @@ export const STAGE_TITLES: Record<StageKey, string> = {
 };
 
 export const STAGE_BLURBS: Record<StageKey, string> = {
-  onboarding: "Eight sections, the flag checks, then the payment plan.",
+  onboarding: "Sections, flags, then the payment plan.",
   agreement: "Generated here, signed on paper, scanned back.",
-  installation: "What actually went on the roof, serial by serial.",
-  evidence: "Geotagged photos and the material actually consumed.",
+  installation: "What went on the roof, serial by serial.",
+  evidence: "Geotagged photos and material used.",
   dcr: "Raised on the DCR portal, then recorded here.",
   meter: "Paid on the DISCOM portal, receipt filed here.",
-  documents: "Generate the set, then mark each one uploaded to PM Surya Ghar.",
+  documents: "Generate the set, then mark each uploaded.",
   commissioning: "DISCOM inspection and the commissioning certificate.",
   settlement: "Subsidy received, balance collected, project closed.",
 };

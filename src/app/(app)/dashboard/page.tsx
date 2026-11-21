@@ -168,10 +168,7 @@ export default async function DashboardPage() {
         <Panel raised>
           <div className="px-6 py-16 text-center">
             <p className="text-[17px] font-bold">No hardware recorded yet</p>
-            <p className="mx-auto mt-2 max-w-[42ch] text-[14px] leading-relaxed text-[var(--muted)]">
-              Modules and inverters appear here as soon as a crew completes the site evidence
-              form at stage 3 of a project.
-            </p>
+            <p className="mx-auto mt-2 text-[14px] text-[var(--muted)]">Filled from stage 3.</p>
             <Link
               href="/projects"
               className="mt-6 inline-flex h-11 items-center rounded-[var(--radius-control)] bg-[var(--orange)] px-5 text-[14px] font-bold text-[var(--orange-ink)] no-underline"

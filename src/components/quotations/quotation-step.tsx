@@ -124,12 +124,8 @@ export async function QuotationStep({
         </ul>
       ) : null}
 
-      <p className="mt-2.5 text-[11.5px] leading-relaxed text-[var(--muted)]">
-        The consumer block, the capacity and the letterhead are filled from this project. The
-        number comes from the company series and is never reused.
-        {rows.length > 1
-          ? " A project can hold several quotations — 3 kW against 5 kW, say — but only the chosen one is filed below and printed in the bank loan pack. Switching keeps the others."
-          : " Whatever you create here is filed below as the project’s quotation, so the bank loan pack picks it up."}
+      <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">
+        Filled from this project.
       </p>
 
       {rows.length > 0 && !chosen ? (
@@ -137,8 +133,7 @@ export async function QuotationStep({
           role="alert"
           className="mt-2.5 rounded-lg border border-[var(--amber-border)] bg-[var(--amber-surface)] px-3.5 py-2.5 text-[12.5px] font-medium text-[var(--amber-text)]"
         >
-          None of these is chosen, so this project has no quotation on file and the bank loan
-          pack has nothing to print. Pick one.
+          None of these is chosen. Pick one.
         </p>
       ) : null}
     </div>

@@ -127,7 +127,7 @@ export function PartnerForm({
           id="p-notes"
           value={v.notes}
           onChange={(e) => setV((o) => ({ ...o, notes: e.target.value }))}
-          placeholder="How they came to us, anything to remember"
+          placeholder="Anything to remember"
           className={cell}
         />
       </div>
@@ -330,7 +330,7 @@ export function CommissionList({ rows }: { rows: CommissionRow[] }) {
   if (rows.length === 0) {
     return (
       <p className="rounded-[9px] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-4 py-8 text-center text-[13px] text-[var(--muted)]">
-        Nothing accrued yet. A commission appears here once a referred project is commissioned.
+Nothing accrued yet.
       </p>
     );
   }

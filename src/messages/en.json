@@ -17,7 +17,7 @@
     "signOut": "Sign out",
     "invalid": "That email and password do not match an account.",
     "inactive": "This account has been deactivated. Ask an admin to re-enable it.",
-    "adminCreates": "Accounts are created by an admin. If you cannot get in, ask them to reset your password."
+    "adminCreates": "Accounts are created by an admin."
   },
   "nav": {
     "dashboard": "Dashboard",

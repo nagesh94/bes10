@@ -35,7 +35,7 @@ export default async function InstallerSurveyPage({ params }: { params: Promise<
       <BackLink href={`/installer/${id}`} label={customerName(job.contact)} />
       <PageTitle
         title="Site survey"
-        sub="Estimated runs, measured on site in metres. Leave a field empty if it does not apply to this roof."
+        sub="Estimated runs in metres."
       />
 
       <div className="space-y-3">
@@ -58,13 +58,13 @@ export default async function InstallerSurveyPage({ params }: { params: Promise<
 
         <FieldSection
           title="Survey photographs"
-          blurb="The roof as you found it. Keep location switched on and the coordinates are burned into the corner of each shot."
+          blurb="Keep location switched on."
         >
           <PhotoGrid
             projectId={id}
             photoType="SITE_SURVEY"
             label="Roof before installation"
-            hint="Angles, shading, the meter board — whatever the quotation was based on"
+            hint="Angles, shading, meter board"
             photos={sitePhotos}
           />
         </FieldSection>

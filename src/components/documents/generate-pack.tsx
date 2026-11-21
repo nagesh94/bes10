@@ -110,9 +110,9 @@ export function GeneratePack({
   }
 
   /**
-   * These are .docx files, which a browser cannot display — so this saves
-   * the file rather than opening a tab that would immediately download it
-   * and sit there empty.
+   * Saved rather than opened in a tab: these go to a printer or up to the
+   * portal, and a technician on a phone wants the file on the device, not a
+   * viewer they then have to re-download from.
    */
   async function download(documentId: string) {
     setBusy(documentId);
@@ -149,10 +149,7 @@ export function GeneratePack({
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">
           <h2 className="mb-0.5 text-base font-bold">Generated documents</h2>
-          <p className="text-[13px] leading-relaxed text-[var(--muted)]">
-            Produced from the installation record as editable .docx, so the office can adjust
-            wording before printing. Print, get them signed, scan, then tick them off below.
-          </p>
+          <p className="text-[13px] text-[var(--muted)]">Print-ready PDF</p>
         </div>
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -314,10 +311,7 @@ export function PortalChecklist({
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">
           <h2 className="mb-0.5 text-base font-bold">Uploaded to PM Surya Ghar</h2>
-          <p className="text-[13px] leading-relaxed text-[var(--muted)]">
-            Tick each one off as it goes up on the national portal. Nothing here uploads by itself —
-            this is the record of what was done there.
-          </p>
+          <p className="text-[13px] text-[var(--muted)]">Tick each one off manually.</p>
         </div>
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -426,11 +420,7 @@ export function ProcurementForm({
   return (
     <div>
       <h2 className="mb-0.5 text-base font-bold">Module procurement</h2>
-      <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-        Only the DCR undertaking asks for these, and it asks for all four by name — it is a signed
-        declaration that these particular cells were made in India, with the subsidy at stake if it
-        is wrong.
-      </p>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">All four are needed for the DCR undertaking.</p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         {fields.map(([key, label, placeholder, type]) => (
@@ -508,10 +498,7 @@ export function InspectionDates({
   return (
     <div>
       <h2 className="mb-0.5 text-base font-bold">Inspection dates</h2>
-      <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-        Any you leave empty print as a blank line for someone to fill in by hand, which is how these
-        forms are meant to be completed. Enter one and regenerate to have it printed instead.
-      </p>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">Empty ones print as a blank line.</p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         {fields.map(([key, label, hint]) => (

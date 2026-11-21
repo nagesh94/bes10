@@ -358,10 +358,7 @@ export function QuotationForm({
             Rebuild material rows
           </button>
         </div>
-        <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-          These come from master data and only fill the table below. Rebuilding replaces every
-          material row, so do it before you reword the remarks.
-        </p>
+        <p className="mb-4 text-[13px] text-[var(--muted)]">Rebuilding replaces every material row.</p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
@@ -481,9 +478,6 @@ export function QuotationForm({
             {values.items.length} {values.items.length === 1 ? "row" : "rows"}
           </span>
         </div>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">
-          Prints as the Material Description table, in this order.
-        </p>
 
         <div className="overflow-x-auto rounded-[9px] border border-[var(--line)]">
           <div className="grid min-w-[760px] grid-cols-[32px_1.5fr_0.7fr_1fr_1.8fr_40px] items-center gap-2 border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
@@ -563,9 +557,7 @@ export function QuotationForm({
       {/* ── Payment schedule ── */}
       <section className={sectionBox}>
         <h2 className="mb-1 text-base font-bold">Payment schedule</h2>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">
-          The schedule column prints exactly as typed — &ldquo;10%&rdquo; or a figure.
-        </p>
+        <p className="mb-4 text-[13px] text-[var(--muted)]">Prints as typed.</p>
 
         <div className="overflow-x-auto rounded-[9px] border border-[var(--line)]">
           <div className="grid min-w-[520px] grid-cols-[32px_2.4fr_1fr_40px] items-center gap-2 border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
@@ -698,9 +690,7 @@ export function QuotationForm({
       {/* ── Notes ── */}
       <section className={sectionBox}>
         <h2 className="mb-1 text-base font-bold">Extra summary line</h2>
-        <p className="mb-3 text-[13px] text-[var(--muted)]">
-          Optional. Prints as one more bullet under Project Summary — usually left empty.
-        </p>
+        <p className="mb-3 text-[13px] text-[var(--muted)]">Optional.</p>
         <input
           aria-label="Extra summary line"
           className={field}
@@ -731,9 +721,7 @@ export function QuotationForm({
               : "Generate quotation"}
         </button>
         <span className="text-[12.5px] text-[var(--muted)]">
-          {mode === "edit"
-            ? `${number} keeps its number — the customer may already have it.`
-            : "The number is taken from the series when you save, and never reused. You'll land on the quotation to view or edit it."}
+          {mode === "edit" ? `${number} keeps its number.` : "Numbered on save."}
         </span>
       </div>
     </form>

@@ -139,9 +139,7 @@ export default async function AuditPage({
       <div className="mb-[18px] flex flex-wrap items-end gap-4">
         <div className="min-w-60 flex-1">
           <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Audit log</h1>
-          <p className="m-0 max-w-[760px] text-sm text-[var(--muted)]">
-            Every change records who, what, before and after. Reads of an Aadhaar document are logged too, which is why they appear here alongside edits.
-          </p>
+          <p className="m-0 text-sm text-[var(--muted)]">Who changed what, and when.</p>
         </div>
         <a
           href={exportHref}

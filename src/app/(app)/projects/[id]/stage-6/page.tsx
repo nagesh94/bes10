@@ -116,9 +116,8 @@ export default async function Stage6Page({ params }: { params: Promise<{ id: str
 
       <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-0.5 text-base font-bold">The receipt</h2>
-        <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-          This receipt <em>is</em> the meter replacement application — the DISCOM treats the paid
-          receipt as the request, so there is no separate form to generate.
+        <p className="mb-4 text-[13px] text-[var(--muted)]">
+          The paid receipt <em>is</em> the application.
         </p>
         <div className="max-w-[420px]">
           <UploadSlot

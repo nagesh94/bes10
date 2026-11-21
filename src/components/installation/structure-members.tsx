@@ -72,10 +72,7 @@ export function StructureMembers({
           ft
         </span>
       </div>
-      <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-        The fabricator, leg count and every column, rafter and purlin run — each with its own size
-        and length. A 3 kW roof often has four columns at four different lengths.
-      </p>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">Size and length for each member.</p>
 
       <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         <div>

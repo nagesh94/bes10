@@ -138,7 +138,7 @@ export default async function MyReferralsPage() {
         <h2 className="mb-3.5 text-base font-bold">Earnings</h2>
         {rows.length === 0 ? (
           <p className="rounded-[9px] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-4 py-8 text-center text-[13px] text-[var(--muted)]">
-            Nothing earned yet. Your first commission appears here once a referral is commissioned.
+Nothing earned yet.
           </p>
         ) : (
           <div className="overflow-hidden rounded-[9px] border border-[var(--line)]">

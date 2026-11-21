@@ -7,10 +7,13 @@ const DOCX_MIME =
  * Turns a generated .docx into a PDF via Gotenberg — LibreOffice behind an
  * HTTP API, already running as the `gotenberg` service in docker-compose.
  *
- * This is used only by the submission pack merge. Every other generated
- * document stays .docx, printed and signed on paper, so the office can still
- * adjust wording before printing — the pack is the one copy meant to be
- * merged and submitted as-is, and merging needs everything in one format.
+ * Every stage 7/8 document goes through here on its way to storage: the
+ * builders write .docx because that is what `docx` produces, but what gets
+ * filed, downloaded and uploaded to the portal is the PDF. The submission pack
+ * merge uses the same step, since concatenating pages needs one format.
+ *
+ * The vendor agreement is the exception and stays .docx — it is the draft that
+ * goes on stamp paper, and the office does adjust its wording before printing.
  */
 export async function convertDocxToPdf(buffer: Buffer, fileName: string): Promise<Buffer> {
   const form = new FormData();

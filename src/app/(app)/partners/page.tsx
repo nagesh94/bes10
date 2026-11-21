@@ -110,9 +110,7 @@ export default async function PartnersPage() {
       <div className="mb-5 flex flex-wrap items-end gap-3">
         <div className="min-w-60 flex-1">
           <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Channel partners</h1>
-          <p className="text-sm text-[var(--muted)]">
-            The people who send work our way, and what they are owed for it.
-          </p>
+          <p className="text-sm text-[var(--muted)]">Referrals and payouts</p>
         </div>
         {outstanding > 0 ? (
           <span className="ref shrink-0 rounded-full bg-[var(--amber-soft)] px-3 py-1.5 text-[12px] font-bold text-[var(--amber-text)]">
@@ -127,10 +125,7 @@ export default async function PartnersPage() {
             {pending.length} referred {pending.length === 1 ? "project has" : "projects have"} reached
             commissioning
           </h2>
-          <p className="mb-3 text-[13px] text-[var(--amber-body)]">
-            A commission is earned once the job is commissioned. Accruing copies the partner&apos;s
-            current rate onto the row, so later rate changes cannot rewrite it.
-          </p>
+          <p className="mb-3 text-[13px] text-[var(--amber-body)]">Accrues at the current rate.</p>
           <div className="flex flex-wrap gap-2">
             {pending.map((r) => (
               <AccrueButton
@@ -145,9 +140,7 @@ export default async function PartnersPage() {
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-0.5 text-base font-bold">Add a partner</h2>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">
-          A login is not required — most partners simply phone a name in.
-        </p>
+        <p className="mb-4 text-[13px] text-[var(--muted)]">A login is optional.</p>
         <PartnerForm />
       </section>
 
@@ -173,10 +166,6 @@ export default async function PartnersPage() {
 
       <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-0.5 text-base font-bold">Commissions</h2>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">
-          Accrued when the job is commissioned, marked due when it is approved for payment, and
-          paid with a reference so it can be traced later.
-        </p>
         <CommissionList rows={list} />
       </section>
     </main>

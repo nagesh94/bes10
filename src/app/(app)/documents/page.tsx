@@ -137,7 +137,7 @@ export default async function DocumentsPage({
         <div className="min-w-60 flex-1">
           <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Documents</h1>
           <p className="text-sm text-[var(--muted)]">
-            Filed by what it is — bank, electricity bill, Aadhaar and the rest. {visible.length} in all.
+            {visible.length} in all
           </p>
         </div>
       </div>
@@ -201,7 +201,7 @@ export default async function DocumentsPage({
             {needle
               ? `No document matches "${q}".`
               : visible.length === 0
-                ? "No documents have been uploaded or generated yet."
+                ? "Nothing uploaded yet."
                 : "Nothing in this category yet."}
           </p>
         </div>
@@ -282,7 +282,7 @@ export default async function DocumentsPage({
 
       {visible.length >= 500 ? (
         <p className="mt-4 text-center text-[12.5px] text-[var(--muted)]">
-          Showing the 500 most recent. Narrow it with the search above.
+          Showing the 500 most recent.
         </p>
       ) : null}
     </main>

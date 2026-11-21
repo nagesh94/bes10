@@ -82,14 +82,14 @@ export default async function InstallerPage() {
   return (
     <main className="mx-auto max-w-[640px] px-4 pt-4 pb-10">
       <h1 className="text-[21px] font-bold tracking-[-0.01em]">My jobs</h1>
-      <p className="mt-1 mb-4 text-[13.5px] leading-relaxed text-[var(--muted)]">
+      <p className="mt-1 mb-4 text-[13.5px] text-[var(--muted)]">
         {!hasRole(actor, "INSTALLER")
-          ? "Every job, exactly as an installer sees it."
+          ? "All jobs"
           : rows.length === 1
-            ? "One job assigned to you."
+            ? "1 job"
             : rows.length > 1
-              ? `${rows.length} jobs assigned to you.`
-              : "Nothing on your list at the moment."}
+              ? `${rows.length} jobs`
+              : "No jobs"}
       </p>
 
       {rows.length === 0 ? (

@@ -329,8 +329,7 @@ export default async function ProjectsPage({
         <div className="min-w-60 flex-1">
           <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Projects</h1>
           <p className="text-sm text-[var(--muted)]">
-            {rows.length} in all. Search by name, phone, project code, address, PIN, division or
-            consumer number.
+            {rows.length} in all
           </p>
         </div>
         {/* A project starts life as a lead row, so this is the lead form —
@@ -340,7 +339,7 @@ export default async function ProjectsPage({
           partners={partners}
           label="Add project"
           title="Add a project"
-          blurb="A project starts at the lead stage. Enough to call them back now; the application details come at stage 1."
+          blurb="Enough to call them back."
           submitLabel="Create project"
         />
       </div>

@@ -77,9 +77,8 @@ export default async function SummaryPage({ params }: { params: Promise<{ id: st
         {summary.panelSerials.length ? (
           <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
             <h2 className="text-base font-bold">Module serials</h2>
-            <p className="mt-0.5 mb-3.5 text-[12.5px] leading-relaxed text-[var(--muted)]">
-              {summary.panelSerials.length} scanned on site. Every one of them prints into the
-              ALMM declaration.
+            <p className="mt-0.5 mb-3.5 text-[12.5px] text-[var(--muted)]">
+              {summary.panelSerials.length} scanned
             </p>
             <ul className="flex flex-wrap gap-1.5 pl-0">
               {summary.panelSerials.map((serial, i) => (

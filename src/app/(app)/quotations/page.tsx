@@ -178,19 +178,16 @@ export default async function QuotationsPage({
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
           <p className="mb-1 font-semibold">Nothing matches</p>
           <p className="text-sm text-[var(--muted)]">
-            No quotation answers that search or those filters.{" "}
             <Link href="/quotations" className="font-semibold">
-              Clear them
-            </Link>{" "}
-            to see the whole list.
+              Clear filters
+            </Link>
           </p>
         </div>
       ) : total === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center">
           <p className="mb-1 font-semibold">No quotations yet</p>
           <p className="mb-5 text-sm text-[var(--muted)]">
-            The first one will be <span className="ref">{nextNumber}</span>. The series never
-            restarts, so every number is used once.
+            The first will be <span className="ref">{nextNumber}</span>.
           </p>
           <Link
             href="/quotations/new"

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { saveBatteryBank, savePanelSerials } from "@/app/actions/installation";
+import { useConfirm } from "@/components/shell/confirm";
 
 const cell =
   "h-11 w-full rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[13.5px] text-[var(--ink)] outline-none focus:border-[var(--orange)]";
@@ -25,6 +26,7 @@ export function PanelSerials({
   expected: number;
 }) {
   const router = useRouter();
+  const ask = useConfirm();
   const [serials, setSerials] = useState<string[]>(initial.length ? initial : [""]);
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -48,6 +50,31 @@ export function PanelSerials({
     });
     setSaved(false);
     return true;
+  }
+
+  /**
+   * A serial that has been scanned off a module is the one thing on this page
+   * that cannot be retyped from memory, and × sits next to every row — so
+   * taking a filled row out asks first. An untouched blank row has nothing to
+   * lose and goes without a question.
+   */
+  async function removeAt(i: number) {
+    const serial = (serials[i] ?? "").trim();
+    if (serial) {
+      const answer = await ask({
+        title: `Remove panel ${i + 1}?`,
+        body: (
+          <>
+            Serial <span className="ref font-semibold text-[var(--ink)]">{serial}</span> will be
+            taken off this list. Save the list afterwards to make it stick.
+          </>
+        ),
+        confirmLabel: "Remove",
+      });
+      if (!answer.confirmed) return;
+    }
+    setSerials((list) => (list.length > 1 ? list.filter((_, j) => j !== i) : [""]));
+    setSaved(false);
   }
 
   async function save() {
@@ -74,9 +101,7 @@ export function PanelSerials({
           {filled}{expected > 0 ? ` of ${expected}` : ""}
         </span>
       </div>
-      <p className="mb-3.5 text-[13px] text-[var(--muted)]">
-        Paste a whole column from the scanner app into any box and it will split across rows.
-      </p>
+      <p className="mb-3.5 text-[13px] text-[var(--muted)]">Paste a column to split across rows.</p>
 
       <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {serials.map((s, i) => {
@@ -103,10 +128,7 @@ export function PanelSerials({
               <button
                 type="button"
                 aria-label={`Remove panel ${i + 1}`}
-                onClick={() => {
-                  setSerials((list) => (list.length > 1 ? list.filter((_, j) => j !== i) : [""]));
-                  setSaved(false);
-                }}
+                onClick={() => void removeAt(i)}
                 className="h-10 w-10 shrink-0 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] text-[var(--red-text)]"
               >
                 ×
@@ -118,7 +140,7 @@ export function PanelSerials({
 
       {duplicates.size > 0 ? (
         <p className="mb-3 text-[12.5px] font-medium text-[var(--red-text)]">
-          The same serial appears more than once. Two panels cannot share one.
+The same serial appears more than once.
         </p>
       ) : null}
       {error ? (

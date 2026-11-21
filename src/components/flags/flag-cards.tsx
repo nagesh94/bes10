@@ -117,10 +117,6 @@ export function LoadChangeForm({
       >
         {pending ? "Saving…" : "Save"}
       </button>
-      <p className="mt-2.5 text-[11.5px] leading-relaxed text-[var(--muted)]">
-        Entering the approved load also updates the bill section, so the flag clears itself on the
-        next save.
-      </p>
     </form>
   );
 }

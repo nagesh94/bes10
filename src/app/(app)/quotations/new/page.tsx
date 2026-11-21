@@ -98,15 +98,13 @@ export default async function NewQuotationPage({
 
       {!branch ? (
         <p className="rounded-[var(--radius)] border border-[var(--red-border)] bg-[var(--red-surface)] px-4 py-3.5 text-[13.5px] font-medium text-[var(--red-text)]">
-          No company branch is set up, so there is no letterhead to print. Add one under Admin
-          first.
+          No company branch is set up. Add one under Admin first.
         </p>
       ) : (
         <>
           {!branch.bankName ? (
             <p className="mb-5 rounded-[var(--radius)] border border-[var(--orange-border,var(--line))] bg-[var(--orange-soft)] px-4 py-3 text-[13px] text-[var(--orange-text)]">
-              The {branch.name} branch has no bank details on record, so this quotation will
-              print without the Bank Details block.
+              {branch.name} has no bank details — the Bank Details block will not print.
             </p>
           ) : null}
           <QuotationForm

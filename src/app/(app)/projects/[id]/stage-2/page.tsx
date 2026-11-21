@@ -144,11 +144,8 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
             <strong className="block text-sm font-bold text-[var(--amber-text)]">
               There is no payment plan yet
             </strong>
-            <span className="mt-0.5 block text-[13px] leading-relaxed text-[var(--amber-body)]">
-              The agreement can still be drawn up — clause 19.1 is filled from the accepted
-              quotation instead, and can be typed over. But until a plan is saved in stage 1,
-              what is signed here and what the office is owed can drift apart.
-              {isAdmin ? "" : " An admin settles this."}
+            <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
+              Clause 19.1 is filled from the accepted quotation.
             </span>
           </span>
           {isAdmin ? (
@@ -263,9 +260,6 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
         </div>
       ) : null}
 
-      <p className="mt-4 text-[12.5px] leading-relaxed text-[var(--muted)]">
-        Closing stage 2 is what turns this prospect into a customer.
-      </p>
       <Link
         href={`/projects/${id}`}
         className="mt-3 inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
