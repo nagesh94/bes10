@@ -101,7 +101,7 @@ export function QuotationRowActions({
             className={`${rowBtn} ${
               failed
                 ? "border-[var(--red-text)] text-[var(--red-text)]"
-                : "border-[var(--line)] text-[var(--navy)]"
+                : "border-[var(--line)] text-[var(--navy-text)]"
             }`}
           >
             {busy === "download" ? "Saving…" : "Download"}

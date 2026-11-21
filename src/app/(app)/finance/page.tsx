@@ -338,7 +338,7 @@ export default async function FinancePage() {
                   >
                     <Link
                       href={`/projects/${r.projectId}/payments`}
-                      className="ref shrink-0 text-[12.5px] font-bold text-[var(--navy)] no-underline"
+                      className="ref shrink-0 text-[12.5px] font-bold text-[var(--navy-text)] no-underline"
                     >
                       {r.code}
                     </Link>
@@ -358,7 +358,7 @@ export default async function FinancePage() {
           {chasing.length > 25 ? (
             <p className="mt-2.5 text-[12px] text-[var(--muted)]">
               The 25 largest are listed. The rest are on{" "}
-              <Link href="/projects" className="font-semibold text-[var(--navy)]">
+              <Link href="/projects" className="font-semibold text-[var(--navy-text)]">
                 projects
               </Link>
               .

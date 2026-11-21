@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 
 const PREFIX: Record<string, string> = {
   dashboard: "/dashboard",
-  leads: "/leads",
   projects: "/projects",
   quotations: "/quotations",
   agreements: "/agreements",

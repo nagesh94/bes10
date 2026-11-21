@@ -135,7 +135,7 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
               </span>
               <Link
                 href="/partners"
-                className="h-9 shrink-0 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] leading-[2.1] font-bold text-[var(--navy)] no-underline"
+                className="h-9 shrink-0 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] leading-[2.1] font-bold text-[var(--navy-text)] no-underline"
               >
                 Open ledger
               </Link>
@@ -165,7 +165,7 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
               <span
                 className={`ref flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
                   done
-                    ? "bg-[var(--green)] text-white"
+                    ? "bg-[var(--green)] text-[var(--green-ink)]"
                     : "bg-[var(--chip-soft)] text-[var(--muted-soft)]"
                 }`}
               >

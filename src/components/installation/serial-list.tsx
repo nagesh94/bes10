@@ -132,7 +132,7 @@ export function PanelSerials({
             setSerials((l) => [...l, ""]);
             setSaved(false);
           }}
-          className="h-11 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy)]"
+          className="h-11 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy-text)]"
         >
           + Add a panel
         </button>

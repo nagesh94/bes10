@@ -27,7 +27,7 @@ const FILTERS = [{ key: "all", label: "Everything" }, ...DOC_GROUPS] as const;
 
 const CLASS_TONE: Record<string, string> = {
   GENERATED: "bg-[var(--orange-soft)] text-[var(--orange-text)]",
-  COLLECTED: "bg-[var(--navy-soft)] text-[var(--navy)]",
+  COLLECTED: "bg-[var(--navy-soft)] text-[var(--navy-text)]",
   EXTERNAL: "bg-[var(--chip-soft)] text-[var(--chip-text)]",
   EXECUTED: "bg-[var(--green-soft)] text-[var(--green-text)]",
   EVIDENCE: "bg-[var(--chip-soft)] text-[var(--chip-text)]",
@@ -162,7 +162,7 @@ export default async function DocumentsPage({
         {q ? (
           <Link
             href={href({ q: "" })}
-            className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-bold text-[var(--navy)] no-underline"
+            className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-bold text-[var(--navy-text)] no-underline"
           >
             Clear
           </Link>

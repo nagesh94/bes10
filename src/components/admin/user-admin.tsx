@@ -20,7 +20,7 @@ const labelCls = "mb-1.5 block text-xs font-semibold text-[var(--muted)]";
 const primary =
   "h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60";
 const quiet =
-  "h-9 shrink-0 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy)] disabled:opacity-60";
+  "h-9 shrink-0 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy-text)] disabled:opacity-60";
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 

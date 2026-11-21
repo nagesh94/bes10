@@ -181,7 +181,7 @@ export function QuotationForm({
         <div className="mb-4 flex flex-wrap items-baseline gap-2">
           <h2 className="flex-1 text-base font-bold">Consumer</h2>
           {projectCode ? (
-            <span className="ref rounded-full bg-[var(--navy-soft)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--navy)]">
+            <span className="ref rounded-full bg-[var(--navy-soft)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--navy-text)]">
               {projectCode}
             </span>
           ) : (
@@ -353,7 +353,7 @@ export function QuotationForm({
           <button
             type="button"
             onClick={reseedItems}
-            className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy)]"
+            className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy-text)]"
           >
             Rebuild material rows
           </button>
@@ -553,7 +553,7 @@ export function QuotationForm({
           onClick={() =>
             set("items", [...values.items, { description: "", qty: "", make: "", remark: "" }])
           }
-          className="mt-3 h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy)]"
+          className="mt-3 h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
         >
           Add a material row
         </button>
@@ -621,7 +621,7 @@ export function QuotationForm({
         <button
           type="button"
           onClick={() => set("milestones", [...values.milestones, { label: "", schedule: "" }])}
-          className="mt-3 h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy)]"
+          className="mt-3 h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
         >
           Add a payment row
         </button>

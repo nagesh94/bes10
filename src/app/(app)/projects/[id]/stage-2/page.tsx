@@ -175,7 +175,7 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
                 <span
                   className={`ref flex h-[30px] w-[30px] items-center justify-center rounded-full text-[13px] font-bold ${
                     done
-                      ? "bg-[var(--green)] text-white"
+                      ? "bg-[var(--green)] text-[var(--green-ink)]"
                       : "bg-[var(--orange)] text-[var(--orange-ink)]"
                   }`}
                 >

@@ -95,7 +95,7 @@ export function StageStepper({
                 <span
                   className={`ref relative mx-auto flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold ${
                     isDone
-                      ? "bg-[var(--green)] text-white"
+                      ? "bg-[var(--green)] text-[var(--green-ink)]"
                       : isNow
                         ? "bg-[var(--orange)] text-[var(--orange-ink)] ring-4 ring-[var(--orange-ring)]"
                         : isHere

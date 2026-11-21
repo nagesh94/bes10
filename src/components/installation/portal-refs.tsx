@@ -46,7 +46,7 @@ export function PanelSerialsCopyBox({ serials }: { serials: string[] }) {
           setTimeout(() => setCopied(false), 2000);
         }}
         disabled={!text}
-        className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy)] disabled:opacity-60"
+        className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy-text)] disabled:opacity-60"
       >
         {copied ? "Copied" : "Copy all"}
       </button>

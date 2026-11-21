@@ -186,7 +186,7 @@ export function MaterialForm({
               ]);
               setSaved(false);
             }}
-            className="mt-3.5 h-11 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy)]"
+            className="mt-3.5 h-11 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy-text)]"
           >
             + Add {CATEGORY_LABEL[unused[0]!].toLowerCase()}
           </button>

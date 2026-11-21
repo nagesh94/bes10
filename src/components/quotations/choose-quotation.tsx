@@ -67,7 +67,7 @@ export function ChooseQuotation({
           if (!result.ok) return setError(result.error);
           router.refresh();
         }}
-        className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy)] disabled:opacity-60"
+        className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy-text)] disabled:opacity-60"
       >
         {pending ? "Choosing…" : "Choose this one"}
       </button>

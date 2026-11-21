@@ -3,7 +3,6 @@ import { can, hasRole, type Actor } from "@/lib/rbac/permissions";
 
 export type NavKey =
   | "dashboard"
-  | "leads"
   | "projects"
   | "quotations"
   | "agreements"
@@ -32,7 +31,6 @@ export async function visibleNavItems(actor: Actor): Promise<NavItem[]> {
 
   const items: Array<{ href: string; key: NavKey; show: boolean }> = [
     { href: "/dashboard", key: "dashboard", show: can(actor, "project.write") },
-    { href: "/leads", key: "leads", show: can(actor, "lead.read") },
     { href: "/projects", key: "projects", show: can(actor, "project.write") },
     { href: "/quotations", key: "quotations", show: can(actor, "quotation.read") },
     { href: "/agreements", key: "agreements", show: can(actor, "agreement.read") },

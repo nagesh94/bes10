@@ -302,7 +302,7 @@ export function AgreementForm({
           <button
             type="button"
             onClick={() => set("milestones", [...values.milestones, { label: "", amount: "" }])}
-            className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy)]"
+            className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
           >
             Add an instalment
           </button>

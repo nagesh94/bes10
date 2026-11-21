@@ -120,7 +120,7 @@ export default async function QuotationPage({ params }: { params: Promise<{ id: 
           {quotation.projectId && row.projectCode ? (
             <Link
               href={`/projects/${quotation.projectId}`}
-              className="ref rounded-full bg-[var(--navy-soft)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--navy)] no-underline"
+              className="ref rounded-full bg-[var(--navy-soft)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--navy-text)] no-underline"
             >
               {row.projectCode}
             </Link>

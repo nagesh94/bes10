@@ -7,9 +7,9 @@ import { saveStructureMembers, type MemberInput } from "@/app/actions/installati
 type MemberType = "COLUMN" | "RAFTER" | "PURLIN";
 
 const GROUPS: Array<{ type: MemberType; label: string; add: string; colour: string; defaultSize: string }> = [
-  { type: "COLUMN", label: "Column", add: "Add a column", colour: "var(--navy)", defaultSize: "140 x 50 mm" },
-  { type: "RAFTER", label: "Rafter", add: "Add a rafter", colour: "var(--link)", defaultSize: "80 x 40 mm" },
-  { type: "PURLIN", label: "Purlin", add: "Add a purlin", colour: "var(--orange)", defaultSize: "40 x 40 mm" },
+  { type: "COLUMN", label: "Column", add: "Add a column", colour: "var(--data-1)", defaultSize: "140 x 50 mm" },
+  { type: "RAFTER", label: "Rafter", add: "Add a rafter", colour: "var(--data-5)", defaultSize: "80 x 40 mm" },
+  { type: "PURLIN", label: "Purlin", add: "Add a purlin", colour: "var(--data-2)", defaultSize: "40 x 40 mm" },
 ];
 
 const cell =
@@ -208,7 +208,7 @@ export function StructureMembers({
                 ]);
                 setSaved(false);
               }}
-              className="mt-2 h-10 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy)]"
+              className="mt-2 h-10 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
             >
               + {group.add}
             </button>

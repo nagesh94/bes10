@@ -26,7 +26,7 @@ import { getActor } from "@/lib/session";
 
 const STATUS_CHIP: Record<string, string> = {
   DRAFT: "bg-[var(--chip-soft)] text-[var(--chip-text)]",
-  ISSUED: "bg-[var(--navy-soft)] text-[var(--navy)]",
+  ISSUED: "bg-[var(--navy-soft)] text-[var(--navy-text)]",
   SIGNED: "bg-[var(--green-soft)] text-[var(--green-text)]",
   CANCELLED: "bg-[var(--red-surface)] text-[var(--red-text)]",
 };

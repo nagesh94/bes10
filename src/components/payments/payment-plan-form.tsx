@@ -180,7 +180,7 @@ export function PaymentPlanForm({
       <button
         type="button"
         onClick={() => setMilestones((l) => [...l, { amount: "", trigger: "PSS1" }])}
-        className="mb-5 h-11 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-bold text-[var(--navy)]"
+        className="mb-5 h-11 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-bold text-[var(--navy-text)]"
       >
         + Add a line
       </button>
@@ -306,7 +306,7 @@ export function GiveMoneyForm({ projectId }: { projectId: string }) {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="h-11 w-full cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] text-sm font-bold text-[var(--navy)]">
+      <button type="button" onClick={() => setOpen(true)} className="h-11 w-full cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] text-sm font-bold text-[var(--navy-text)]">
         Give money to the customer
       </button>
     );

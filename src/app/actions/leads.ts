@@ -89,7 +89,7 @@ export async function createLead(raw: NewLeadInput): Promise<ActionResult> {
     return code;
   });
 
-  revalidatePath("/leads");
+  revalidatePath("/projects");
   return { ok: true, projectId, code };
 }
 
@@ -160,7 +160,7 @@ export async function convertToProspect(raw: {
     });
   });
 
-  revalidatePath("/leads");
+  revalidatePath("/projects");
   revalidatePath(`/projects/${projectId}`);
   return { ok: true, projectId };
 }

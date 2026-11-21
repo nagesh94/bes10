@@ -1,17 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   applicationDetails,
+  channelPartners,
   contacts,
   electricityConnections,
+  flags as flagsTable,
   paymentPlans,
   projects,
   rooftopDetails,
 } from "@/lib/db/schema";
 import { can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
+import { FlagsChip } from "@/components/projects/flags-chip";
+import { ListPager } from "@/components/shell/list-controls";
+import { DEFAULT_PER_PAGE, PER_PAGE_OPTIONS } from "@/lib/list/params";
+import { NewLeadDialog } from "@/components/leads/new-lead-dialog";
 import { STAGES } from "@/lib/workflow/stages";
 import { STAGE_TITLES } from "@/lib/workflow/labels";
 
@@ -40,9 +46,12 @@ const PAY_LABELS: Record<string, string> = {
   SPLIT: "Cash + finance",
 };
 
+/* Prospect is deliberately not offered as a filter. It is a passing state
+   between a lead and a customer, not a bucket anyone works out of, and a
+   third option here only ever split the list someone wanted whole. A
+   prospect row still says so — the blue chip on the row carries it. */
 const LIFECYCLE_LABELS: Record<string, string> = {
   LEAD: "Leads",
-  PROSPECT: "Prospects",
   CUSTOMER: "Customers",
 };
 
@@ -53,6 +62,8 @@ type Filters = {
   kw?: string;
   place?: string;
   pay?: string;
+  page?: string;
+  per?: string;
 };
 
 export default async function ProjectsPage({
@@ -66,6 +77,10 @@ export default async function ProjectsPage({
   // an installer and a partner each read individual projects at a narrower
   // scope and have their own page instead.
   if (!actor || !can(actor, "project.write")) notFound();
+  // Today the two permissions carry the same roles, but the flags page is
+  // gated on its own one — so the chip is only offered to whoever can
+  // actually open what it links to.
+  const canSeeFlags = can(actor, "flag.resolve");
 
   const raw = await searchParams;
 
@@ -84,6 +99,15 @@ export default async function ProjectsPage({
   // or `…:none` for the projects that have neither on file yet.
   const place = /^(div|pin):.{1,80}$/s.test(raw.place ?? "") ? (raw.place as string) : "";
   const pay = raw.pay === "none" || (raw.pay && raw.pay in PAY_LABELS) ? (raw.pay as string) : "";
+
+  // Same two keys, the same options and the same default as the quotations
+  // and agreements lists, so a pager link means the same thing everywhere.
+  const perRaw = Number(raw.per);
+  const per = (PER_PAGE_OPTIONS as readonly number[]).includes(perRaw)
+    ? perRaw
+    : DEFAULT_PER_PAGE;
+  const pageRaw = Number(raw.page);
+  const requestedPage = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
 
   const rows = await db
     .select({
@@ -107,6 +131,37 @@ export default async function ProjectsPage({
     .leftJoin(applicationDetails, eq(applicationDetails.projectId, projects.id))
     .orderBy(desc(projects.updatedAt))
     .limit(500);
+
+  /**
+   * Which jobs are blocked, in one query rather than one per row.
+   *
+   * Open and in-progress both block the job; resolved and waived do not. The
+   * table holds at most two rows per project — the unique index on
+   * (project, type) guarantees it — so fetching every open flag is a few
+   * hundred rows at the outside, cheaper than a correlated count per row.
+   */
+  const openFlagRows = await db
+    .select({
+      projectId: flagsTable.projectId,
+      type: flagsTable.type,
+      status: flagsTable.status,
+    })
+    .from(flagsTable)
+    .where(inArray(flagsTable.status, ["OPEN", "IN_PROGRESS"]));
+
+  const flagsByProject = new Map<string, Array<{ type: string; status: string }>>();
+  for (const f of openFlagRows) {
+    const list = flagsByProject.get(f.projectId);
+    if (list) list.push(f);
+    else flagsByProject.set(f.projectId, [f]);
+  }
+
+  // Carried by the add-project dialog, which holds the lead form.
+  const partners = await db
+    .select({ id: channelPartners.id, name: channelPartners.name, phone: channelPartners.phone })
+    .from(channelPartners)
+    .where(eq(channelPartners.active, true))
+    .orderBy(channelPartners.name);
 
   type Row = (typeof rows)[number];
 
@@ -179,6 +234,24 @@ export default async function ProjectsPage({
   );
   const filtered = inScope.filter(matchesStage);
 
+  /**
+   * One page of the list.
+   *
+   * The slice is taken here rather than in SQL because the filters above are
+   * not all SQL: the size bands read a measured figure or parse a lead's
+   * free-text "3 kW", and the search runs over a joined line of name, code,
+   * phone, address, PIN, division and consumer number. Both would have to be
+   * expressions in the query before an OFFSET could mean anything, and an
+   * OFFSET over the wrong rows is worse than none.
+   *
+   * The page number is clamped to what exists: arriving on page 9 of a list
+   * that now has two — a bookmark, or a filter narrowed since — should show
+   * the last page, not an empty table that reads as "nothing here".
+   */
+  const pageCount = Math.max(1, Math.ceil(filtered.length / per));
+  const page = Math.min(requestedPage, pageCount);
+  const pageRows = filtered.slice((page - 1) * per, page * per);
+
   const perStage = new Map<number, number>();
   for (const r of inScope) {
     perStage.set(r.project.pipelineStage, (perStage.get(r.project.pipelineStage) ?? 0) + 1);
@@ -235,31 +308,44 @@ export default async function ProjectsPage({
 
   const filtersOn = Boolean(q || stage || lifecycle || kw || place || pay);
 
-  const href = (next: Filters) => {
-    const merged: Filters = { q, stage, lifecycle, kw, place, pay, ...next };
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(merged)) {
-      if (value) params.set(key, value);
-    }
-    const str = params.toString();
-    return str ? `/projects?${str}` : "/projects";
-  };
+  /* One set of cell classes so every column is padded and baselined the
+     same. The header says what each column is — without it the numbers and
+     the bare strings in a row are a guessing game. */
+  const th =
+    "px-4 py-2.5 align-middle text-[11px] font-bold tracking-[0.06em] whitespace-nowrap text-[var(--muted)] uppercase";
+  const td = "px-4 py-3 align-middle";
+  /** An empty cell is a dash in the faintest ink, not a gap. */
+  const blank = "text-[var(--muted-soft)]";
 
   const selectClass =
     "h-11 min-w-36 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-2.5 text-[13.5px] font-semibold text-[var(--ink)] outline-none focus:border-[var(--orange)]";
+  /** The page size holds two or three digits, not a sentence. */
+  const perClass =
+    "h-11 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-2.5 text-[13.5px] font-semibold text-[var(--ink)] outline-none focus:border-[var(--orange)]";
 
   return (
     <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
-      <div className="mb-5">
-        <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Projects</h1>
-        <p className="text-sm text-[var(--muted)]">
-          {rows.length} in all. Search by name, phone, project code, address, PIN, division or
-          consumer number.
-        </p>
+      <div className="mb-5 flex flex-wrap items-end gap-4">
+        <div className="min-w-60 flex-1">
+          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Projects</h1>
+          <p className="text-sm text-[var(--muted)]">
+            {rows.length} in all. Search by name, phone, project code, address, PIN, division or
+            consumer number.
+          </p>
+        </div>
+        {/* A project starts life as a lead row, so this is the lead form —
+            adding one here saves the detour through /leads for an office
+            that works out of this list. */}
+        <NewLeadDialog
+          partners={partners}
+          label="Add project"
+          title="Add a project"
+          blurb="A project starts at the lead stage. Enough to call them back now; the application details come at stage 1."
+          submitLabel="Create project"
+        />
       </div>
 
       <form action="/projects" className="mb-3 flex flex-wrap gap-2.5">
-        {stage ? <input type="hidden" name="stage" value={stage} /> : null}
         <input
           name="q"
           defaultValue={q}
@@ -267,6 +353,19 @@ export default async function ProjectsPage({
           aria-label="Search projects"
           className="h-11 min-w-60 flex-1 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[14px] text-[var(--ink)] outline-none focus:border-[var(--orange)]"
         />
+
+        {/* The stage used to be nine chips across the page, which took a
+            band the width of the window to say one thing. It is a filter
+            like the rest, so it sits with the rest — and the option list
+            doubles as the key to the numbers in the first column. */}
+        <select name="stage" defaultValue={stage} aria-label="Pipeline stage" className={selectClass}>
+          <option value="">Any stage ({inScope.length})</option>
+          {STAGES.map((s) => (
+            <option key={s.no} value={String(s.no)}>
+              {s.no} · {STAGE_TITLES[s.key]} ({perStage.get(s.no) ?? 0})
+            </option>
+          ))}
+        </select>
 
         <select name="kw" defaultValue={kw} aria-label="Plant size" className={selectClass}>
           <option value="">Any size</option>
@@ -320,12 +419,25 @@ export default async function ProjectsPage({
           className={selectClass}
         >
           <option value="">Any lifecycle</option>
-          {(["LEAD", "PROSPECT", "CUSTOMER"] as const).map((l) => (
+          {(["LEAD", "CUSTOMER"] as const).map((l) => (
             <option key={l} value={l}>
               {LIFECYCLE_LABELS[l]} ({lifecycleCounts.get(l) ?? 0})
             </option>
           ))}
         </select>
+
+        {/* No hidden `page` field, so applying a filter always lands on page
+            one — staying on page 9 of a list that now has two looks broken. */}
+        <label className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--muted)]">
+          Show
+          <select name="per" defaultValue={String(per)} aria-label="Rows per page" className={perClass}>
+            {PER_PAGE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <button
           type="submit"
@@ -336,7 +448,7 @@ export default async function ProjectsPage({
         {filtersOn ? (
           <Link
             href="/projects"
-            className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-bold text-[var(--navy)] no-underline"
+            className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-bold text-[var(--navy-text)] no-underline"
           >
             Clear
           </Link>
@@ -346,6 +458,9 @@ export default async function ProjectsPage({
       {filtersOn ? (
         <p className="mb-3 text-[12.5px] text-[var(--muted)]">
           {filtered.length} of {rows.length} shown
+          {stage
+            ? ` · stage ${stage} — ${STAGE_TITLES[STAGES[Number(stage) - 1]?.key ?? "onboarding"]}`
+            : ""}
           {kw ? ` · ${KW_BANDS.find((b) => b.key === kw)?.label ?? "size not set"}` : ""}
           {place ? ` · ${placeLabel(place)}` : ""}
           {pay ? ` · ${pay === "none" ? "no plan yet" : PAY_LABELS[pay]}` : ""}
@@ -353,40 +468,6 @@ export default async function ProjectsPage({
         </p>
       ) : null}
 
-      <div className="mb-4 flex flex-wrap gap-1.5">
-        <Link
-          href={href({ stage: "" })}
-          aria-current={stage === "" ? "page" : undefined}
-          className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[13px] no-underline ${
-            stage === ""
-              ? "bg-[var(--navy)] font-bold text-[var(--navy-ink)]"
-              : "border border-[var(--line)] bg-[var(--surface)] font-semibold text-[var(--muted)]"
-          }`}
-        >
-          All stages
-          <span className="ref text-[11px] opacity-75">{inScope.length}</span>
-        </Link>
-        {STAGES.map((s) => {
-          const n = perStage.get(s.no) ?? 0;
-          const active = stage === String(s.no);
-          return (
-            <Link
-              key={s.no}
-              href={href({ stage: String(s.no) })}
-              aria-current={active ? "page" : undefined}
-              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[12.5px] no-underline ${
-                active
-                  ? "bg-[var(--navy)] font-bold text-[var(--navy-ink)]"
-                  : "border border-[var(--line)] bg-[var(--surface)] font-semibold text-[var(--muted)]"
-              } ${n === 0 && !active ? "opacity-55" : ""}`}
-            >
-              <span className="ref">{s.no}</span>
-              {STAGE_TITLES[s.key]}
-              <span className="ref text-[11px] opacity-75">{n}</span>
-            </Link>
-          );
-        })}
-      </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 py-12 text-center">
@@ -396,79 +477,148 @@ export default async function ProjectsPage({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
-          {filtered.map((r, i) => {
-            const size = sizeOf(r);
-            return (
-              <Link
-                key={r.project.id}
-                href={`/projects/${r.project.id}`}
-                className={`flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3.5 no-underline ${
-                  i < filtered.length - 1 ? "border-b border-[var(--line-soft)]" : ""
-                }`}
-              >
-                <span
-                  className={`ref flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12.5px] font-bold ${
-                    r.project.lifecycleStage === "LEAD"
-                      ? "bg-[var(--chip-soft)] text-[var(--muted)]"
-                      : "bg-[var(--orange-soft)] text-[var(--orange-text)]"
-                  }`}
-                >
-                  {r.project.pipelineStage}
-                </span>
+        /* A real table, because this is tabular data and the eye needs a
+           column to run down. It scrolls sideways under ~960px rather than
+           reflowing: a row that wraps is a row whose columns stop lining up,
+           which is what made the old flex list hard to read. */
+        <div className="overflow-x-auto rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
+          <table className="w-full min-w-[1040px] border-collapse text-left">
+            <thead>
+              <tr className="border-b border-[var(--line)] bg-[var(--surface-2)]">
+                {/* The number is the stage; its name is on the chips above
+                    and on hover, rather than spending a whole column on a
+                    phrase that repeats down the page. */}
+                <th scope="col" className={`${th} w-16 text-center`} title="Pipeline stage 1 to 9">
+                  Stage
+                </th>
+                <th scope="col" className={`${th} min-w-[240px]`}>
+                  Customer
+                </th>
+                <th scope="col" className={`${th} w-36`}>
+                  Phone
+                </th>
+                <th scope="col" className={`${th} w-40`}>
+                  Consumer no.
+                </th>
+                <th scope="col" className={`${th} w-32`}>
+                  Plant size
+                </th>
+                <th scope="col" className={`${th} w-36`}>
+                  Finance
+                </th>
+                {canSeeFlags ? (
+                  <th scope="col" className={`${th} w-24`}>
+                    Flags
+                  </th>
+                ) : null}
+                <th scope="col" className={`${th} w-28`}>
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageRows.map((r) => {
+                const size = sizeOf(r);
+                const openFlags = flagsByProject.get(r.project.id) ?? [];
+                const name = `${r.contact.firstName} ${r.contact.lastName ?? ""}`.trim();
+                const stageKey = STAGES[r.project.pipelineStage - 1]?.key ?? "onboarding";
+                return (
+                  /* `relative` on the row so the stretched link below covers
+                     the whole of it. The row cannot itself be an anchor —
+                     the flags chip inside it is a link, and an anchor cannot
+                     nest inside an anchor. */
+                  <tr
+                    key={r.project.id}
+                    className="relative border-b border-[var(--line-soft)] last:border-b-0 hover:bg-[var(--surface-2)]"
+                  >
+                    <td className={`${td} text-center`}>
+                      <span
+                        title={`Stage ${r.project.pipelineStage} — ${STAGE_TITLES[stageKey]}`}
+                        className={`ref inline-flex h-8 w-8 items-center justify-center rounded-full text-[12.5px] font-bold ${
+                          r.project.lifecycleStage === "LEAD"
+                            ? "bg-[var(--chip-soft)] text-[var(--muted)]"
+                            : "bg-[var(--orange-soft)] text-[var(--orange-text)]"
+                        }`}
+                      >
+                        {r.project.pipelineStage}
+                        <span className="sr-only"> — {STAGE_TITLES[stageKey]}</span>
+                      </span>
+                    </td>
 
-                <span className="min-w-44 flex-[2_1_220px]">
-                  <span className="block text-[14px] font-semibold text-[var(--ink)]">
-                    {r.contact.firstName} {r.contact.lastName ?? ""}
-                  </span>
-                  <span className="ref mt-0.5 block text-[11.5px] text-[var(--muted)]">
-                    {r.project.code} · {r.contact.phone}
-                    {r.contact.pinCode ? ` · ${r.contact.pinCode}` : ""}
-                    {r.division ? ` · ${r.division}` : ""}
-                  </span>
-                </span>
+                    <td className={td}>
+                      <Link
+                        href={`/projects/${r.project.id}`}
+                        aria-label={`${name} — ${r.project.code}`}
+                        className="absolute inset-0 z-0 no-underline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--orange)]"
+                      />
+                      <span className="block text-[14px] font-semibold text-[var(--ink)]">
+                        {name}
+                      </span>
+                      <span className="mt-0.5 block text-[12px] text-[var(--muted)]">
+                        {r.division ?? "No division yet"}
+                      </span>
+                    </td>
 
-                <span className="min-w-32 flex-1 text-[12.5px] text-[var(--muted)]">
-                  {size.kw === null ? (
-                    <span className="text-[var(--muted-soft)]">size not set</span>
-                  ) : size.exact ? (
-                    <span className="ref font-semibold text-[var(--ink)]">
-                      {r.rooftop?.plantKw} kW
-                    </span>
-                  ) : (
-                    <span className="ref">~{size.kw} kW interest</span>
-                  )}
-                  {r.connection?.consumerNumber ? (
-                    <span className="ref mt-0.5 block text-[11px]">
-                      {r.connection.consumerNumber}
-                    </span>
-                  ) : null}
-                </span>
+                    <td className={`${td} ref text-[12.5px] text-[var(--muted)]`}>
+                      {r.contact.phone}
+                    </td>
 
-                <span className="min-w-20 shrink-0 text-[12px] text-[var(--muted)]">
-                  {r.payMode ? PAY_LABELS[r.payMode] : "—"}
-                </span>
+                    <td className={`${td} ref text-[12.5px] text-[var(--muted)]`}>
+                      {r.connection?.consumerNumber ?? <span className={blank}>—</span>}
+                    </td>
 
-                <span className="min-w-28 shrink-0 text-[12.5px] text-[var(--muted)]">
-                  {STAGE_TITLES[STAGES[r.project.pipelineStage - 1]?.key ?? "onboarding"]}
-                </span>
+                    <td className={`${td} text-[12.5px]`}>
+                      {size.kw === null ? (
+                        <span className={blank}>not set</span>
+                      ) : size.exact ? (
+                        <span className="ref font-semibold text-[var(--ink)]">
+                          {r.rooftop?.plantKw} kW
+                        </span>
+                      ) : (
+                        <span className="ref text-[var(--muted)]">~{size.kw} kW interest</span>
+                      )}
+                    </td>
 
-                <span
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-bold tracking-[0.04em] uppercase ${
-                    r.project.lifecycleStage === "LEAD"
-                      ? "bg-[var(--chip-soft)] text-[var(--muted)]"
-                      : r.project.lifecycleStage === "CUSTOMER"
-                        ? "bg-[var(--green-soft)] text-[var(--green-text)]"
-                        : "bg-[var(--navy-soft)] text-[var(--navy)]"
-                  }`}
-                >
-                  {r.project.lifecycleStage}
-                </span>
-              </Link>
-            );
-          })}
+                    <td className={`${td} text-[12.5px] whitespace-nowrap text-[var(--muted)]`}>
+                      {r.payMode ? PAY_LABELS[r.payMode] : <span className={blank}>—</span>}
+                    </td>
+
+                    {/* Above the row overlay, so the chip takes the click and
+                        goes to the flags page rather than to the project. */}
+                    {canSeeFlags ? (
+                      <td className={`${td} relative z-10`}>
+                        <FlagsChip projectId={r.project.id} openFlags={openFlags} compact />
+                      </td>
+                    ) : null}
+
+                    <td className={td}>
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-1 text-[10.5px] font-bold tracking-[0.04em] uppercase ${
+                          r.project.lifecycleStage === "LEAD"
+                            ? "bg-[var(--chip-soft)] text-[var(--muted)]"
+                            : r.project.lifecycleStage === "CUSTOMER"
+                              ? "bg-[var(--green-soft)] text-[var(--green-text)]"
+                              : "bg-[var(--navy-soft)] text-[var(--link)]"
+                        }`}
+                      >
+                        {r.project.lifecycleStage}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
+
+      {/* Under the table, and only when there is a table: the same pager the
+          quotations and agreements lists use, so "Next" is in the same place
+          and means the same thing. It counts the filtered list, not the
+          whole table, which is the list being paged. */}
+      {filtered.length > 0 ? (
+        <ListPager total={filtered.length} page={page} per={per} noun="projects" />
+      ) : null}
     </main>
   );
 }

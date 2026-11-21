@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import {
   applicationDetails,
   contacts,
+  electricityConnections,
   flags as flagsTable,
   projectStageProgress,
   projects,
@@ -27,9 +28,28 @@ export interface ProjectHeaderData {
   completed: Set<number>;
   plantKw: string;
   portalId: string | null;
+  /**
+   * The electricity consumer number, which is how the DISCOM, the portal and
+   * the customer themselves all refer to the connection. It sits in the
+   * header beside the portal ID because those two numbers are what every
+   * telephone call about a job opens with.
+   */
+  consumerNumber: string | null;
   divisionName: string | null;
   isDcr: boolean;
   openFlagCount: number;
+  /**
+   * The open flags themselves, not just how many. The header chip shows them
+   * on hover so the common question — "what is blocking this one?" — is
+   * answered without loading the flags page. There are only ever two kinds,
+   * so this list stays short by construction.
+   */
+  openFlags: Array<{ type: string; status: string }>;
+}
+
+/** Open and in-progress both block the job; resolved and waived do not. */
+function isOpen(status: string): boolean {
+  return status === "OPEN" || status === "IN_PROGRESS";
 }
 
 export async function loadProjectHeader(id: string): Promise<ProjectHeaderData | null> {
@@ -40,20 +60,26 @@ export async function loadProjectHeader(id: string): Promise<ProjectHeaderData |
         contact: contacts,
         application: applicationDetails,
         rooftop: rooftopDetails,
+        connection: electricityConnections,
       })
       .from(projects)
       .innerJoin(contacts, eq(projects.contactId, contacts.id))
       .leftJoin(applicationDetails, eq(applicationDetails.projectId, projects.id))
       .leftJoin(rooftopDetails, eq(rooftopDetails.projectId, projects.id))
+      .leftJoin(electricityConnections, eq(electricityConnections.projectId, projects.id))
       .where(eq(projects.id, id))
       .limit(1),
     db.select().from(projectStageProgress).where(eq(projectStageProgress.projectId, id)),
-    db.select({ status: flagsTable.status }).from(flagsTable).where(eq(flagsTable.projectId, id)),
+    db
+      .select({ type: flagsTable.type, status: flagsTable.status })
+      .from(flagsTable)
+      .where(eq(flagsTable.projectId, id)),
   ]);
 
   if (!row) return null;
 
-  const { project, contact, application, rooftop } = row;
+  const { project, contact, application, rooftop, connection } = row;
+  const openFlags = flagRows.filter((f) => isOpen(f.status));
 
   return {
     id: project.id,
@@ -67,10 +93,10 @@ export async function loadProjectHeader(id: string): Promise<ProjectHeaderData |
     ),
     plantKw: rooftop?.plantKw ? `${rooftop.plantKw} kW` : project.interestedPlantKw || "—",
     portalId: application?.nationalPortalId ?? null,
+    consumerNumber: connection?.consumerNumber ?? null,
     divisionName: application?.divisionName ?? null,
     isDcr: Boolean(application?.isDcr),
-    openFlagCount: flagRows.filter(
-      (f) => f.status === "OPEN" || f.status === "IN_PROGRESS",
-    ).length,
+    openFlagCount: openFlags.length,
+    openFlags,
   };
 }

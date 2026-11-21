@@ -33,79 +33,90 @@
 
   /* Text */
   --ink: #0a1a2f;
-  --muted: #4d6075;
-  --muted-soft: #677c92;
+  --muted: #45596f;
+  --muted-soft: #5a7088;
 
   /* App chrome. Dark in both themes — see note above. */
   --chrome: #081e36;
   --chrome-2: #0f2b4a;
   --chrome-ink: #ffffff;
-  --chrome-muted: #9fb6d1;
+  --chrome-muted: #a7bdd6;
   --chrome-line: #15385d;
 
-  /* Brand navy */
+  /* Brand navy. Two tokens, and they are not interchangeable:
+       --navy       a FILL, always carrying --navy-ink
+       --navy-text  the INK, for a navy label on a pale surface
+     Dark mode has to move them in opposite directions — the fill lightens,
+     the ink lightens much more — so one token could not serve both. */
   --navy: #072744;
   --navy-ink: #ffffff;
+  --navy-text: #0b3f72;
   --navy-soft: #e5edf7;
   --navy-border: #c2d4e9;
-  --link: #0e4c8a;
+  --link: #0d4c8c;
   --link-hover: #072744;
 
   /* Solar amber — the single primary action. Navy ink, never white:
      white on amber fails in both themes, navy on it clears 7:1. */
   --orange: #f59008;
-  --orange-hover: #e07f00;
+  --orange-hover: #dd7d00;
   --orange-ink: #0a1a2f;
-  --orange-text: #a8520a;
+  --orange-text: #96490a;
   --orange-soft: #fff2e0;
-  --orange-border: #f8cd96;
-  --orange-ring: #ffe4bd;
+  --orange-border: #f6c889;
+  --orange-ring: #ffe0b2;
 
   /* Daylight gold — energy and statistics. Not an action. */
   --gold: #f0a500;
   --gold-ink: #0a1a2f;
   /* Gold as a fill is 2:1 on white, so text never uses it: a figure set in
      gold uses this one instead, which clears 5:1 and still reads as sun. */
-  --gold-text: #9a6400;
+  --gold-text: #8a5a00;
   --gold-soft: #fff6e0;
-  --gold-border: #f3d79a;
+  --gold-border: #f0d08c;
 
   /* Leaf green — completed, verified */
-  --green: #157f33;
+  --green: #137029;
   --green-ink: #ffffff;
-  --green-text: #0f6b2a;
+  --green-text: #0d6124;
   --green-soft: #dcf3e1;
-  --green-border: #b4e4c1;
+  --green-border: #a9dfb8;
 
   /* Amber — open flags */
-  --amber-text: #8a5206;
-  --amber-body: #6a4409;
+  --amber-text: #7d4a05;
+  --amber-body: #60400a;
   --amber-soft: #fdf0ce;
   --amber-surface: #fffaed;
-  --amber-border: #ecc97f;
+  --amber-border: #e2bd6c;
 
   /* Red — blocked, rejected, mismatch */
-  --red-text: #ad2118;
+  --red-text: #a51d14;
   --red-soft: #fde5e2;
-  --red-border: #f7bdb7;
+  --red-border: #f3b2ab;
   --red-surface: #fff5f4;
 
   /* Channel partner */
-  --partner-text: #6b21a8;
+  --partner-text: #61219c;
   --partner-soft: #f2e9fe;
 
   /* Restricted / admin-only lock chip */
-  --locked-text: #3c4f64;
+  --locked-text: #39495c;
   --locked-soft: #e3e9f1;
 
   /* Neutral chip */
-  --chip-text: #41566e;
+  --chip-text: #3b5069;
   --chip-soft: #edf1f7;
 
+  /* Focus. Gold is the brand's focus colour and holds up beautifully on the
+     dark theme, but it is only 2:1 on white — a focus ring nobody can see.
+     So the ring is its own token: deep blue on the light canvas, gold on
+     the dark one. Both clear 3:1 against every surface they land on. */
+  --focus: #0b4a86;
+
   /* Stage rail */
-  --stage-done: #157f33;
+  --stage-done: #137029;
   --stage-now: #f59008;
-  --stage-todo: #bccbdb;
+  --stage-todo: #b3c3d6;
 
   /* Statistics series. Ordered so neighbours stay apart for the most
      common colour-blindness, and so each one holds up at 6px wide. */
@@ -142,67 +153,78 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #07121f;
+      --bg: #07121f;
     --surface: #101f33;
     --surface-2: #0c1a2c;
-    --surface-sunken: #162940;
+    --surface-sunken: #17293f;
 
-    --line: #1f3a5c;
-    --line-soft: #182c47;
+    --line: #23405f;
+    --line-soft: #1a2e49;
 
     --ink: #e6edf7;
-    --muted: #93a8c2;
-    --muted-soft: #7a91ad;
+    --muted: #9cb0c8;
+    --muted-soft: #8ca4c1;
 
     --chrome: #050f1c;
     --chrome-2: #102641;
     --chrome-ink: #f3f7fd;
-    --chrome-muted: #93abc8;
+    --chrome-muted: #9db5d2;
     --chrome-line: #1b3a5e;
 
-    --navy: #16304f;
-    --navy-ink: #e6edf7;
-    --navy-soft: #13283f;
-    --navy-border: #27456c;
-    --link: #7fb2ea;
-    --link-hover: #a9ccf3;
+    /* The fill lifts off the card instead of sinking into it, and the ink
+       becomes a pale blue — the two tokens move apart, not together. */
+    --navy: #1e4272;
+    --navy-ink: #eaf1fb;
+    --navy-text: #9cc6f7;
+    --navy-soft: #142b47;
+    --navy-border: #2b4c76;
+    --link: #86b8ee;
+    --link-hover: #b3d4f7;
 
-    --orange-text: #ffa94d;
-    --orange-soft: #3a2608;
-    --orange-border: #5e4414;
-    --orange-ring: #2a1c08;
+    --orange-hover: #ffa428;
+    --orange-text: #ffac55;
+    --orange-soft: #3a2a0c;
+    --orange-border: #6b4e1a;
+    /* Hover lightens here. On the light theme the same token darkens — a
+       hover that moved the same way in both would dim the button in one. */
+    --orange-ring: #4a3310;
 
     --gold: #ffb22c;
-    --gold-text: #ffb22c;
-    --gold-soft: #332307;
-    --gold-border: #5c4414;
+    --gold-text: #ffbb45;
+    --gold-soft: #33280d;
+    --gold-border: #5e4a18;
 
-    --green: #1a8d3a;
-    --green-text: #5cd47e;
-    --green-soft: #0f3520;
-    --green-border: #1c5c33;
+    /* Bright enough to read as "done" at 20px across, with its own near-black
+       ink rather than white: white on a mid green clears 4.5 in neither theme. */
+    --green: #35c767;
+    --green-ink: #05210f;
+    --green-text: #64dc87;
+    --green-soft: #10301e;
+    --green-border: #1f5a37;
 
-    --amber-text: #f9c256;
-    --amber-body: #d9bc85;
-    --amber-soft: #352607;
-    --amber-surface: #241b06;
-    --amber-border: #5c4414;
+    --amber-text: #f7c45f;
+    --amber-body: #d8bd8c;
+    --amber-soft: #382b0e;
+    --amber-surface: #241c0b;
+    --amber-border: #5e4a18;
 
-    --red-text: #ff9c94;
-    --red-soft: #3a1310;
-    --red-border: #652420;
-    --red-surface: #280f0d;
+    --red-text: #ff9f97;
+    --red-soft: #3b1613;
+    --red-border: #6a2a25;
+    --red-surface: #28100e;
 
-    --partner-text: #d7b4fe;
-    --partner-soft: #2b1065;
+    --partner-text: #d4b2fd;
+    --partner-soft: #2a1b4d;
 
     --locked-text: #c3d4ea;
-    --locked-soft: #16304f;
+    --locked-soft: #1a3350;
 
     --chip-text: #a9ccf3;
-    --chip-soft: #15293f;
+    --chip-soft: #16293f;
 
-    --stage-done: #2ba84c;
+    --focus: #ffb22c;
+
+    --stage-done: #35c767;
     --stage-todo: #2b4668;
 
     --data-1: #62a6ef;
@@ -212,7 +234,7 @@
     --data-5: #3fb8cf;
     --data-6: #f0923b;
     --data-rest: #5b7696;
-    --data-track: #182c47;
+    --data-track: #1a2e49;
 
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
     --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 14px 32px -12px rgb(0 0 0 / 0.6);
@@ -224,67 +246,78 @@
 
 /* Explicit choice always wins */
 :root[data-theme="dark"] {
-  --bg: #07121f;
+    --bg: #07121f;
   --surface: #101f33;
   --surface-2: #0c1a2c;
-  --surface-sunken: #162940;
+  --surface-sunken: #17293f;
 
-  --line: #1f3a5c;
-  --line-soft: #182c47;
+  --line: #23405f;
+  --line-soft: #1a2e49;
 
   --ink: #e6edf7;
-  --muted: #93a8c2;
-  --muted-soft: #7a91ad;
+  --muted: #9cb0c8;
+  --muted-soft: #8ca4c1;
 
   --chrome: #050f1c;
   --chrome-2: #102641;
   --chrome-ink: #f3f7fd;
-  --chrome-muted: #93abc8;
+  --chrome-muted: #9db5d2;
   --chrome-line: #1b3a5e;
 
-  --navy: #16304f;
-  --navy-ink: #e6edf7;
-  --navy-soft: #13283f;
-  --navy-border: #27456c;
-  --link: #7fb2ea;
-  --link-hover: #a9ccf3;
+  /* The fill lifts off the card instead of sinking into it, and the ink
+     becomes a pale blue — the two tokens move apart, not together. */
+  --navy: #1e4272;
+  --navy-ink: #eaf1fb;
+  --navy-text: #9cc6f7;
+  --navy-soft: #142b47;
+  --navy-border: #2b4c76;
+  --link: #86b8ee;
+  --link-hover: #b3d4f7;
 
-  --orange-text: #ffa94d;
-  --orange-soft: #3a2608;
-  --orange-border: #5e4414;
-  --orange-ring: #2a1c08;
+  --orange-hover: #ffa428;
+  --orange-text: #ffac55;
+  --orange-soft: #3a2a0c;
+  --orange-border: #6b4e1a;
+  /* Hover lightens here. On the light theme the same token darkens — a
+     hover that moved the same way in both would dim the button in one. */
+  --orange-ring: #4a3310;
 
   --gold: #ffb22c;
-  --gold-text: #ffb22c;
-  --gold-soft: #332307;
-  --gold-border: #5c4414;
+  --gold-text: #ffbb45;
+  --gold-soft: #33280d;
+  --gold-border: #5e4a18;
 
-  --green: #1a8d3a;
-  --green-text: #5cd47e;
-  --green-soft: #0f3520;
-  --green-border: #1c5c33;
+  /* Bright enough to read as "done" at 20px across, with its own near-black
+     ink rather than white: white on a mid green clears 4.5 in neither theme. */
+  --green: #35c767;
+  --green-ink: #05210f;
+  --green-text: #64dc87;
+  --green-soft: #10301e;
+  --green-border: #1f5a37;
 
-  --amber-text: #f9c256;
-  --amber-body: #d9bc85;
-  --amber-soft: #352607;
-  --amber-surface: #241b06;
-  --amber-border: #5c4414;
+  --amber-text: #f7c45f;
+  --amber-body: #d8bd8c;
+  --amber-soft: #382b0e;
+  --amber-surface: #241c0b;
+  --amber-border: #5e4a18;
 
-  --red-text: #ff9c94;
-  --red-soft: #3a1310;
-  --red-border: #652420;
-  --red-surface: #280f0d;
+  --red-text: #ff9f97;
+  --red-soft: #3b1613;
+  --red-border: #6a2a25;
+  --red-surface: #28100e;
 
-  --partner-text: #d7b4fe;
-  --partner-soft: #2b1065;
+  --partner-text: #d4b2fd;
+  --partner-soft: #2a1b4d;
 
   --locked-text: #c3d4ea;
-  --locked-soft: #16304f;
+  --locked-soft: #1a3350;
 
   --chip-text: #a9ccf3;
-  --chip-soft: #15293f;
+  --chip-soft: #16293f;
 
-  --stage-done: #2ba84c;
+  --focus: #ffb22c;
+
+  --stage-done: #35c767;
   --stage-todo: #2b4668;
 
   --data-1: #62a6ef;
@@ -294,7 +327,7 @@
   --data-5: #3fb8cf;
   --data-6: #f0923b;
   --data-rest: #5b7696;
-  --data-track: #182c47;
+  --data-track: #1a2e49;
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 14px 32px -12px rgb(0 0 0 / 0.6);
@@ -330,7 +363,9 @@
   --color-navy-ink: var(--navy-ink);
   --color-navy-soft: var(--navy-soft);
   --color-navy-border: var(--navy-border);
+  --color-navy-text: var(--navy-text);
   --color-link: var(--link);
+  --color-focus: var(--focus);
 
   --color-orange: var(--orange);
   --color-orange-ink: var(--orange-ink);
@@ -454,7 +489,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--gold);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
     border-radius: 3px;
   }

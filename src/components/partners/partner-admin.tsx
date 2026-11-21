@@ -16,7 +16,7 @@ const labelCls = "mb-1.5 block text-xs font-semibold text-[var(--muted)]";
 const primary =
   "h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60";
 const small =
-  "h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy)] disabled:opacity-60";
+  "h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy-text)] disabled:opacity-60";
 
 const EMPTY: PartnerInput = {
   name: "",
@@ -214,7 +214,7 @@ export function PartnerCard({ partner }: { partner: PartnerRow }) {
             {partner.phone}
             {partner.email ? ` · ${partner.email}` : ""}
           </p>
-          <p className="mt-1 text-[12.5px] font-semibold text-[var(--navy)]">{rateLabel}</p>
+          <p className="mt-1 text-[12.5px] font-semibold text-[var(--navy-text)]">{rateLabel}</p>
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-4 text-right">

@@ -20,7 +20,7 @@ const labelCls = "mb-1.5 block text-xs font-semibold text-[var(--muted)]";
 const primary =
   "h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60";
 const secondary =
-  "h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy)] disabled:opacity-60";
+  "h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)] disabled:opacity-60";
 
 export interface GeneratedDoc {
   docType: Stage7DocType;
@@ -188,7 +188,7 @@ export function GeneratePack({
             <span
               className={`ref flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${
                 d.documentId
-                  ? "bg-[var(--green)] text-white"
+                  ? "bg-[var(--green)] text-[var(--green-ink)]"
                   : "bg-[var(--chip-soft)] text-[var(--muted-soft)]"
               }`}
             >

@@ -73,3 +73,17 @@ export const GATE_LABELS: Record<string, string> = {
 export function gateLabel(id: string): string {
   return GATE_LABELS[id] ?? id;
 }
+
+/**
+ * There are only ever two kinds of flag, and both are a sentence the office
+ * already says out loud. Shared because the header chip, the project list and
+ * the stage-1 banner all name them and had drifted into three wordings.
+ */
+export const FLAG_LABELS: Record<string, string> = {
+  NAME_MISMATCH: "Name change",
+  LOAD_ENHANCEMENT: "Load enhancement",
+};
+
+export function flagLabel(type: string): string {
+  return FLAG_LABELS[type] ?? type;
+}

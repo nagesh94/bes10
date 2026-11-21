@@ -81,7 +81,7 @@ export function SectionStepper({
                 <span
                   className={`ref relative mx-auto flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${
                     step.done
-                      ? "bg-[var(--green)] text-white"
+                      ? "bg-[var(--green)] text-[var(--green-ink)]"
                       : isHere
                         ? "bg-[var(--orange)] text-[var(--orange-ink)] ring-[3px] ring-[var(--orange-ring)]"
                         : "border-[1.5px] border-[var(--line)] bg-[var(--surface)] text-[var(--muted-soft)] group-hover:border-[var(--muted-soft)]"

@@ -19,8 +19,20 @@ const label = "mb-1.5 block text-xs font-semibold text-[var(--muted)]";
 
 export function NewLeadForm({
   partners,
+  submitLabel = "Create lead",
+  onCreated,
+  onCancel,
 }: {
   partners: Array<{ id: string; name: string; phone: string }>;
+  /** "Create lead" on its own page, "Create project" in the projects dialog. */
+  submitLabel?: string;
+  /**
+   * Given by a dialog, which wants to close itself and refresh the list
+   * behind it rather than send the person away to the new project. Left out
+   * on the standalone page, where going to the project is the whole point.
+   */
+  onCreated?: (projectId: string) => void;
+  onCancel?: () => void;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -52,6 +64,15 @@ export function NewLeadForm({
       setError(result.error);
       setFieldErrors(result.fieldErrors ?? {});
       setPending(false);
+      return;
+    }
+
+    if (onCreated) {
+      // The dialog stays in charge of what happens next: it closes, and the
+      // list it was opened from reloads with the new row in place.
+      setPending(false);
+      onCreated(result.projectId);
+      router.refresh();
       return;
     }
 
@@ -148,11 +169,11 @@ export function NewLeadForm({
           disabled={pending}
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
-          {pending ? "Saving…" : "Create lead"}
+          {pending ? "Saving…" : submitLabel}
         </button>
         <button
           type="button"
-          onClick={() => router.push("/leads")}
+          onClick={() => (onCancel ? onCancel() : router.push("/projects"))}
           className="h-11 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-5 text-sm font-semibold text-[var(--ink)]"
         >
           Cancel

@@ -21,7 +21,7 @@ const STATUS_LABEL: Record<string, { label: string; tone: string; note: string }
   },
   DUE: {
     label: "Approved",
-    tone: "bg-[var(--navy-soft)] text-[var(--navy)]",
+    tone: "bg-[var(--navy-soft)] text-[var(--navy-text)]",
     note: "Approved for payment",
   },
   PAID: {
@@ -67,7 +67,7 @@ export default async function MyReferralsPage() {
 
   const totals = [
     ["Earned", sum("ACCRUED"), "var(--amber-text)"],
-    ["Approved", sum("DUE"), "var(--navy)"],
+    ["Approved", sum("DUE"), "var(--navy-text)"],
     ["Paid", sum("PAID"), "var(--green-text)"],
   ] as const;
 

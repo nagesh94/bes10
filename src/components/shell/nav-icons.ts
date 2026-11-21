@@ -8,7 +8,6 @@ import {
   Settings,
   Share2,
   ShieldCheck,
-  UserPlus,
   Wallet,
   Wrench,
   type LucideIcon,
@@ -20,7 +19,6 @@ import {
  */
 export const NAV_ICON: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
-  leads: UserPlus,
   projects: FolderOpen,
   quotations: FileText,
   agreements: FileSignature,

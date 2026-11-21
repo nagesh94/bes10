@@ -48,7 +48,8 @@ export function PhotoGrid({
 }) {
   const router = useRouter();
   const ask = useConfirm();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -220,7 +221,7 @@ export function PhotoGrid({
         <button
           type="button"
           disabled={busy !== null}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => cameraRef.current?.click()}
           className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[9px] border-[1.5px] border-dashed border-[var(--orange)] bg-[var(--orange-soft)] text-[var(--orange-text)] disabled:opacity-60"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -228,17 +229,48 @@ export function PhotoGrid({
             <circle cx="12" cy="12.5" r="3.4" />
           </svg>
           <span className="px-2 text-center text-[11.5px] font-bold">
-            {busy ?? (photos.length ? "Add more" : "Add photos")}
+            {busy ?? "Take photo"}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          disabled={busy !== null}
+          onClick={() => galleryRef.current?.click()}
+          className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[9px] border-[1.5px] border-dashed border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)] disabled:opacity-60"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <rect x="3" y="4.5" width="18" height="15" rx="2" />
+            <circle cx="8.5" cy="10" r="1.6" />
+            <path d="M3.5 17l5-5 4.5 4.5 3-2.5 4.5 4" />
+          </svg>
+          <span className="px-2 text-center text-[11.5px] font-bold">
+            {busy ?? "Upload from gallery"}
           </span>
         </button>
       </div>
 
+      {/* Opens the camera straight away on a phone. */}
       <input
-        ref={inputRef}
+        ref={cameraRef}
         type="file"
         accept="image/*"
         multiple
         capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const files = Array.from(e.target.files ?? []);
+          if (files.length) void uploadAll(files);
+          e.target.value = "";
+        }}
+      />
+
+      {/* No capture attribute, so this opens the gallery / file browser instead. */}
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*,.jpg,.jpeg,.png,.heic,.heif,.webp"
+        multiple
         className="hidden"
         onChange={(e) => {
           const files = Array.from(e.target.files ?? []);

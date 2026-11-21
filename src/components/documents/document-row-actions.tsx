@@ -27,7 +27,7 @@ import { openFile, saveFile } from "@/lib/documents/open-file";
 type Busy = "open" | "download" | "regenerate" | "delete" | null;
 
 const btn =
-  "h-9 shrink-0 cursor-pointer rounded-[7px] border px-3 text-[12.5px] font-bold disabled:opacity-60 border-[var(--line)] bg-[var(--surface)] text-[var(--navy)]";
+  "h-9 shrink-0 cursor-pointer rounded-[7px] border px-3 text-[12.5px] font-bold disabled:opacity-60 border-[var(--line)] bg-[var(--surface)] text-[var(--navy-text)]";
 const dangerBtn =
   "h-9 shrink-0 cursor-pointer rounded-[7px] border px-3 text-[12.5px] font-bold disabled:opacity-60 border-[var(--red-border)] bg-[var(--surface)] text-[var(--red-text)]";
 

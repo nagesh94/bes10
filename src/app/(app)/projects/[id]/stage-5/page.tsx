@@ -82,7 +82,7 @@ export default async function Stage5Page({ params }: { params: Promise<{ id: str
           </p>
           <Link
             href={`/projects/${id}/stage-1`}
-            className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4.5 text-[13.5px] font-bold text-[var(--navy)] no-underline"
+            className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4.5 text-[13.5px] font-bold text-[var(--navy-text)] no-underline"
           >
             Check the prospect form
           </Link>

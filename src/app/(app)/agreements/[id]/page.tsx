@@ -74,7 +74,7 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
           {agreement.projectId && row.projectCode ? (
             <Link
               href={`/projects/${agreement.projectId}`}
-              className="ref rounded-full bg-[var(--navy-soft)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--navy)] no-underline"
+              className="ref rounded-full bg-[var(--navy-soft)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--navy-text)] no-underline"
             >
               {row.projectCode}
             </Link>

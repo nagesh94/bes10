@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ClipboardList, FileStack, Flag, IndianRupee } from "lucide-react";
+import { ClipboardList, FileStack, IndianRupee } from "lucide-react";
 import type { ProjectHeaderData } from "@/lib/projects/header";
+import { FlagsChip } from "@/components/projects/flags-chip";
 
 /* PROSPECT reads with --link rather than --navy: on a dark ground the navy
    ink and the navy chip behind it are within a hair of each other, and the
@@ -36,12 +37,14 @@ export function ProjectHeader({
   const meta: Array<{ k: string; v: string; mono?: boolean }> = [
     { k: "Plant size", v: data.plantKw },
     { k: "Portal ID", v: data.portalId ?? "—", mono: true },
+    { k: "Consumer no.", v: data.consumerNumber ?? "—", mono: true },
     { k: "Phone", v: data.phone, mono: true },
     { k: "Division", v: data.divisionName ?? "—" },
   ];
 
   const chip =
     "inline-flex min-h-9 items-center gap-1.5 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-2)] px-2.5 text-[12.5px] font-semibold text-[var(--ink)] no-underline hover:bg-[var(--surface-sunken)]";
+
 
   return (
     <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5 sm:px-6">
@@ -75,26 +78,7 @@ export function ProjectHeader({
               Documents
             </Link>
           ) : null}
-          <Link
-            href={`/projects/${data.id}/flags`}
-            className={
-              data.openFlagCount > 0
-                ? `${chip} border-[var(--amber-border)] bg-[var(--amber-surface)] text-[var(--amber-text)]`
-                : chip
-            }
-          >
-            <Flag size={15} strokeWidth={2} aria-hidden />
-            Flags
-            <span
-              className={`ref rounded-full px-1.5 text-[10.5px] font-bold ${
-                data.openFlagCount > 0
-                  ? "bg-[var(--amber-soft)] text-[var(--amber-text)]"
-                  : "bg-[var(--green-soft)] text-[var(--green-text)]"
-              }`}
-            >
-              {data.openFlagCount > 0 ? data.openFlagCount : "clear"}
-            </span>
-          </Link>
+          <FlagsChip projectId={data.id} openFlags={data.openFlags} />
           {canSeeMoney ? (
             <Link href={`/projects/${data.id}/payments`} className={chip}>
               <IndianRupee size={15} strokeWidth={2} aria-hidden />

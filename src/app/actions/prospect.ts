@@ -126,6 +126,40 @@ export async function saveSection(
               completedAt,
             },
           });
+
+        /**
+         * The application number is what makes a lead a prospect.
+         *
+         * It used to take the convert panel to say so, which meant a job
+         * could carry a National Portal ID and still read LEAD if the ID was
+         * typed into this form instead — two ways in, one of which left the
+         * label behind. The ID is the fact; the lifecycle follows it.
+         *
+         * One way only. A customer is past both labels, and clearing the ID
+         * later is a correction to a number, not grounds for un-selling a
+         * job that has since moved on.
+         */
+        const portalId = nullIfBlank(v.nationalPortalId);
+        if (portalId && project.lifecycleStage === "LEAD") {
+          await tx
+            .update(projects)
+            .set({
+              lifecycleStage: "PROSPECT",
+              leadStatus: "READY_TO_CONVERT",
+              updatedAt: new Date(),
+            })
+            .where(eq(projects.id, projectId));
+
+          await tx.insert(auditLog).values({
+            actorId: actor.id,
+            action: "lead.convert",
+            entityType: "project",
+            entityId: projectId,
+            projectId,
+            before: { lifecycleStage: "LEAD" },
+            after: { lifecycleStage: "PROSPECT", nationalPortalId: portalId },
+          });
+        }
         break;
       }
 
