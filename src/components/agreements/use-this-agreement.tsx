@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { makeAgreementPrimary } from "@/app/actions/agreements";
 
 /**
@@ -26,6 +27,7 @@ export function UseThisAgreement({
   attached: boolean;
   cancelled: boolean;
 }) {
+  const t = useTranslations("agreements.c");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export function UseThisAgreement({
         >
           <path d="M20 6 9 17l-5-5" />
         </svg>
-        On file
+        {t("onFile")}
       </span>
     );
   }
@@ -56,7 +58,7 @@ export function UseThisAgreement({
   if (cancelled) {
     return (
       <span className="shrink-0 rounded-full bg-[var(--chip-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--muted)]">
-        Cancelled
+        {t("cancelled")}
       </span>
     );
   }
@@ -66,7 +68,7 @@ export function UseThisAgreement({
       <button
         type="button"
         disabled={pending}
-        title="File this as the project's agreement — it replaces the current one in the documents and the bank loan pack"
+        title={t("useTitle")}
         onClick={async () => {
           setPending(true);
           setError(null);
@@ -77,7 +79,7 @@ export function UseThisAgreement({
         }}
         className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy-text)] disabled:opacity-60"
       >
-        {pending ? "Filing…" : "Use this one"}
+        {pending ? t("filing") : t("useThis")}
       </button>
       {error ? (
         <span role="alert" className="mt-1 text-[11px] font-medium text-[var(--red-text)]">

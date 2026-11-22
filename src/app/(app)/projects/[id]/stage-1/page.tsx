@@ -19,7 +19,8 @@ import {
   siteSurveys,
   coApplicants,
 } from "@/lib/db/schema";
-import { CO_APPLICANT_SECTION, SECTIONS, sectionByKey } from "@/components/prospect/fields";
+import { CO_APPLICANT_SECTION as CO_APPLICANT_SECTION_EN, SECTIONS, localizeSection, sectionByKey } from "@/components/prospect/fields";
+import { getTranslations } from "next-intl/server";
 import { SectionForm } from "@/components/prospect/section-form";
 import { UploadSlot } from "@/components/documents/upload-slot";
 import { QuickGenerateAgreement } from "@/components/agreements/quick-generate";
@@ -44,8 +45,13 @@ export default async function Stage1Page({
 }) {
   const [{ id }, { section: requested }] = await Promise.all([params, searchParams]);
 
-  const actor = await getActor();
+  const [actor, tp, t] = await Promise.all([
+    getActor(),
+    getTranslations("prospect"),
+    getTranslations("prospect.stage1"),
+  ]);
   if (!actor || !can(actor, "prospect.write")) notFound();
+  const CO_APPLICANT_SECTION = localizeSection(CO_APPLICANT_SECTION_EN, tp);
   const canDeleteDocs = can(actor, "document.delete");
 
   const [project] = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
@@ -170,7 +176,7 @@ export default async function Stage1Page({
   const activeKey: SectionKey = (SECTION_KEYS as readonly string[]).includes(requested ?? "")
     ? (requested as SectionKey)
     : "user";
-  const active = sectionByKey(activeKey)!;
+  const active = localizeSection(sectionByKey(activeKey)!, tp);
   const activeIndex = SECTIONS.findIndex((s) => s.key === activeKey);
   const nextKey = activeIndex < SECTIONS.length - 1 ? SECTIONS[activeIndex + 1]!.key : null;
   const prevKey = activeIndex > 0 ? SECTIONS[activeIndex - 1]!.key : null;
@@ -179,7 +185,12 @@ export default async function Stage1Page({
   // every page load would be wasted work.
   const surveyPhotos = activeKey === "survey" ? await getPhotoThumbUrls(id, "SITE_SURVEY") : [];
 
-  const openFlags = flagRows.filter((f) => f.status === "OPEN" || f.status === "IN_PROGRESS");
+  // Stage 1's own flags; the DCR serial flag is stage 3's and shows there.
+  const openFlags = flagRows.filter(
+    (f) =>
+      (f.status === "OPEN" || f.status === "IN_PROGRESS") &&
+      (f.type === "NAME_MISMATCH" || f.type === "LOAD_ENHANCEMENT"),
+  );
   const maskedAadhaar = aadhaar?.aadhaarLast4 ? `•••• •••• ${aadhaar.aadhaarLast4}` : null;
   const coApplicantUploadsComplete = CO_APPLICANT_SECTION.uploads.every((u) => docFor(u.docType));
 
@@ -187,7 +198,7 @@ export default async function Stage1Page({
     <StageShell
       projectId={id}
       stageNo={1}
-      note="Each section saves on its own"
+      note={t("note")}
       badge={
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -196,7 +207,7 @@ export default async function Stage1Page({
               : "bg-[var(--amber-soft)] text-[var(--amber-text)]"
           }`}
         >
-          {completeCount} of {SECTIONS.length} sections
+          {t("sectionsDone", { done: completeCount, total: SECTIONS.length })}
         </span>
       }
       /* The customer is in the room while this form is being filled, and
@@ -209,31 +220,33 @@ export default async function Stage1Page({
         <div className="mb-4.5 flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-4 py-3.5">
           <span className="min-w-52 flex-1 text-[13.5px] text-[var(--amber-body)]">
             <strong className="text-[var(--amber-text)]">
-              {openFlags.length} flag{openFlags.length > 1 ? "s" : ""} open.
+              {t("flagsOpen", { count: openFlags.length })}
             </strong>{" "}
-            Stage 1 cannot close until{" "}
-            {openFlags.map((f) => (f.type === "NAME_MISMATCH" ? "a name change" : "a load enhancement")).join(" and ")}{" "}
-            {openFlags.length > 1 ? "are" : "is"} resolved.
+            {t("cannotClose", {
+              what: openFlags
+                .map((f) => (f.type === "NAME_MISMATCH" ? t("aNameChange") : t("aLoadEnhancement")))
+                .join(t("and")),
+            })}
           </span>
           <Link
             href={`/projects/${id}/flags`}
             className="inline-flex h-10 items-center rounded-lg bg-[var(--orange)] px-4 text-[13px] font-bold text-[var(--orange-ink)] no-underline"
           >
-            Resolve flags
+            {t("resolveFlags")}
           </Link>
         </div>
       ) : null}
 
       <section className="mb-3.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-3 pt-2.5 pb-2 sm:px-5">
         <div className="mb-0.5 px-1 text-[12px] font-bold tracking-[0.06em] text-[var(--muted)] uppercase">
-          Prospect form
+          {t("prospectForm")}
         </div>
         <SectionStepper
           projectId={id}
           activeKey={activeKey}
           steps={SECTIONS.map((s) => ({
             key: s.key,
-            title: s.title,
+            title: tp.has(`sections.${s.key}.title`) ? tp(`sections.${s.key}.title`) : s.title,
             done: completion[s.key],
           }))}
         />
@@ -243,7 +256,10 @@ export default async function Stage1Page({
         <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-5 sm:px-6">
           {activeKey === "aadhaar" && maskedAadhaar ? (
             <p className="mb-4 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3.5 py-2.5 text-[12.5px] text-[var(--muted)]">
-              Aadhaar on file, ending <span className="ref">{maskedAadhaar}</span>. No longer collected.
+              {t.rich("aadhaarOnFile", {
+                masked: maskedAadhaar,
+                ref: (chunks) => <span className="ref">{chunks}</span>,
+              })}
             </p>
           ) : null}
 
@@ -257,17 +273,17 @@ export default async function Stage1Page({
             {...(activeKey === "bank"
               ? {
                   blockAdvance: Boolean(bank?.hasCoApplicant) && !coApplicantUploadsComplete,
-                  blockAdvanceReason: "Upload the co-applicant's documents below before continuing.",
+                  blockAdvanceReason: t("uploadCoAppFirst"),
                 }
               : {})}
           />
 
           {active.uploads?.length ? (
             <div className="mt-7 border-t border-[var(--line-soft)] pt-6">
-              <h3 className="mb-0.5 text-sm font-bold">Documents for this section</h3>
+              <h3 className="mb-0.5 text-sm font-bold">{t("docsForSection")}</h3>
               <p className="mb-4 text-[12.5px] text-[var(--muted)]">
                 {active.uploadsNote ??
-                  "Uploaded at full resolution for printing, with a portal-sized copy made automatically."}
+                  t("uploadsDefaultNote")}
               </p>
               <div className="space-y-2.5">
                 {active.uploads.map((u) => (
@@ -303,7 +319,7 @@ export default async function Stage1Page({
               />
 
               <div className="mt-6">
-                <h3 className="mb-0.5 text-sm font-bold">Co-applicant documents</h3>
+                <h3 className="mb-0.5 text-sm font-bold">{t("coAppDocs")}</h3>
                 <p className="mb-4 text-[12.5px] text-[var(--muted)]">
                   {CO_APPLICANT_SECTION.uploadsNote}
                 </p>
@@ -329,8 +345,8 @@ export default async function Stage1Page({
               <PhotoGrid
                 projectId={id}
                 photoType="SITE_SURVEY"
-                label="Site photographs"
-                hint="Geotagged, taken on site"
+                label={t("sitePhotos")}
+                hint={t("sitePhotosHint")}
                 photos={surveyPhotos}
               />
             </div>

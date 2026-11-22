@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * The pieces the statistics board is built from.
@@ -174,6 +175,7 @@ export function ModuleArray({
   groups: { label: string; modules: number }[];
   total: number;
 }) {
+  const t = useTranslations("dashboard");
   const MAX_CELLS = 192;
   const per = total > MAX_CELLS ? Math.ceil(total / MAX_CELLS) : 1;
   const cells: number[] = [];
@@ -194,9 +196,7 @@ export function ModuleArray({
           width: `${cols * 31}px`,
         }}
         role="img"
-        aria-label={`${total} modules installed${
-          per > 1 ? `, drawn at one cell per ${per} modules` : ""
-        }`}
+        aria-label={per > 1 ? t("arrayAriaScaled", { total, per }) : t("arrayAria", { total })}
       >
         {cells.map((group, i) => (
           <span
@@ -211,7 +211,7 @@ export function ModuleArray({
         ))}
       </div>
       {per > 1 ? (
-        <p className="mt-2 text-[12px] text-[var(--muted-soft)]">One cell is {per} modules.</p>
+        <p className="mt-2 text-[12px] text-[var(--muted-soft)]">{t("oneCellIs", { per })}</p>
       ) : null}
     </div>
   );

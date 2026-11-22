@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { saveEarthing, saveMaterial, type MaterialInput } from "@/app/actions/installation";
 
 const cell =
@@ -42,6 +43,7 @@ export function MaterialForm({
   /** From the cable-makes master list. Typing one not on the list is still allowed. */
   cableMakeOptions?: string[];
 }) {
+  const t = useTranslations("installation");
   const router = useRouter();
   const [pipesUsed, setPipesUsed] = useState(initialPipesUsed);
   const [rows, setRows] = useState<MaterialInput[]>(
@@ -75,27 +77,27 @@ export function MaterialForm({
 
   return (
     <div>
-      <h3 className="mb-0.5 text-base font-bold">Material used</h3>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">Actual runs, not the estimate.</p>
+      <h3 className="mb-0.5 text-base font-bold">{t("material.title")}</h3>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">{t("material.intro")}</p>
 
       <div className="space-y-3">
         {rows.map((r, i) => (
           <div key={i} className="rounded-[9px] border border-[var(--line)] bg-[var(--surface-2)] p-3.5">
             <div className="mb-2.5 flex flex-wrap items-center gap-2.5">
               <select
-                aria-label={`Run ${i + 1} category`}
+                aria-label={t("material.categoryAria", { n: i + 1 })}
                 value={r.category}
                 onChange={(e) => update(i, { category: e.target.value as MaterialInput["category"] })}
                 className="h-9 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-2.5 text-[13px] font-semibold"
               >
                 {availableFor(i).map((c) => (
-                  <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>
+                  <option key={c} value={c}>{t(`material.categories.${c}`)}</option>
                 ))}
               </select>
               <span className="flex-1" />
               <button
                 type="button"
-                aria-label={`Remove run ${i + 1}`}
+                aria-label={t("material.removeAria", { n: i + 1 })}
                 onClick={() => {
                   setRows((l) => l.filter((_, j) => j !== i));
                   setSaved(false);
@@ -108,7 +110,7 @@ export function MaterialForm({
 
             <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2.5">
               <div>
-                <label className={labelCls} htmlFor={`mk-${i}`}>Make</label>
+                <label className={labelCls} htmlFor={`mk-${i}`}>{t("material.make")}</label>
                 <input
                   id={`mk-${i}`}
                   list={`makes-${i}`}
@@ -124,7 +126,7 @@ export function MaterialForm({
                 </datalist>
               </div>
               <div>
-                <label className={labelCls} htmlFor={`ln-${i}`}>Length (m)</label>
+                <label className={labelCls} htmlFor={`ln-${i}`}>{t("material.length")}</label>
                 <input
                   id={`ln-${i}`}
                   value={r.lengthM}
@@ -135,7 +137,7 @@ export function MaterialForm({
                 />
               </div>
               <div>
-                <label className={labelCls} htmlFor={`sz-${i}`}>Size (sqmm)</label>
+                <label className={labelCls} htmlFor={`sz-${i}`}>{t("material.size")}</label>
                 <input
                   id={`sz-${i}`}
                   value={r.sizeSqmm}
@@ -146,7 +148,7 @@ export function MaterialForm({
                 />
               </div>
               <div>
-                <label className={labelCls} htmlFor={`co-${i}`}>Core</label>
+                <label className={labelCls} htmlFor={`co-${i}`}>{t("material.coreLabel")}</label>
                 <select
                   id={`co-${i}`}
                   value={r.coreType}
@@ -154,12 +156,12 @@ export function MaterialForm({
                   className={cell}
                 >
                   {CORE_OPTIONS.map((o) => (
-                    <option key={o} value={o}>{o}</option>
+                    <option key={o} value={o}>{t.has(`material.core.${o}`) ? t(`material.core.${o}`) : o}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className={labelCls} htmlFor={`cd-${i}`}>Conductor</label>
+                <label className={labelCls} htmlFor={`cd-${i}`}>{t("material.conductorLabel")}</label>
                 <select
                   id={`cd-${i}`}
                   value={r.conductor}
@@ -167,7 +169,7 @@ export function MaterialForm({
                   className={cell}
                 >
                   {CONDUCTOR_OPTIONS.map((o) => (
-                    <option key={o} value={o}>{o}</option>
+                    <option key={o} value={o}>{t.has(`material.conductor.${o}`) ? t(`material.conductor.${o}`) : o}</option>
                   ))}
                 </select>
               </div>
@@ -192,13 +194,13 @@ export function MaterialForm({
             }}
             className="mt-3.5 h-11 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy-text)]"
           >
-            + Add {CATEGORY_LABEL[unused[0]!].toLowerCase()}
+            {t("material.add", { what: t(`material.categories.${unused[0]!}`).toLowerCase() })}
           </button>
         ) : null;
       })()}
 
       <div className="mt-4 max-w-[200px]">
-        <label className={labelCls} htmlFor="pipesUsed">Pipes used</label>
+        <label className={labelCls} htmlFor="pipesUsed">{t("material.pipesUsed")}</label>
         <input
           id="pipesUsed"
           value={pipesUsed}
@@ -211,7 +213,7 @@ export function MaterialForm({
           className={`${cell} ref`}
         />
         {pipesRequired !== null ? (
-          <p className="mt-1.5 text-[11.5px] text-[var(--muted)]">{pipesRequired} on the survey</p>
+          <p className="mt-1.5 text-[11.5px] text-[var(--muted)]">{t("material.onSurvey", { count: pipesRequired })}</p>
         ) : null}
       </div>
 
@@ -234,7 +236,7 @@ export function MaterialForm({
           }}
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
-          {pending ? "Saving…" : saved ? "Saved" : "Save material"}
+          {pending ? t("common.saving") : saved ? t("common.saved") : t("material.save")}
         </button>
       </div>
     </div>
@@ -270,6 +272,7 @@ export function EarthingForm({
     omManualProvided: boolean;
   };
 }) {
+  const t = useTranslations("installation");
   const router = useRouter();
   // The three text fields start on the usual answers rather than showing them
   // as grey placeholder text, which was being read as if it had been filled
@@ -293,21 +296,21 @@ export function EarthingForm({
   };
 
   const toggles: Array<[keyof typeof initial, string]> = [
-    ["twoSeparatePoints", "Two separate earthing points"],
-    ["cautionSignage", "Caution signage fitted"],
-    ["omManualProvided", "O&M manual given to the customer"],
+    ["twoSeparatePoints", t("earthing.toggles.twoSeparatePoints")],
+    ["cautionSignage", t("earthing.toggles.cautionSignage")],
+    ["omManualProvided", t("earthing.toggles.omManualProvided")],
   ];
 
   return (
     <div>
-      <h3 className="mb-0.5 text-base font-bold">Earthing</h3>
+      <h3 className="mb-0.5 text-base font-bold">{t("earthing.title")}</h3>
       <p className="mb-4 text-[13px] text-[var(--muted)]">
-        Measured on site. The DISCOM limit is under 2 ohms.
+        {t("earthing.intro")}
       </p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
         <div>
-          <label className={labelCls} htmlFor="ohms">Measured resistance</label>
+          <label className={labelCls} htmlFor="ohms">{t("earthing.resistance")}</label>
           <div className="flex items-center gap-2">
             <input
               id="ohms"
@@ -324,12 +327,12 @@ export function EarthingForm({
                 passes ? "text-[var(--green-text)]" : "text-[var(--red-text)]"
               }`}
             >
-              {passes ? "Under 2 Ω — passes" : "2 Ω or over — the DISCOM will not pass this"}
+              {passes ? t("earthing.passes") : t("earthing.fails")}
             </p>
           ) : null}
         </div>
         <div>
-          <label className={labelCls} htmlFor="wireSize">Earth wire size (sqmm)</label>
+          <label className={labelCls} htmlFor="wireSize">{t("earthing.wireSize")}</label>
           <input
             id="wireSize"
             value={v.wireSize}
@@ -339,7 +342,7 @@ export function EarthingForm({
           />
         </div>
         <div>
-          <label className={labelCls} htmlFor="wireType">Wire type</label>
+          <label className={labelCls} htmlFor="wireType">{t("earthing.wireType")}</label>
           <input id="wireType" value={v.wireType} onChange={(e) => set({ wireType: e.target.value })} className={cell} />
         </div>
       </div>
@@ -361,7 +364,7 @@ export function EarthingForm({
                       : "font-semibold text-[var(--muted)]"
                   }`}
                 >
-                  {b ? "Yes" : "No"}
+                  {b ? t("common.yes") : t("common.no")}
                 </button>
               ))}
             </div>
@@ -381,7 +384,7 @@ export function EarthingForm({
         }}
         className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
       >
-        {pending ? "Saving…" : saved ? "Saved" : "Save earthing"}
+        {pending ? t("common.saving") : saved ? t("common.saved") : t("earthing.save")}
       </button>
     </div>
   );

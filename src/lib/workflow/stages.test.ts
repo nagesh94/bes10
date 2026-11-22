@@ -22,6 +22,7 @@ const complete: ProjectSnapshot = {
 
   installationRecorded: true,
   panelSerialsCaptured: 9,
+  dcrSerialFlagOpen: false,
   panelCount: 9,
   structureMemberCount: 7,
   isHybrid: false,

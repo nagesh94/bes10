@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 
 const field =
@@ -8,6 +9,7 @@ const field =
 const labelCls = "mb-1.5 block text-xs font-semibold text-[var(--muted)]";
 
 export function PasswordForm() {
+  const t = useTranslations("settings.password");
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,11 +26,11 @@ export function PasswordForm() {
     const confirm = String(data.get("confirm") ?? "");
 
     if (newPassword.length < 10) {
-      setError("A new password needs at least 10 characters.");
+      setError(t("tooShort"));
       return;
     }
     if (newPassword !== confirm) {
-      setError("The two new passwords do not match.");
+      setError(t("mismatch"));
       return;
     }
 
@@ -43,7 +45,7 @@ export function PasswordForm() {
     setPending(false);
 
     if (authError) {
-      setError("That current password is not right.");
+      setError(t("wrongCurrent"));
       return;
     }
     setDone(true);
@@ -54,9 +56,9 @@ export function PasswordForm() {
     return (
       <div className="flex flex-wrap items-center gap-3.5 border-t border-[var(--line-soft)] py-3.5">
         <div className="min-w-50 flex-1">
-          <div className="text-sm font-semibold">Password</div>
+          <div className="text-sm font-semibold">{t("label")}</div>
           <div className="mt-0.5 text-[12.5px] text-[var(--muted)]">
-            {done ? "Changed just now — other sessions were signed out." : "At least 10 characters."}
+            {done ? t("changedNow") : t("hint")}
           </div>
         </div>
         <button
@@ -64,7 +66,7 @@ export function PasswordForm() {
           onClick={() => setOpen(true)}
           className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-semibold text-[var(--ink)]"
         >
-          Change
+          {t("change")}
         </button>
       </div>
     );
@@ -72,18 +74,18 @@ export function PasswordForm() {
 
   return (
     <form onSubmit={onSubmit} noValidate className="border-t border-[var(--line-soft)] py-4">
-      <div className="mb-3 text-sm font-semibold">Change password</div>
+      <div className="mb-3 text-sm font-semibold">{t("changeTitle")}</div>
       <div className="grid max-w-lg grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className={labelCls} htmlFor="currentPassword">Current password</label>
+          <label className={labelCls} htmlFor="currentPassword">{t("current")}</label>
           <input id="currentPassword" name="currentPassword" type="password" autoComplete="current-password" required className={field} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="newPassword">New password</label>
+          <label className={labelCls} htmlFor="newPassword">{t("new")}</label>
           <input id="newPassword" name="newPassword" type="password" autoComplete="new-password" required className={field} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="confirm">Confirm</label>
+          <label className={labelCls} htmlFor="confirm">{t("confirm")}</label>
           <input id="confirm" name="confirm" type="password" autoComplete="new-password" required className={field} />
         </div>
       </div>
@@ -100,7 +102,7 @@ export function PasswordForm() {
           disabled={pending}
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
-          {pending ? "Saving…" : "Update password"}
+          {pending ? t("saving") : t("update")}
         </button>
         <button
           type="button"
@@ -110,7 +112,7 @@ export function PasswordForm() {
           }}
           className="h-11 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-5 text-sm font-semibold text-[var(--ink)]"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

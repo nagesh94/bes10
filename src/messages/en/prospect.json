@@ -1,0 +1,310 @@
+{
+  "sections": {
+    "user": {
+      "title": "User details",
+      "blurb": "As it appears on the PM Surya Ghar application.",
+      "fields": {
+        "firstName": {
+          "label": "First name"
+        },
+        "lastName": {
+          "label": "Last name"
+        },
+        "gender": {
+          "label": "Gender"
+        },
+        "phone": {
+          "label": "Contact number",
+          "hint": "10 digits"
+        },
+        "email": {
+          "label": "Email address"
+        },
+        "nationalPortalId": {
+          "label": "National Portal ID",
+          "placeholder": "NP-MPMK26-00000000"
+        },
+        "address": {
+          "label": "Address"
+        },
+        "pinCode": {
+          "label": "PIN code",
+          "hint": "6 digits"
+        },
+        "applicationDate": {
+          "label": "Application date"
+        },
+        "regionName": {
+          "label": "Region",
+          "placeholder": "Bhopal"
+        },
+        "circleName": {
+          "label": "Circle",
+          "placeholder": "Betul Circle"
+        },
+        "divisionName": {
+          "label": "Division",
+          "placeholder": "Betul South"
+        },
+        "zoneName": {
+          "label": "Zone / DC",
+          "placeholder": "Betul Town-II"
+        },
+        "isDcr": {
+          "label": "Going with DCR?",
+          "hint": "Domestic content modules. Switches on the stage 5 certificate step."
+        },
+        "wantsSubsidy": {
+          "label": "Applying for subsidy?",
+          "hint": "Opens stage 9 settlement and the post-subsidy payment milestone."
+        }
+      },
+      "uploads": {}
+    },
+    "rooftop": {
+      "title": "Rooftop details",
+      "blurb": "Plant size drives the load check, so get it right before the bill section.",
+      "fields": {
+        "plantKw": {
+          "label": "Plant size",
+          "placeholder": "4.82"
+        },
+        "latitude": {
+          "label": "Latitude",
+          "placeholder": "21.8840185"
+        },
+        "longitude": {
+          "label": "Longitude",
+          "placeholder": "77.9016424"
+        }
+      },
+      "uploads": {}
+    },
+    "aadhaar": {
+      "title": "Aadhaar details",
+      "blurb": "Only the name and address as printed on the card — the number itself is not collected.",
+      "fields": {
+        "nameOnAadhaar": {
+          "label": "Name on Aadhaar"
+        },
+        "addressOnAadhaar": {
+          "label": "Address on Aadhaar"
+        }
+      },
+      "uploads": {
+        "AADHAAR": {
+          "label": "Aadhaar card",
+          "hint": "Both sides · stored under a restricted prefix, every read logged"
+        }
+      }
+    },
+    "pan": {
+      "title": "PAN details",
+      "blurb": "One of the four names the flag engine compares.",
+      "fields": {
+        "nameOnPan": {
+          "label": "Name on PAN"
+        },
+        "panNumber": {
+          "label": "PAN number",
+          "placeholder": "ABCPS1234F"
+        }
+      },
+      "uploads": {
+        "PAN": {
+          "label": "PAN card",
+          "hint": "Scan or clear photo"
+        }
+      }
+    },
+    "bank": {
+      "title": "Bank details",
+      "blurb": "Where the subsidy lands — it is credited to the customer, not to BHIM.",
+      "fields": {
+        "bankName": {
+          "label": "Bank name"
+        },
+        "accountHolderName": {
+          "label": "Account holder name"
+        },
+        "accountNumber": {
+          "label": "Account number"
+        },
+        "confirmAccountNumber": {
+          "label": "Confirm account number",
+          "hint": "Re-type it — this catches a mistyped digit before it reaches the bank file."
+        },
+        "ifscCode": {
+          "label": "IFSC code",
+          "placeholder": "SBIN0001234"
+        },
+        "occupation": {
+          "label": "Occupation",
+          "hint": "The lender wants this on the loan file.",
+          "placeholder": "Farmer, shopkeeper, salaried…"
+        },
+        "hasCoApplicant": {
+          "label": "Co-applicant on the loan?",
+          "hint": "Optional. Saying yes adds a section for their details and documents."
+        }
+      },
+      "uploads": {
+        "CANCELLED_CHEQUE": {
+          "label": "Cancelled cheque",
+          "hint": "Goes into the bank loan pack"
+        },
+        "BANK_STATEMENT": {
+          "label": "Bank statement",
+          "hint": "Last six months · for the loan file"
+        },
+        "PASSBOOK": {
+          "label": "Passbook photo",
+          "hint": "Alternative if there is no cheque book"
+        }
+      },
+      "uploadsNote": "A cancelled cheque and a statement both go into the bank loan pack. A passbook photo stands in where the customer has no cheque book."
+    },
+    "electricity": {
+      "title": "Electricity bill details",
+      "blurb": "Taken from the latest bill for this connection.",
+      "fields": {
+        "consumerNumber": {
+          "label": "Consumer number"
+        },
+        "nameOnBill": {
+          "label": "Name on the bill",
+          "hint": "Compared against Aadhaar, PAN and bank."
+        },
+        "sanctionedLoadKw": {
+          "label": "Sanctioned load on the bill",
+          "hint": "Must be greater than the plant size, or a load enhancement is raised."
+        },
+        "currentBillAmount": {
+          "label": "Current bill amount"
+        }
+      },
+      "uploads": {
+        "ELECTRICITY_BILL": {
+          "label": "Electricity bill",
+          "hint": "The latest bill for this connection"
+        }
+      }
+    },
+    "other": {
+      "title": "Other details",
+      "blurb": "Equipment choices that carry through to the documents.",
+      "fields": {
+        "panelType": {
+          "label": "Panel type",
+          "placeholder": "Mono PERC"
+        },
+        "panelCompany": {
+          "label": "Panel company",
+          "placeholder": "Waaree Energies Limited"
+        },
+        "meterType": {
+          "label": "Meter type"
+        }
+      },
+      "uploads": {}
+    },
+    "survey": {
+      "title": "Site survey",
+      "blurb": "Estimated runs. The actual lengths are recorded at stage 4.",
+      "fields": {
+        "acCableLengthM": {
+          "label": "AC cable length"
+        },
+        "dcCableLengthM": {
+          "label": "DC cable length"
+        },
+        "earthingLengthM": {
+          "label": "Earthing length"
+        },
+        "laLengthM": {
+          "label": "LA length"
+        },
+        "pipesRequired": {
+          "label": "Pipes required"
+        }
+      },
+      "uploads": {}
+    },
+    "coApplicant": {
+      "title": "Co-applicant",
+      "blurb": "The bank wants the same identity set from them as from the consumer.",
+      "fields": {
+        "name": {
+          "label": "Full name"
+        },
+        "relationship": {
+          "label": "Relationship to consumer",
+          "placeholder": "Spouse, son, daughter…"
+        },
+        "phone": {
+          "label": "Phone number"
+        },
+        "email": {
+          "label": "Email address"
+        },
+        "occupation": {
+          "label": "Occupation"
+        },
+        "panNumber": {
+          "label": "PAN number",
+          "placeholder": "ABCPS1234F"
+        }
+      },
+      "uploads": {
+        "COAPP_AADHAAR": {
+          "label": "Co-applicant Aadhaar card"
+        },
+        "COAPP_PAN": {
+          "label": "Co-applicant PAN card"
+        },
+        "COAPP_PASSBOOK": {
+          "label": "Co-applicant bank passbook"
+        },
+        "COAPP_PHOTO": {
+          "label": "Co-applicant photographs",
+          "hint": "Scan on file; the bank wants two prints attached by hand"
+        }
+      },
+      "uploadsNote": "The same set the bank asks for from the main applicant. These join the bank file automatically."
+    }
+  },
+  "options": {
+    "Male": "Male",
+    "Female": "Female",
+    "Other": "Other",
+    "Smart_meter": "Smart meter",
+    "Normal_meter": "Normal meter"
+  },
+  "form": {
+    "yes": "Yes",
+    "no": "No",
+    "saved": "Saved.",
+    "back": "Back",
+    "saving": "Saving…",
+    "save": "Save",
+    "saveContinue": "Save and continue"
+  },
+  "stage1": {
+    "note": "Each section saves on its own",
+    "sectionsDone": "{done} of {total} sections",
+    "flagsOpen": "{count, plural, one {# flag} other {# flags}} open.",
+    "cannotClose": "Stage 1 cannot close until {what} is resolved.",
+    "aNameChange": "a name change",
+    "aLoadEnhancement": "a load enhancement",
+    "and": " and ",
+    "resolveFlags": "Resolve flags",
+    "prospectForm": "Prospect form",
+    "aadhaarOnFile": "Aadhaar on file, ending <ref>{masked}</ref>. No longer collected.",
+    "uploadCoAppFirst": "Upload the co-applicant’s documents below before continuing.",
+    "docsForSection": "Documents for this section",
+    "uploadsDefaultNote": "Uploaded at full resolution for printing, with a portal-sized copy made automatically.",
+    "coAppDocs": "Co-applicant documents",
+    "sitePhotos": "Site photographs",
+    "sitePhotosHint": "Geotagged, taken on site"
+  }
+}

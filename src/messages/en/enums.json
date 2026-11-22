@@ -1,0 +1,181 @@
+{
+  "lifecycle": {
+    "LEAD": "Lead",
+    "PROSPECT": "Prospect",
+    "CUSTOMER": "Customer"
+  },
+  "lifecyclePlural": {
+    "LEAD": "Leads",
+    "PROSPECT": "Prospects",
+    "CUSTOMER": "Customers"
+  },
+  "payMode": {
+    "CASH": "Cash",
+    "FINANCE": "Finance",
+    "SPLIT": "Cash + finance"
+  },
+  "segment": {
+    "RESIDENTIAL": "Residential"
+  },
+  "leadStatus": {
+    "NEW": "New",
+    "CONTACTED": "Contacted",
+    "SURVEY_DONE": "Survey done",
+    "READY_TO_CONVERT": "Ready to convert",
+    "LOST": "Lost"
+  },
+  "leadSource": {
+    "WALK_IN": "Walk-in",
+    "REFERRAL": "Referral",
+    "WEBSITE": "Website",
+    "CAMPAIGN": "Campaign",
+    "OTHER": "Other"
+  },
+  "financeStatus": {
+    "NOT_APPLIED": "Not applied",
+    "APPLIED": "Applied on Jan Samarth",
+    "SANCTIONED": "Sanctioned, awaiting disbursal",
+    "DISBURSED": "Disbursed",
+    "REJECTED": "Rejected"
+  },
+  "subsidyStatus": {
+    "NOT_APPLIED": "Not applied",
+    "APPLIED": "Applied",
+    "APPROVED": "Approved",
+    "RECEIVED": "Received"
+  },
+  "commissionStatus": {
+    "PENDING": "Pending",
+    "PAID": "Paid",
+    "DUE": "Due",
+    "CANCELLED": "Cancelled",
+    "ACCRUED": "Accrued"
+  },
+  "commissionBasis": {
+    "PER_KW": "Per kW",
+    "FLAT_PER_PROJECT": "Flat per project"
+  },
+  "flagStatus": {
+    "OPEN": "Open",
+    "IN_PROGRESS": "In progress",
+    "RESOLVED": "Resolved",
+    "WAIVED": "Waived"
+  },
+  "milestoneTrigger": {
+    "UPFRONT": "Upfront",
+    "ON_INSTALL": "On installation",
+    "PSS1": "PSS 1",
+    "PSS2": "PSS 2",
+    "POST_SUBSIDY": "After subsidy",
+    "ON_LOAN_DISBURSAL": "On loan disbursal"
+  },
+  "paymentModeReceived": {
+    "CASH": "Cash",
+    "UPI": "UPI",
+    "CHEQUE": "Cheque",
+    "NEFT": "NEFT",
+    "LOAN_DISBURSAL": "Loan disbursal",
+    "LOAN_DISBURSAL_PSS1": "Loan disbursal (PSS 1)",
+    "LOAN_DISBURSAL_PSS2": "Loan disbursal (PSS 2)"
+  },
+  "lenderKind": {
+    "PUBLIC_BANK": "Public sector bank",
+    "PRIVATE_BANK": "Private bank",
+    "OTHER_BANK": "Gramin, co-operative or small finance bank",
+    "THIRD_PARTY": "Third-party finance (NBFC)"
+  },
+  "structureMember": {
+    "COLUMN": "Column",
+    "RAFTER": "Rafter",
+    "PURLIN": "Purlin"
+  },
+  "inverterPhase": {
+    "SINGLE": "Single phase",
+    "THREE": "Three phase"
+  },
+  "cableCategory": {
+    "AC": "AC",
+    "DC": "DC",
+    "LA": "LA",
+    "EARTHING": "Earthing"
+  },
+  "docClass": {
+    "COLLECTED": "Collected",
+    "GENERATED": "Generated",
+    "EXECUTED": "Executed",
+    "EVIDENCE": "Evidence",
+    "EXTERNAL": "External",
+    "PHYSICAL": "Physical"
+  },
+  "docStatus": {
+    "PENDING": "Pending",
+    "GENERATED": "Generated",
+    "PRINTED": "Printed",
+    "SIGNED": "Signed",
+    "SCANNED": "Scanned",
+    "UPLOADED_TO_PORTAL": "Uploaded to portal",
+    "VERIFIED": "Verified",
+    "REJECTED": "Rejected"
+  },
+  "quotationStatus": {
+    "DRAFT": "Draft",
+    "ISSUED": "Issued",
+    "ACCEPTED": "Accepted",
+    "DECLINED": "Declined",
+    "EXPIRED": "Expired"
+  },
+  "systemType": {
+    "ON_GRID": "On-grid",
+    "OFF_GRID": "Off-grid",
+    "HYBRID": "Hybrid"
+  },
+  "agreementStatus": {
+    "DRAFT": "Draft",
+    "ISSUED": "Issued",
+    "SIGNED": "Signed",
+    "CANCELLED": "Cancelled"
+  },
+  "stageStatus": {
+    "not_started": "Not started",
+    "in_progress": "In progress",
+    "blocked": "Blocked",
+    "complete": "Complete"
+  },
+  "trigger": {
+    "UPFRONT": "Upfront",
+    "ON_INSTALL": "On install",
+    "PSS1": "PSS1 — first bank release",
+    "PSS2": "PSS2 — second bank release",
+    "POST_SUBSIDY": "After subsidy",
+    "ON_LOAN_DISBURSAL": "On loan disbursal"
+  },
+  "triggerShort": {
+    "UPFRONT": "Upfront",
+    "ON_INSTALL": "On install",
+    "PSS1": "PSS1",
+    "PSS2": "PSS2",
+    "POST_SUBSIDY": "After subsidy",
+    "ON_LOAN_DISBURSAL": "On loan disbursal"
+  },
+  "receivedMode": {
+    "NEFT": "NEFT",
+    "UPI": "UPI",
+    "CASH": "Cash",
+    "CHEQUE": "Cheque",
+    "LOAN_DISBURSAL_PSS1": "Loan disbursal — PSS1",
+    "LOAN_DISBURSAL_PSS2": "Loan disbursal — PSS2",
+    "LOAN_DISBURSAL": "Loan disbursal"
+  },
+  "lenderKindShort": {
+    "PUBLIC_BANK": "Public bank",
+    "PRIVATE_BANK": "Private bank",
+    "OTHER_BANK": "Other bank",
+    "THIRD_PARTY": "Third party"
+  },
+  "costPayment": {
+    "CASH": "Cash",
+    "UPI": "UPI",
+    "NET_BANKING": "Net banking",
+    "OTHER": "Other"
+  }
+}

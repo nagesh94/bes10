@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   deleteDocument,
   getDocumentUrl,
@@ -44,6 +45,7 @@ export function DocumentRowActions({
   canRegenerate: boolean;
   canDelete: boolean;
 }) {
+  const t = useTranslations("documents.row");
   const router = useRouter();
   const ask = useConfirm();
   const [busy, setBusy] = useState<Busy>(null);
@@ -78,9 +80,9 @@ export function DocumentRowActions({
 
   async function remove() {
     const answer = await ask({
-      title: "Delete this document?",
-      body: "The file is removed from storage and cannot be recovered here. The record of the deletion stays in the audit log.",
-      confirmLabel: "Delete it",
+      title: t("deleteTitle"),
+      body: t("deleteBody"),
+      confirmLabel: t("deleteIt"),
       reason: {},
     });
     if (!answer.confirmed) return;
@@ -96,25 +98,25 @@ export function DocumentRowActions({
   return (
     <span className="flex shrink-0 flex-wrap items-center gap-1.5">
       <button type="button" disabled={busy !== null} onClick={open} className={btn}>
-        {busy === "open" ? "Opening…" : "Open"}
+        {busy === "open" ? t("opening") : t("open")}
       </button>
       <button type="button" disabled={busy !== null} onClick={download} className={btn}>
-        {busy === "download" ? "Downloading…" : "Download"}
+        {busy === "download" ? t("downloading") : t("download")}
       </button>
       {canRegenerate ? (
         <button
           type="button"
           disabled={busy !== null}
           onClick={regenerate}
-          title="Rebuild this file from the project's current data"
+          title={t("rebuildTitle")}
           className={btn}
         >
-          {busy === "regenerate" ? "Regenerating…" : "Regenerate"}
+          {busy === "regenerate" ? t("regenerating") : t("regenerate")}
         </button>
       ) : null}
       {canDelete ? (
         <button type="button" disabled={busy !== null} onClick={remove} className={dangerBtn}>
-          {busy === "delete" ? "Deleting…" : "Delete"}
+          {busy === "delete" ? t("deleting") : t("delete")}
         </button>
       ) : null}
       {error ? <span className="text-[11.5px] font-semibold text-[var(--red-text)]">{error}</span> : null}

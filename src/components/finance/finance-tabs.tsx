@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 /**
  * The finance section's own tabs, drawn exactly as the admin tabs are.
@@ -11,12 +12,13 @@ import { usePathname, useSearchParams } from "next/navigation";
  * too. Customer filters do not — they mean different things per tab.
  */
 const TABS = [
-  { href: "/finance", label: "Dashboard", exact: true },
-  { href: "/finance/expenses", label: "Expenses", exact: false },
-  { href: "/finance/loans", label: "Loans", exact: false },
+  { href: "/finance", label: "dashboard", exact: true },
+  { href: "/finance/expenses", label: "expenses", exact: false },
+  { href: "/finance/loans", label: "loans", exact: false },
 ] as const;
 
 export function FinanceTabs() {
+  const t = useTranslations("finance.tabs");
   const path = usePathname();
   const params = useSearchParams();
 
@@ -43,7 +45,7 @@ export function FinanceTabs() {
                   : "px-3.5 py-[13px] text-sm font-medium text-[var(--muted)] no-underline hover:text-[var(--ink)]"
               }
             >
-              {tab.label}
+              {t(tab.label)}
             </Link>
           );
         })}

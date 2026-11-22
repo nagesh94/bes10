@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { NAV_ICON } from "./nav-icons";
 import { isActive } from "./nav-links";
 import { SignOutButton } from "./sign-out-button";
@@ -45,6 +46,7 @@ export function SideNav({
   appName: string;
   initials: string;
 }) {
+  const t = useTranslations("shell");
   const path = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -119,7 +121,7 @@ export function SideNav({
         </Link>
       </div>
 
-      <nav aria-label="Primary" className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-3">
+      <nav aria-label={t("primaryNav")} className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-3">
         <ul className="m-0 grid list-none gap-0.5 p-0">
           {items.map((item) => {
             const Icon = NAV_ICON[item.key] ?? Settings;
@@ -199,7 +201,7 @@ export function SideNav({
             type="button"
             onClick={toggle}
             aria-expanded={!collapsed}
-            title={collapsed ? "Expand the menu" : "Collapse the menu"}
+            title={collapsed ? t("expandMenu") : t("collapseMenu")}
             className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[var(--radius-control)] text-[var(--chrome-muted)] hover:bg-[var(--chrome-2)] hover:text-[var(--chrome-ink)]"
           >
             {collapsed ? <ChevronsRight size={17} /> : <ChevronsLeft size={17} />}

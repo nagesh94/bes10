@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { createAgreement, updateAgreement } from "@/app/actions/agreements";
 import {
   apportion,
@@ -62,6 +63,7 @@ export function AgreementForm({
   initial: AgreementFormValues;
   projectCode?: string | null;
 }) {
+  const t = useTranslations("agreements.form");
   const router = useRouter();
   const [values, setValues] = useState<AgreementFormValues>(initial);
   const [pending, setPending] = useState(false);
@@ -130,12 +132,12 @@ export function AgreementForm({
     >
       {/* ── The parties ── */}
       <section className={sectionBox}>
-        <h2 className="mb-1 text-base font-bold">First party — the consumer</h2>
+        <h2 className="mb-1 text-base font-bold">{t("firstParty")}</h2>
 
         <div className="grid gap-4 sm:grid-cols-[110px_1fr]">
           <div>
             <label className={label} htmlFor="consumerTitle">
-              Title
+              {t("title")}
             </label>
             <select
               id="consumerTitle"
@@ -154,7 +156,7 @@ export function AgreementForm({
 
           <div>
             <label className={label} htmlFor="consumerName">
-              Name
+              {t("name")}
             </label>
             <input
               id="consumerName"
@@ -168,7 +170,7 @@ export function AgreementForm({
 
         <div className="mt-4">
           <label className={label} htmlFor="consumerAddress">
-            Address
+            {t("address")}
           </label>
           <input
             id="consumerAddress"
@@ -181,7 +183,7 @@ export function AgreementForm({
 
         <div className="mt-4 max-w-56">
           <label className={label} htmlFor="executionDate">
-            Date of execution
+            {t("executionDate")}
           </label>
           <input
             id="executionDate"
@@ -194,21 +196,21 @@ export function AgreementForm({
         </div>
 
         <p className="mt-4 text-[12px] text-[var(--muted)]">
-          Second party taken from the company branch record.
-          {projectCode ? ` Attached to ${projectCode}.` : ""}
+          {t("secondParty")}
+          {projectCode ? t("attachedTo", { code: projectCode }) : ""}
         </p>
       </section>
 
       {/* ── Clause 19.1 ── */}
       <section className={sectionBox}>
-        <h2 className="mb-1 text-base font-bold">Clause 19.1 — the cost</h2>
+        <h2 className="mb-1 text-base font-bold">{t("clauseCost")}</h2>
         <p className="mb-4 text-[13px] leading-relaxed text-[var(--muted)]">
-          {SOURCE_NOTE[values.valueSource] ?? SOURCE_NOTE.typed}
+          {t(`source.${SOURCE_NOTE[values.valueSource] ? values.valueSource : "typed"}`)}
         </p>
 
         <div className="max-w-72">
           <label className={label} htmlFor="totalValue">
-            Cost of the RTS system (Rs.)
+            {t("cost")}
           </label>
           <input
             id="totalValue"
@@ -232,12 +234,12 @@ export function AgreementForm({
 
       {/* ── The instalments ── */}
       <section className={sectionBox}>
-        <h2 className="mb-1 text-base font-bold">Clause 19.1 (i)(ii)(iii) — the instalments</h2>
+        <h2 className="mb-1 text-base font-bold">{t("clauseInstalments")}</h2>
 
         <div className="overflow-x-auto rounded-[9px] border border-[var(--line)]">
           <div className="grid min-w-[520px] grid-cols-[32px_2.4fr_1fr_64px_40px] items-center gap-2 border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
             <span />
-            {["What it is for", "Amount (Rs.)", "Share"].map((h) => (
+            {[t("cols.for"), t("cols.amount"), t("cols.share")].map((h) => (
               <span key={h} className="text-[12px] font-semibold text-[var(--muted)]">
                 {h}
               </span>
@@ -274,7 +276,7 @@ export function AgreementForm({
                 </span>
                 <button
                   type="button"
-                  aria-label={`Remove instalment ${index + 1}`}
+                  aria-label={t("removeInstalment", { n: index + 1 })}
                   onClick={() =>
                     set(
                       "milestones",
@@ -296,16 +298,16 @@ export function AgreementForm({
             onClick={() => set("milestones", [...values.milestones, { label: "", amount: "" }])}
             className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
           >
-            Add an instalment
+            {t("addInstalment")}
           </button>
           <button
             type="button"
             disabled={total <= 0}
             onClick={() => set("milestones", apportion(total))}
-            title="Replace the rows with the standard 10 / 70 / 10 / 10 split of the cost"
+            title={t("standardTitle")}
             className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-semibold text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Use the standard split
+            {t("standardSplit")}
           </button>
 
           {/* The one check worth making before this goes to a notary. */}
@@ -315,12 +317,12 @@ export function AgreementForm({
             }`}
           >
             {total <= 0
-              ? "No cost entered yet"
+              ? t("noCost")
               : difference === 0
-                ? `Adds up to Rs. ${inr(total)}`
+                ? t("addsUp", { amount: inr(total) })
                 : difference > 0
-                  ? `Rs. ${inr(difference)} short of the cost`
-                  : `Rs. ${inr(-difference)} over the cost`}
+                  ? t("short", { amount: inr(difference) })
+                  : t("over", { amount: inr(-difference) })}
           </span>
         </div>
         <Err name="milestones" errors={errors} />
@@ -342,12 +344,12 @@ export function AgreementForm({
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
           {pending
-            ? "Generating…"
+            ? t("generating")
             : mode === "edit"
-              ? "Save and rebuild the .docx"
-              : "Generate agreement"}
+              ? t("saveRebuild")
+              : t("generate")}
         </button>
-        <span className="text-[12.5px] text-[var(--muted)]">Generates a Word file.</span>
+        <span className="text-[12.5px] text-[var(--muted)]">{t("generatesWord")}</span>
       </div>
     </form>
   );

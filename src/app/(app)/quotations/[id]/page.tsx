@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -32,7 +33,11 @@ import { getActor } from "@/lib/session";
  */
 export default async function QuotationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t, tq] = await Promise.all([
+    getActor(),
+    getTranslations("quotations.detail"),
+    getTranslations("quotations.new"),
+  ]);
   if (!actor || !can(actor, "quotation.read")) notFound();
 
   const [row] = await db
@@ -112,7 +117,7 @@ export default async function QuotationPage({ params }: { params: Promise<{ id: 
           href="/quotations"
           className="mb-3 inline-block text-[13px] font-semibold text-[var(--link)] no-underline"
         >
-          ← Quotations
+          ← {tq("back")}
         </Link>
         <div className="flex flex-wrap items-baseline gap-3">
           <h1 className="ref text-[26px] font-bold tracking-[-0.02em]">{quotation.number}</h1>
@@ -129,7 +134,7 @@ export default async function QuotationPage({ params }: { params: Promise<{ id: 
         <p className="ref mt-1 text-sm text-[var(--muted)]">
           {Number(quotation.capacityKwp)} kWp · Rs. {inr(Number(quotation.totalAmount))} ·{" "}
           {quotation.quotationDate}
-          {quotation.pdfGeneratedAt ? "" : " · no PDF built yet"}
+          {quotation.pdfGeneratedAt ? "" : t("noPdf")}
         </p>
       </div>
 
@@ -153,8 +158,8 @@ export default async function QuotationPage({ params }: { params: Promise<{ id: 
             />
             <p className="min-w-60 flex-1 text-[12.5px] leading-relaxed text-[var(--muted)]">
               {quotation.isChosen
-                ? `Chosen for ${row.projectCode}.`
-                : `Alternative offer on ${row.projectCode} — not chosen.`}
+                ? t("chosenFor", { code: row.projectCode ?? "" })
+                : t("alternativeOn", { code: row.projectCode ?? "" })}
             </p>
           </div>
         ) : null}
@@ -181,7 +186,7 @@ export default async function QuotationPage({ params }: { params: Promise<{ id: 
         />
       ) : (
         <p className="text-sm text-[var(--muted)]">
-          You can open this quotation but not change it.
+          {t("readOnly")}
         </p>
       )}
     </main>

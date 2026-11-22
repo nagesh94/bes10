@@ -25,7 +25,12 @@ export const leadStatusEnum = pgEnum("lead_status", [
   "LOST",
 ]);
 
-export const flagTypeEnum = pgEnum("flag_type", ["NAME_MISMATCH", "LOAD_ENHANCEMENT"]);
+export const flagTypeEnum = pgEnum("flag_type", [
+  "NAME_MISMATCH",
+  "LOAD_ENHANCEMENT",
+  /** A panel serial on the roof that no stored DCR certificate covers. */
+  "DCR_SERIAL_MISMATCH",
+]);
 export const flagStatusEnum = pgEnum("flag_status", [
   "OPEN",
   "IN_PROGRESS",

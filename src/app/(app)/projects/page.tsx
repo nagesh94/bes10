@@ -19,7 +19,7 @@ import { ListPager } from "@/components/shell/list-controls";
 import { DEFAULT_PER_PAGE, PER_PAGE_OPTIONS } from "@/lib/list/params";
 import { NewLeadDialog } from "@/components/leads/new-lead-dialog";
 import { STAGES } from "@/lib/workflow/stages";
-import { STAGE_TITLES } from "@/lib/workflow/labels";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Every project, searchable.
@@ -34,26 +34,19 @@ import { STAGE_TITLES } from "@/lib/workflow/labels";
 
 /** URL keys, not labels, so a bookmarked filter survives a copy change. */
 const KW_BANDS = [
-  { key: "lt3", label: "Under 3 kW", test: (kw: number) => kw < 3 },
-  { key: "3to5", label: "3 – 5 kW", test: (kw: number) => kw >= 3 && kw < 5 },
-  { key: "5to10", label: "5 – 10 kW", test: (kw: number) => kw >= 5 && kw < 10 },
-  { key: "10plus", label: "10 kW and above", test: (kw: number) => kw >= 10 },
+  { key: "lt3", test: (kw: number) => kw < 3 },
+  { key: "3to5", test: (kw: number) => kw >= 3 && kw < 5 },
+  { key: "5to10", test: (kw: number) => kw >= 5 && kw < 10 },
+  { key: "10plus", test: (kw: number) => kw >= 10 },
 ] as const;
 
-const PAY_LABELS: Record<string, string> = {
-  CASH: "Cash",
-  FINANCE: "Finance",
-  SPLIT: "Cash + finance",
-};
+const PAY_LABELS: Record<string, true> = { CASH: true, FINANCE: true, SPLIT: true };
 
 /* Prospect is deliberately not offered as a filter. It is a passing state
    between a lead and a customer, not a bucket anyone works out of, and a
    third option here only ever split the list someone wanted whole. A
    prospect row still says so — the blue chip on the row carries it. */
-const LIFECYCLE_LABELS: Record<string, string> = {
-  LEAD: "Leads",
-  CUSTOMER: "Customers",
-};
+const LIFECYCLE_LABELS: Record<string, true> = { LEAD: true, CUSTOMER: true };
 
 type Filters = {
   q?: string;
@@ -71,7 +64,17 @@ export default async function ProjectsPage({
 }: {
   searchParams: Promise<Filters>;
 }) {
-  const actor = await getActor();
+  const [actor, t, tl, te, ts] = await Promise.all([
+    getActor(),
+    getTranslations("projects.list"),
+    getTranslations("labels"),
+    getTranslations("enums"),
+    getTranslations(),
+  ]);
+  const STAGE_TITLES = Object.fromEntries(STAGES.map((s) => [s.key, tl(`stageTitles.${s.key}`)])) as Record<string, string>;
+  const bandLabel = (key: string) => t(`kwBands.${key}`);
+  const payLabel = (mode: string) => te(`payMode.${mode}`);
+  const lifecycleLabel = (l: string) => te(`lifecyclePlural.${l}`);
   // The pipeline list, not a single project. `project.write` is the
   // permission for working the pipeline at all, which is the question here —
   // an installer and a partner each read individual projects at a narrower
@@ -294,8 +297,8 @@ export default async function ProjectsPage({
   /** What the summary line calls the chosen place. */
   const placeLabel = (value: string) => {
     const name = value.slice(4);
-    if (value.startsWith("div:")) return name === "none" ? "no division" : name;
-    return name === "none" ? "no PIN" : `PIN ${name}`;
+    if (value.startsWith("div:")) return name === "none" ? t("noDivision") : name;
+    return name === "none" ? t("noPin") : t("pin", { pin: name });
   };
 
   const lifecycleCounts = new Map<string, number>();
@@ -327,9 +330,9 @@ export default async function ProjectsPage({
     <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
       <div className="mb-5 flex flex-wrap items-end gap-4">
         <div className="min-w-60 flex-1">
-          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Projects</h1>
+          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">{ts("nav.projects")}</h1>
           <p className="text-sm text-[var(--muted)]">
-            {rows.length} in all
+            {t("inAll", { count: rows.length })}
           </p>
         </div>
         {/* A project starts life as a lead row, so this is the lead form —
@@ -337,10 +340,10 @@ export default async function ProjectsPage({
             that works out of this list. */}
         <NewLeadDialog
           partners={partners}
-          label="Add project"
-          title="Add a project"
-          blurb="Enough to call them back."
-          submitLabel="Create project"
+          label={t("addProject")}
+          title={t("addProjectTitle")}
+          blurb={t("addProjectBlurb")}
+          submitLabel={t("createProject")}
         />
       </div>
 
@@ -348,8 +351,8 @@ export default async function ProjectsPage({
         <input
           name="q"
           defaultValue={q}
-          placeholder="Krishni, 98269…, BHIM-2026-0007, N2317015620"
-          aria-label="Search projects"
+          placeholder={t("searchPlaceholder")}
+          aria-label={t("searchAria")}
           className="h-11 min-w-60 flex-1 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[14px] text-[var(--ink)] outline-none focus:border-[var(--orange)]"
         />
 
@@ -357,8 +360,8 @@ export default async function ProjectsPage({
             band the width of the window to say one thing. It is a filter
             like the rest, so it sits with the rest — and the option list
             doubles as the key to the numbers in the first column. */}
-        <select name="stage" defaultValue={stage} aria-label="Pipeline stage" className={selectClass}>
-          <option value="">Any stage ({inScope.length})</option>
+        <select name="stage" defaultValue={stage} aria-label={t("stageAria")} className={selectClass}>
+          <option value="">{t("anyStage", { count: inScope.length })}</option>
           {STAGES.map((s) => (
             <option key={s.no} value={String(s.no)}>
               {s.no} · {STAGE_TITLES[s.key]} ({perStage.get(s.no) ?? 0})
@@ -366,61 +369,61 @@ export default async function ProjectsPage({
           ))}
         </select>
 
-        <select name="kw" defaultValue={kw} aria-label="Plant size" className={selectClass}>
-          <option value="">Any size</option>
+        <select name="kw" defaultValue={kw} aria-label={t("sizeAria")} className={selectClass}>
+          <option value="">{t("anySize")}</option>
           {KW_BANDS.map((b) => (
             <option key={b.key} value={b.key}>
-              {b.label} ({kwCounts.get(b.key) ?? 0})
+              {bandLabel(b.key)} ({kwCounts.get(b.key) ?? 0})
             </option>
           ))}
-          <option value="none">Size not set ({noKw})</option>
+          <option value="none">{t("sizeNotSet", { count: noKw })}</option>
         </select>
 
         <select
           name="place"
           defaultValue={place}
-          aria-label="Division or PIN code"
+          aria-label={t("placeAria")}
           className={selectClass}
         >
-          <option value="">Any place</option>
-          <optgroup label="DISCOM division">
+          <option value="">{t("anyPlace")}</option>
+          <optgroup label={t("discomDivision")}>
             {divisions.map(([name, n]) => (
               <option key={name} value={`div:${name}`}>
                 {name} ({n})
               </option>
             ))}
-            <option value="div:none">No division yet ({noDivision})</option>
+            <option value="div:none">{t("noDivisionYet", { count: noDivision })}</option>
           </optgroup>
-          <optgroup label="PIN code">
+          <optgroup label={t("pinCode")}>
             {pins.map(([pin, n]) => (
               <option key={pin} value={`pin:${pin}`}>
-                PIN {pin} ({n})
+                {t("pin", { pin })} ({n})
               </option>
             ))}
-            <option value="pin:none">No PIN on file ({noPin})</option>
+            <option value="pin:none">{t("noPinOnFile", { count: noPin })}</option>
           </optgroup>
         </select>
 
-        <select name="pay" defaultValue={pay} aria-label="Finance option" className={selectClass}>
-          <option value="">Any finance</option>
+        <select name="pay" defaultValue={pay} aria-label={t("financeAria")} className={selectClass}>
+          <option value="">{t("anyFinance")}</option>
           {(["CASH", "FINANCE", "SPLIT"] as const).map((mode) => (
             <option key={mode} value={mode}>
-              {PAY_LABELS[mode]} ({payCounts.get(mode) ?? 0})
+              {payLabel(mode)} ({payCounts.get(mode) ?? 0})
             </option>
           ))}
-          <option value="none">No plan yet ({noPay})</option>
+          <option value="none">{t("noPlanYet", { count: noPay })}</option>
         </select>
 
         <select
           name="lifecycle"
           defaultValue={lifecycle}
-          aria-label="Lifecycle stage"
+          aria-label={t("lifecycleAria")}
           className={selectClass}
         >
-          <option value="">Any lifecycle</option>
+          <option value="">{t("anyLifecycle")}</option>
           {(["LEAD", "CUSTOMER"] as const).map((l) => (
             <option key={l} value={l}>
-              {LIFECYCLE_LABELS[l]} ({lifecycleCounts.get(l) ?? 0})
+              {lifecycleLabel(l)} ({lifecycleCounts.get(l) ?? 0})
             </option>
           ))}
         </select>
@@ -428,8 +431,8 @@ export default async function ProjectsPage({
         {/* No hidden `page` field, so applying a filter always lands on page
             one — staying on page 9 of a list that now has two looks broken. */}
         <label className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--muted)]">
-          Show
-          <select name="per" defaultValue={String(per)} aria-label="Rows per page" className={perClass}>
+          {ts("shell.show")}
+          <select name="per" defaultValue={String(per)} aria-label={ts("shell.rowsPerPage")} className={perClass}>
             {PER_PAGE_OPTIONS.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -442,37 +445,37 @@ export default async function ProjectsPage({
           type="submit"
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)]"
         >
-          Apply
+          {t("apply")}
         </button>
         {filtersOn ? (
           <Link
             href="/projects"
             className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-bold text-[var(--navy-text)] no-underline"
           >
-            Clear
+            {t("clear")}
           </Link>
         ) : null}
       </form>
 
       {filtersOn ? (
         <p className="mb-3 text-[12.5px] text-[var(--muted)]">
-          {filtered.length} of {rows.length} shown
+          {t("shownOf", { shown: filtered.length, total: rows.length })}
           {stage
-            ? ` · stage ${stage} — ${STAGE_TITLES[STAGES[Number(stage) - 1]?.key ?? "onboarding"]}`
+            ? ` · ${t("stageSummary", { no: stage, title: STAGE_TITLES[STAGES[Number(stage) - 1]?.key ?? "onboarding"] ?? "" })}`
             : ""}
-          {kw ? ` · ${KW_BANDS.find((b) => b.key === kw)?.label ?? "size not set"}` : ""}
+          {kw ? ` · ${KW_BANDS.some((b) => b.key === kw) ? bandLabel(kw) : t("sizeNotSetLower")}` : ""}
           {place ? ` · ${placeLabel(place)}` : ""}
-          {pay ? ` · ${pay === "none" ? "no plan yet" : PAY_LABELS[pay]}` : ""}
-          {lifecycle ? ` · ${LIFECYCLE_LABELS[lifecycle] ?? lifecycle}` : ""}
+          {pay ? ` · ${pay === "none" ? t("noPlanYetLower") : payLabel(pay)}` : ""}
+          {lifecycle ? ` · ${lifecycleLabel(lifecycle)}` : ""}
         </p>
       ) : null}
 
 
       {filtered.length === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 py-12 text-center">
-          <p className="mb-1 text-[15px] font-semibold">Nothing matches</p>
+          <p className="mb-1 text-[15px] font-semibold">{t("nothingMatches")}</p>
           <p className="text-[13.5px] text-[var(--muted)]">
-            {needle ? `No project matches "${q}".` : "No project matches these filters."}
+            {needle ? t("noMatchQuery", { q }) : t("noMatchFilters")}
           </p>
         </div>
       ) : (
@@ -487,31 +490,31 @@ export default async function ProjectsPage({
                 {/* The number is the stage; its name is on the chips above
                     and on hover, rather than spending a whole column on a
                     phrase that repeats down the page. */}
-                <th scope="col" className={`${th} w-16 text-center`} title="Pipeline stage 1 to 9">
-                  Stage
+                <th scope="col" className={`${th} w-16 text-center`} title={t("stageTitle")}>
+                  {t("colStage")}
                 </th>
                 <th scope="col" className={`${th} min-w-[240px]`}>
-                  Customer
+                  {t("colCustomer")}
                 </th>
                 <th scope="col" className={`${th} w-36`}>
-                  Phone
+                  {t("colPhone")}
                 </th>
                 <th scope="col" className={`${th} w-40`}>
-                  Consumer no.
+                  {t("colConsumer")}
                 </th>
                 <th scope="col" className={`${th} w-32`}>
-                  Plant size
+                  {t("colPlant")}
                 </th>
                 <th scope="col" className={`${th} w-36`}>
-                  Finance
+                  {t("colFinance")}
                 </th>
                 {canSeeFlags ? (
                   <th scope="col" className={`${th} w-24`}>
-                    Flags
+                    {t("colFlags")}
                   </th>
                 ) : null}
                 <th scope="col" className={`${th} w-28`}>
-                  Status
+                  {t("colStatus")}
                 </th>
               </tr>
             </thead>
@@ -532,7 +535,7 @@ export default async function ProjectsPage({
                   >
                     <td className={`${td} text-center`}>
                       <span
-                        title={`Stage ${r.project.pipelineStage} — ${STAGE_TITLES[stageKey]}`}
+                        title={t("stageRowTitle", { no: r.project.pipelineStage, title: STAGE_TITLES[stageKey] ?? "" })}
                         className={`ref inline-flex h-8 w-8 items-center justify-center rounded-full text-[12.5px] font-bold ${
                           r.project.lifecycleStage === "LEAD"
                             ? "bg-[var(--chip-soft)] text-[var(--muted)]"
@@ -554,7 +557,7 @@ export default async function ProjectsPage({
                         {name}
                       </span>
                       <span className="mt-0.5 block text-[12px] text-[var(--muted)]">
-                        {r.division ?? "No division yet"}
+                        {r.division ?? t("noDivisionYetPlain")}
                       </span>
                     </td>
 
@@ -568,18 +571,18 @@ export default async function ProjectsPage({
 
                     <td className={`${td} text-[12.5px]`}>
                       {size.kw === null ? (
-                        <span className={blank}>not set</span>
+                        <span className={blank}>{t("notSet")}</span>
                       ) : size.exact ? (
                         <span className="ref font-semibold text-[var(--ink)]">
                           {r.rooftop?.plantKw} kW
                         </span>
                       ) : (
-                        <span className="ref text-[var(--muted)]">~{size.kw} kW interest</span>
+                        <span className="ref text-[var(--muted)]">{t("kwInterest", { kw: size.kw })}</span>
                       )}
                     </td>
 
                     <td className={`${td} text-[12.5px] whitespace-nowrap text-[var(--muted)]`}>
-                      {r.payMode ? PAY_LABELS[r.payMode] : <span className={blank}>—</span>}
+                      {r.payMode ? payLabel(r.payMode) : <span className={blank}>—</span>}
                     </td>
 
                     {/* Above the row overlay, so the chip takes the click and
@@ -600,7 +603,7 @@ export default async function ProjectsPage({
                               : "bg-[var(--navy-soft)] text-[var(--link)]"
                         }`}
                       >
-                        {r.project.lifecycleStage}
+                        {te(`lifecycle.${r.project.lifecycleStage}`)}
                       </span>
                     </td>
                   </tr>
@@ -616,7 +619,7 @@ export default async function ProjectsPage({
           and means the same thing. It counts the filtered list, not the
           whole table, which is the list being paged. */}
       {filtered.length > 0 ? (
-        <ListPager total={filtered.length} page={page} per={per} noun="projects" />
+        <ListPager total={filtered.length} page={page} per={per} noun={t("noun")} />
       ) : null}
     </main>
   );

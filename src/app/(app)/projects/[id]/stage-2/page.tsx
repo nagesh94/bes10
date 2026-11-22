@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -30,7 +31,7 @@ interface Step {
 
 export default async function Stage2Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t] = await Promise.all([getActor(), getTranslations("stage.s2")]);
   if (!actor || !can(actor, "document.upload")) notFound();
   const canDeleteDocs = can(actor, "document.delete");
 
@@ -96,34 +97,34 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
   const steps: Step[] = [
     {
       n: 1,
-      title: "Make the quotation",
-      body: "Built from this project's own details and filed here, so the agreement and the customer are talking about the same number.",
+      title: t("step1Title"),
+      body: t("step1Body"),
       docType: "QUOTATION",
-      label: "Or upload a quotation priced elsewhere",
-      hint: "Photo or PDF — only if you are not using the one made here",
+      label: t("step1Label"),
+      hint: t("step1Hint"),
     },
     {
       n: 2,
-      title: "Upload the customer signature",
-      body: "A clean specimen on white paper, photographed or scanned.",
+      title: t("step2Title"),
+      body: t("step2Body"),
       docType: "CUSTOMER_SIGNATURE",
-      label: "Customer signature",
-      hint: "Image is best — it gets composited into the generated documents",
+      label: t("step2Label"),
+      hint: t("step2Hint"),
     },
     {
       n: 3,
-      title: "Generate the agreement",
-      body: "Produces the Annexure 2 model agreement as an editable Word file, with the parties and clause 19.1 filled from this project. Download it, give it to the lawyer for the hard copy, then upload the signed scan at step 4.",
+      title: t("step3Title"),
+      body: t("step3Body"),
       docType: "AGREEMENT",
-      label: "Vendor agreement",
+      label: t("step3Label"),
     },
     {
       n: 4,
-      title: "Upload the signed scan",
-      body: "Scan the wet-signed copy and put it back here. It is stored alongside the original, never in place of it.",
+      title: t("step4Title"),
+      body: t("step4Body"),
       docType: "AGREEMENT_SIGNED",
-      label: "Vendor agreement — signed scan",
-      hint: "Keep it at full resolution for the bank pack",
+      label: t("step4Label"),
+      hint: t("step4Hint"),
     },
   ];
   return (
@@ -132,9 +133,8 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
       stageNo={2}
       note={
         <>
-          The agreement is signed on paper, so
-          the app produces it and takes the scan back.
-          {financed ? "" : " This is a cash project, so there is no approval letter."}
+          {t("note")}
+          {financed ? "" : ` ${t("noteCash")}`}
         </>
       }
     >
@@ -142,10 +142,10 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
         <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
           <span className="min-w-60 flex-1">
             <strong className="block text-sm font-bold text-[var(--amber-text)]">
-              There is no payment plan yet
+              {t("noPlan")}
             </strong>
             <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
-              Clause 19.1 is filled from the accepted quotation.
+              {t("noPlanBody")}
             </span>
           </span>
           {isAdmin ? (
@@ -153,7 +153,7 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
               href={`/projects/${id}/payments`}
               className="inline-flex h-11 shrink-0 items-center rounded-lg bg-[var(--orange)] px-4.5 text-[13.5px] font-bold text-[var(--orange-ink)] no-underline"
             >
-              Settle the payment plan
+              {t("settlePlan")}
             </Link>
           ) : null}
         </div>
@@ -188,7 +188,7 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
                   <h2 className="text-base font-bold">{step.title}</h2>
                   {step.pending ? (
                     <span className="rounded-full bg-[var(--amber-soft)] px-2.5 py-1 text-[10.5px] font-bold tracking-[0.05em] text-[var(--amber-text)] uppercase">
-                      Engine in phase 4
+                      {t("enginePhase4")}
                     </span>
                   ) : null}
                 </div>
@@ -207,9 +207,9 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
                         projectId={id}
                         docType="AGREEMENT"
                         label={
-                          canAgree ? "Or upload an agreement prepared elsewhere" : "Agreement"
+                          canAgree ? t("uploadAgreementElsewhere") : t("agreement")
                         }
-                        hint="Only if you are not using the one made here"
+                        hint={t("onlyIfNotHere")}
                         existing={canAgree ? uploadedAgreement : existing}
                         canDelete={canDeleteDocs}
                       />
@@ -227,7 +227,7 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
                       <UploadSlot
                         projectId={id}
                         docType="QUOTATION"
-                        label={canQuote ? step.label! : "Quotation"}
+                        label={canQuote ? step.label! : t("quotation")}
                         {...(step.hint === undefined ? {} : { hint: step.hint })}
                         existing={canQuote ? uploadedQuotation : existing}
                       />
@@ -264,7 +264,7 @@ export default async function Stage2Page({ params }: { params: Promise<{ id: str
         href={`/projects/${id}`}
         className="mt-3 inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
       >
-        Back to the stage gate
+        {t("backToGate")}
       </Link>
     </StageShell>
   );

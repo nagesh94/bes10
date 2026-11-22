@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { agreements } from "@/lib/db/schema";
@@ -55,6 +56,7 @@ export async function AgreementStep({
 
   // Attached to this project, so the admin-only rule applies.
   const canDelete = can(await getActor(), "agreement.delete.filed");
+  const [t, te] = await Promise.all([getTranslations("agreements.c"), getTranslations("enums")]);
 
   const filed = rows.find((row) => row.isPrimary) ?? null;
 
@@ -66,7 +68,7 @@ export async function AgreementStep({
             href={`/agreements/new?project=${projectId}`}
             className="inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
           >
-            {rows.length ? "Draw up another agreement" : "Draw up the agreement"}
+            {rows.length ? t("drawAnother") : t("draw")}
           </Link>
         ) : null}
 
@@ -75,7 +77,7 @@ export async function AgreementStep({
             href="/agreements"
             className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--ink)] no-underline"
           >
-            All agreements
+            {t("all")}
           </Link>
         ) : null}
       </div>
@@ -101,7 +103,11 @@ export async function AgreementStep({
                 Rs. {inr(Number(agreement.totalValue))} · {agreement.executionDate}
               </span>
               <span className="rounded-full bg-[var(--chip-soft)] px-2 py-0.5 text-[10.5px] font-bold text-[var(--chip-text)]">
-                {STATUS_LABEL[agreement.status] ?? agreement.status}
+                {agreement.status === "ISSUED"
+                  ? t("issuedForSigning")
+                  : te.has(`agreementStatus.${agreement.status}`)
+                    ? te(`agreementStatus.${agreement.status}`)
+                    : agreement.status}
               </span>
               {canWrite ? (
                 <UseThisAgreement
@@ -112,7 +118,7 @@ export async function AgreementStep({
                 />
               ) : agreement.isPrimary ? (
                 <span className="rounded-full bg-[var(--green-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--green-text)]">
-                  On file
+                  {t("onFile")}
                 </span>
               ) : null}
               <AgreementRowActions
@@ -126,7 +132,7 @@ export async function AgreementStep({
       ) : null}
 
       <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">
-        A Word file, filled from this project.
+        {t("wordFromProject")}
       </p>
 
       {rows.length > 0 && !filed ? (
@@ -134,7 +140,7 @@ export async function AgreementStep({
           role="alert"
           className="mt-2.5 rounded-lg border border-[var(--amber-border)] bg-[var(--amber-surface)] px-3.5 py-2.5 text-[12.5px] font-medium text-[var(--amber-text)]"
         >
-          None of these is on file. Pick one.
+          {t("noneOnFile")}
         </p>
       ) : null}
     </div>

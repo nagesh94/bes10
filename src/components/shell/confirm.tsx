@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * The app's one confirmation dialog.
@@ -80,6 +81,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     request: ConfirmRequest;
     settle: (answer: ConfirmAnswer) => void;
   } | null>(null);
+  const t = useTranslations("shell");
   const [reason, setReason] = useState("");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -159,7 +161,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               <label className="mt-4 block">
                 <span className="mb-1.5 block text-[12.5px] font-semibold text-[var(--muted)]">
                   {request.reason.label ??
-                    (request.reason.required ? "Reason" : "Reason (optional)")}
+                    (request.reason.required ? t("reason") : t("reasonOptional"))}
                 </span>
                 <textarea
                   // The field is the reason this is a panel and not a system
@@ -183,7 +185,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 onClick={() => finish(false)}
                 className="h-10 cursor-pointer rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-semibold text-[var(--ink)]"
               >
-                {request.cancelLabel ?? "Cancel"}
+                {request.cancelLabel ?? t("cancel")}
               </button>
               <button
                 type="button"
@@ -195,7 +197,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                     : "bg-[var(--orange)] text-[var(--orange-ink)]"
                 }`}
               >
-                {request.confirmLabel ?? (danger ? "Delete" : "Confirm")}
+                {request.confirmLabel ?? (danger ? t("delete") : t("confirm"))}
               </button>
             </div>
           </div>

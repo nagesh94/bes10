@@ -3,6 +3,8 @@
  * grey ahead. Small enough to sit in a table row and still be readable at a
  * glance down a column of twenty projects.
  */
+import { useTranslations } from "next-intl";
+
 export function DotRail({
   currentStage,
   completed,
@@ -10,8 +12,9 @@ export function DotRail({
   currentStage: number;
   completed: number;
 }) {
+  const t = useTranslations("projects.c");
   return (
-    <div className="flex gap-[3px]" aria-label={`Stage ${currentStage} of 9`}>
+    <div className="flex gap-[3px]" aria-label={t("stageOf", { no: currentStage, total: 9 })}>
       {Array.from({ length: 9 }, (_, i) => {
         const no = i + 1;
         const done = no <= completed;

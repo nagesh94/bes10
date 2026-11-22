@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { and, count, desc, eq, ilike, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { agreements, projects } from "@/lib/db/schema";
@@ -50,11 +51,16 @@ export default async function AgreementsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const actor = await getActor();
+  const [actor, t, te] = await Promise.all([
+    getActor(),
+    getTranslations("agreements.list"),
+    getTranslations("enums"),
+  ]);
+  const statusFilter = STATUS_FILTER.map((s) => ({ value: s.value, label: te(`agreementStatus.${s.value}`) }));
   if (!actor || !can(actor, "agreement.read")) {
     return (
       <main className="mx-auto max-w-[1280px] px-6 py-10">
-        <p className="text-sm text-[var(--muted)]">You do not have access to agreements.</p>
+        <p className="text-sm text-[var(--muted)]">{t("noAccess")}</p>
       </main>
     );
   }
@@ -126,14 +132,15 @@ export default async function AgreementsPage({
     <main className="mx-auto max-w-[1280px] px-6 pt-7 pb-14">
       <div className="mb-5 flex flex-wrap items-end gap-4">
         <div className="min-w-60 flex-1">
-          <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">Agreements</h1>
+          <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">{t("title")}</h1>
           <p className="text-sm text-[var(--muted)]">
-            {filtered ? `${total} matching` : `${total} drawn up`} · {signed} signed
+            {filtered ? t("matching", { count: total }) : t("drawnUp", { count: total })} ·{" "}
+            {t("signed", { count: signed })}
             {filtered ? (
               <>
                 {" · "}
                 <Link href="/agreements" className="font-semibold">
-                  Clear
+                  {t("clear")}
                 </Link>
               </>
             ) : null}
@@ -144,21 +151,21 @@ export default async function AgreementsPage({
             href="/agreements/new"
             className="flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
           >
-            New agreement
+            {t("new")}
           </Link>
         ) : null}
       </div>
 
       <ListControls
-        placeholder="Search by consumer, address, project or date"
+        placeholder={t("search")}
         filters={[
-          { name: "status", anyLabel: "Any status", options: STATUS_FILTER },
+          { name: "status", anyLabel: t("anyStatus"), options: statusFilter },
           {
             name: "project",
-            anyLabel: "Attached or not",
+            anyLabel: t("attachedOrNot"),
             options: [
-              { value: "attached", label: "On a project" },
-              { value: "standalone", label: "Standalone" },
+              { value: "attached", label: t("onProject") },
+              { value: "standalone", label: t("standalone") },
             ],
           },
         ]}
@@ -168,22 +175,22 @@ export default async function AgreementsPage({
 
       {total === 0 && filtered ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
-          <p className="mb-1 font-semibold">Nothing matches</p>
+          <p className="mb-1 font-semibold">{t("nothingMatches")}</p>
           <p className="text-sm text-[var(--muted)]">
             <Link href="/agreements" className="font-semibold">
-              Clear filters
+              {t("clearFilters")}
             </Link>
           </p>
         </div>
       ) : total === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center">
-          <p className="mb-1 font-semibold">No agreements yet</p>
-          <p className="mb-5 text-sm text-[var(--muted)]">Built as a Word file.</p>
+          <p className="mb-1 font-semibold">{t("none")}</p>
+          <p className="mb-5 text-sm text-[var(--muted)]">{t("builtAsWord")}</p>
           <Link
             href="/agreements/new"
             className="inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
           >
-            Draw up the first agreement
+            {t("first")}
           </Link>
         </div>
       ) : (
@@ -192,7 +199,7 @@ export default async function AgreementsPage({
             <table className="w-full min-w-[860px] border-collapse">
               <thead>
                 <tr className="bg-[var(--surface-2)]">
-                  {["Consumer", "Project", "Cost", "Executed", "Status", ""].map((h) => (
+                  {[t("cols.consumer"), t("cols.project"), t("cols.cost"), t("cols.executed"), t("cols.status"), ""].map((h) => (
                     <th
                       key={h}
                       className="border-b border-[var(--line)] px-5 py-2.5 text-left text-[12px] font-semibold text-[var(--muted)]"
@@ -231,11 +238,11 @@ export default async function AgreementsPage({
                                 : "bg-[var(--chip-soft)] text-[var(--muted)]"
                             }`}
                           >
-                            {row.isPrimary ? "On file" : "Draft"}
+                            {row.isPrimary ? t("onFile") : t("draft")}
                           </span>
                         </>
                       ) : (
-                        <span className="text-[var(--muted)]">Standalone</span>
+                        <span className="text-[var(--muted)]">{t("standalone")}</span>
                       )}
                     </td>
                     <td className="ref px-5 py-3.5 align-middle text-[13px] font-semibold whitespace-nowrap">
@@ -250,7 +257,7 @@ export default async function AgreementsPage({
                           STATUS_CHIP[row.status] ?? STATUS_CHIP.DRAFT
                         }`}
                       >
-                        {STATUS_LABEL[row.status] ?? row.status}
+                        {te.has(`agreementStatus.${row.status}`) ? te(`agreementStatus.${row.status}`) : (STATUS_LABEL[row.status] ?? row.status)}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right align-middle">
@@ -272,7 +279,7 @@ export default async function AgreementsPage({
       )}
 
       {total > 0 ? (
-        <ListPager total={total} page={params.page} per={params.per} noun="agreements" />
+        <ListPager total={total} page={params.page} per={params.per} noun={t("noun")} />
       ) : null}
     </main>
   );

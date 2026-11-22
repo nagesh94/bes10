@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { deleteExpense, recordExpense } from "@/app/actions/expenses";
 import { Combobox } from "@/components/finance/combobox";
 import { useConfirm } from "@/components/shell/confirm";
@@ -30,7 +31,7 @@ export function AddExpenseDialog({
   options,
   defaultProjectId,
   defaultCategoryId,
-  label = "Add expense",
+  label,
   compact = false,
   ghost = false,
 }: {
@@ -45,6 +46,7 @@ export function AddExpenseDialog({
   ghost?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const t = useTranslations("finance.expense");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export function AddExpenseDialog({
         }`}
       >
         <Plus size={compact || ghost ? 13 : 16} strokeWidth={2.6} aria-hidden />
-        {label}
+        {label ?? t("add")}
       </button>
       <dialog
         ref={ref}
@@ -85,10 +87,10 @@ export function AddExpenseDialog({
         {open ? (
           <div className="max-h-[88vh] overflow-y-auto px-5 py-5 sm:px-6">
             <h2 id="expense-dialog-title" className="text-[19px] font-bold tracking-[-0.01em]">
-              Record an expense
+              {t("title")}
             </h2>
             <p className="mt-1 mb-4 text-[13px] text-[var(--muted)]">
-              Money paid out — for a site, a person or the business.
+              {t("intro")}
             </p>
             <ExpenseForm
               options={options}
@@ -114,6 +116,8 @@ function ExpenseForm({
   defaultCategoryId?: number;
   onDone: () => void;
 }) {
+  const t = useTranslations("finance.expense");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [categoryId, setCategoryId] = useState(defaultCategoryId ? String(defaultCategoryId) : "");
   const [projectId, setProjectId] = useState(defaultProjectId ?? "");
@@ -129,7 +133,7 @@ function ExpenseForm({
       onSubmit={async (e) => {
         e.preventDefault();
         setError(null);
-        if (!category) return setError({ message: "Choose what the money was spent on.", field: "categoryId" });
+        if (!category) return setError({ message: t("chooseCategory"), field: "categoryId" });
         setPending(true);
         const data = new FormData(e.currentTarget);
         const text = (k: string) => String(data.get(k) ?? "");
@@ -153,10 +157,10 @@ function ExpenseForm({
     >
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className={labelCls} htmlFor="exp-category">Spent on</label>
+          <label className={labelCls} htmlFor="exp-category">{t("spentOn")}</label>
           <Combobox
             id="exp-category"
-            placeholder="Search: material, transport, salary…"
+            placeholder={t("spentOnPlaceholder")}
             value={categoryId}
             onChange={setCategoryId}
             invalid={error?.field === "categoryId"}
@@ -165,24 +169,24 @@ function ExpenseForm({
         </div>
 
         <div>
-          <label className={labelCls} htmlFor="exp-amount">Amount</label>
+          <label className={labelCls} htmlFor="exp-amount">{t("amount")}</label>
           <input id="exp-amount" name="amount" required inputMode="decimal" placeholder="12,500" className={`${field} ref`} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="exp-date">Paid on</label>
+          <label className={labelCls} htmlFor="exp-date">{t("paidOn")}</label>
           <input id="exp-date" name="spentOn" type="date" required defaultValue={today()} max={today()} className={field} />
         </div>
 
         <div className="sm:col-span-2">
           <label className={labelCls} htmlFor="exp-project">
-            {category?.perSite ? "Site (project)" : "Site (project) — optional"}
+            {category?.perSite ? t("site") : t("siteOptional")}
           </label>
           <Combobox
             id="exp-project"
-            placeholder={category?.perSite ? "Search by project code or customer" : "Leave empty for an office expense"}
+            placeholder={category?.perSite ? t("siteSearch") : t("siteEmpty")}
             value={projectId}
             onChange={setProjectId}
-            emptyLabel="No site — office expense"
+            emptyLabel={t("noSite")}
             invalid={error?.field === "projectId"}
             options={options.projects.map((p) => ({ value: p.id, label: p.label }))}
           />
@@ -196,22 +200,22 @@ function ExpenseForm({
         {category?.needsPerson ? (
           <>
             <div className={person === SOMEONE_ELSE ? "" : "sm:col-span-2"}>
-              <label className={labelCls} htmlFor="exp-person">For whom</label>
+              <label className={labelCls} htmlFor="exp-person">{t("forWhom")}</label>
               <Combobox
                 id="exp-person"
-                placeholder="Search staff"
+                placeholder={t("searchStaff")}
                 value={person}
                 onChange={setPerson}
                 invalid={error?.field === "person"}
                 options={[
                   ...options.people.map((p) => ({ value: p.id, label: p.name })),
-                  { value: SOMEONE_ELSE, label: "Someone else — type the name" },
+                  { value: SOMEONE_ELSE, label: t("someoneElse") },
                 ]}
               />
             </div>
             {person === SOMEONE_ELSE ? (
               <div>
-                <label className={labelCls} htmlFor="exp-person-name">Name</label>
+                <label className={labelCls} htmlFor="exp-person-name">{t("name")}</label>
                 <input
                   id="exp-person-name"
                   value={personTyped}
@@ -225,27 +229,27 @@ function ExpenseForm({
         ) : null}
 
         <div>
-          <label className={labelCls} htmlFor="exp-paid-to">Paid to</label>
-          <input id="exp-paid-to" name="paidTo" placeholder="Vendor, transporter, office…" className={field} />
+          <label className={labelCls} htmlFor="exp-paid-to">{t("paidTo")}</label>
+          <input id="exp-paid-to" name="paidTo" placeholder={t("paidToPlaceholder")} className={field} />
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <div>
-            <label className={labelCls} htmlFor="exp-mode">Mode</label>
+            <label className={labelCls} htmlFor="exp-mode">{t("mode")}</label>
             <select id="exp-mode" name="mode" className={field} defaultValue="UPI">
               {PAID_OUT_MODES.map((m) => (
-                <option key={m} value={m}>{RECEIVED_MODE_LABELS[m]}</option>
+                <option key={m} value={m}>{te.has(`receivedMode.${m}`) ? te(`receivedMode.${m}`) : RECEIVED_MODE_LABELS[m]}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className={labelCls} htmlFor="exp-ref">Reference</label>
-            <input id="exp-ref" name="referenceNo" placeholder="UTR / bill no." className={`${field} ref`} />
+            <label className={labelCls} htmlFor="exp-ref">{t("reference")}</label>
+            <input id="exp-ref" name="referenceNo" placeholder={t("refPlaceholder")} className={`${field} ref`} />
           </div>
         </div>
 
         <div className="sm:col-span-2">
           <label className={labelCls} htmlFor="exp-details">
-            {category?.needsDetail ? "What was it for, and where was the money used?" : "Details — optional"}
+            {category?.needsDetail ? t("detailsNeeded") : t("detailsOptional")}
           </label>
           <textarea
             id="exp-details"
@@ -276,14 +280,14 @@ function ExpenseForm({
           disabled={pending}
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
-          {pending ? "Saving…" : "Record expense"}
+          {pending ? t("saving") : t("record")}
         </button>
         <button
           type="button"
           onClick={onDone}
           className="h-11 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-5 text-sm font-semibold"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -291,6 +295,8 @@ function ExpenseForm({
 }
 
 export function DeleteExpenseButton({ id, summary }: { id: string; summary: string }) {
+  const t = useTranslations("finance.expense");
+  const te = useTranslations("enums");
   const router = useRouter();
   const ask = useConfirm();
   const [pending, setPending] = useState(false);
@@ -300,13 +306,13 @@ export function DeleteExpenseButton({ id, summary }: { id: string; summary: stri
       type="button"
       disabled={pending}
       aria-label={`Remove ${summary}`}
-      title="Remove"
+      title={t("remove")}
       onClick={async () => {
         const answer = await ask({
-          title: "Remove this expense?",
-          body: `${summary}. It stops counting everywhere; the audit log keeps a record.`,
-          confirmLabel: "Remove",
-          reason: { label: "Why?", placeholder: "Entered twice, wrong amount…" },
+          title: t("removeTitle"),
+          body: t("removeBody", { summary }),
+          confirmLabel: t("remove"),
+          reason: { label: t("why"), placeholder: t("whyPlaceholder") },
         });
         if (!answer.confirmed) return;
         setPending(true);

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { completeStage } from "@/app/actions/stages";
 
 export interface GateItemView {
@@ -33,6 +34,7 @@ export function StageGate({
   items: GateItemView[];
   passed: boolean;
 }) {
+  const t = useTranslations("projects.c");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +69,7 @@ export function StageGate({
             passed ? "text-[var(--green-text)]" : "text-[var(--orange-text)]"
           }`}
         >
-          {passed ? "Ready to close" : "In progress"}
+          {passed ? t("readyToClose") : t("inProgress")}
         </span>
       </div>
 
@@ -115,7 +117,7 @@ export function StageGate({
         {overriding ? (
           <div className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-3.5">
             <p className="mb-2.5 text-[13px] font-semibold">
-              Moving on with {outstandingCount} line{outstandingCount === 1 ? "" : "s"} still open:{" "}
+              {t("movingOn", { count: outstandingCount })}{" "}
               <span className="font-normal text-[var(--muted)]">
                 {items.filter((i) => !i.passed).map((i) => i.label).join(", ")}.
               </span>
@@ -124,14 +126,14 @@ export function StageGate({
               htmlFor="override-reason"
               className="mb-1.5 block text-xs font-semibold text-[var(--muted)]"
             >
-              Why?
+              {t("why")}
             </label>
             <textarea
               id="override-reason"
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Customer is travelling; the signed copy follows on Monday and the bank file is already lodged."
+              placeholder={t("whyPlaceholder")}
               className="mb-3 w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--orange)]"
             />
             <div className="flex gap-2">
@@ -141,14 +143,14 @@ export function StageGate({
                 onClick={() => go(reason)}
                 className="h-10 cursor-pointer rounded-lg bg-[var(--orange)] px-4 text-[13px] font-bold text-[var(--orange-ink)] disabled:opacity-60"
               >
-                {pending ? "Recording…" : "Continue and record"}
+                {pending ? t("recording") : t("continueRecord")}
               </button>
               <button
                 type="button"
                 onClick={() => setOverriding(false)}
                 className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-semibold"
               >
-                Cancel
+                {t("cancel")}
               </button>
             </div>
           </div>
@@ -168,17 +170,17 @@ export function StageGate({
               }`}
             >
               {pending
-                ? "Closing…"
+                ? t("closing")
                 : passed
-                  ? `Complete stage ${stageNo}`
-                  : `Continue to stage ${Math.min(stageNo + 1, 9)} anyway`}
+                  ? t("completeStage", { no: stageNo })
+                  : t("continueAnyway", { no: Math.min(stageNo + 1, 9) })}
             </button>
           </div>
         )}
 
         {!passed && !overriding ? (
           <p className="mt-3 text-[12.5px] text-[var(--muted)]">
-            {outstandingCount} line{outstandingCount === 1 ? "" : "s"} still open.
+            {t("linesOpen", { count: outstandingCount })}
           </p>
         ) : null}
       </div>

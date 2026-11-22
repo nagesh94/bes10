@@ -2,6 +2,7 @@ export const MASTER_CATEGORIES = [
   { key: "panel-companies", label: "Panel companies", addLabel: "Add company" },
   { key: "panel-types", label: "Panel types", addLabel: "Add type" },
   { key: "panel-models", label: "Panel models", addLabel: "Add model" },
+  { key: "suppliers", label: "Panel suppliers (DCR)", addLabel: "" },
   { key: "inverters", label: "Inverter models", addLabel: "Add inverter" },
   { key: "structures", label: "Structure companies", addLabel: "Add company" },
   { key: "cable-makes", label: "Cable makes", addLabel: "Add make" },

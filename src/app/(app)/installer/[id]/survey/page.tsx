@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import { getPhotoThumbUrls } from "@/app/actions/photos";
 import { PhotoGrid } from "@/components/documents/photo-grid";
 import { BackLink, FieldSection, PageTitle } from "@/components/installer/job-chrome";
-import { sectionByKey } from "@/components/prospect/fields";
+import { localizeSection, sectionByKey } from "@/components/prospect/fields";
+import { getTranslations } from "next-intl/server";
 import { SectionForm } from "@/components/prospect/section-form";
 import { db } from "@/lib/db";
 import { siteSurveys } from "@/lib/db/schema";
@@ -24,8 +25,10 @@ export default async function InstallerSurveyPage({ params }: { params: Promise<
   const job = await loadJob(id, "survey.write");
   if (!job) notFound();
 
-  const section = sectionByKey("survey");
-  if (!section) notFound();
+  const [tp, t] = await Promise.all([getTranslations("prospect"), getTranslations("installer.survey")]);
+  const raw = sectionByKey("survey");
+  if (!raw) notFound();
+  const section = localizeSection(raw, tp);
 
   const [survey] = await db.select().from(siteSurveys).where(eq(siteSurveys.projectId, id)).limit(1);
   const sitePhotos = await getPhotoThumbUrls(id, "SITE_SURVEY");
@@ -34,8 +37,8 @@ export default async function InstallerSurveyPage({ params }: { params: Promise<
     <main className="mx-auto max-w-[640px] px-4 pt-2 pb-12">
       <BackLink href={`/installer/${id}`} label={customerName(job.contact)} />
       <PageTitle
-        title="Site survey"
-        sub="Estimated runs in metres."
+        title={t("title")}
+        sub={t("sub")}
       />
 
       <div className="space-y-3">
@@ -57,14 +60,14 @@ export default async function InstallerSurveyPage({ params }: { params: Promise<
         </FieldSection>
 
         <FieldSection
-          title="Survey photographs"
-          blurb="Keep location switched on."
+          title={t("photos")}
+          blurb={t("photosBlurb")}
         >
           <PhotoGrid
             projectId={id}
             photoType="SITE_SURVEY"
-            label="Roof before installation"
-            hint="Angles, shading, meter board"
+            label={t("roofBefore")}
+            hint={t("roofBeforeHint")}
             photos={sitePhotos}
           />
         </FieldSection>

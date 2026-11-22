@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { saveSection } from "@/app/actions/prospect";
 import type { SectionKey } from "@/lib/validation/prospect";
 import type { FieldDef, FormSection } from "./fields";
@@ -37,6 +38,7 @@ export function SectionForm({
   blockAdvance?: boolean;
   blockAdvanceReason?: string;
 }) {
+  const t = useTranslations("prospect");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +110,7 @@ export function SectionForm({
                     : "font-semibold text-[var(--muted)]"
                 }`}
               >
-                {val ? "Yes" : "No"}
+                {val ? t("form.yes") : t("form.no")}
               </button>
             ))}
           </div>
@@ -125,7 +127,7 @@ export function SectionForm({
         <select id={f.name} name={f.name} defaultValue={defaultValue} className={baseField}>
           {(f.options ?? []).map((o) => (
             <option key={o} value={o}>
-              {o === "" ? "—" : o}
+              {o === "" ? "—" : t.has(`options.${o.replace(/\s+/g, "_")}`) ? t(`options.${o.replace(/\s+/g, "_")}`) : o}
             </option>
           ))}
         </select>
@@ -198,7 +200,7 @@ export function SectionForm({
         </p>
       ) : null}
       {saved && !error ? (
-        <p className="mt-4 text-[13px] font-semibold text-[var(--green-text)]">Saved.</p>
+        <p className="mt-4 text-[13px] font-semibold text-[var(--green-text)]">{t("form.saved")}</p>
       ) : null}
 
       <div className="mt-6 flex flex-wrap items-center gap-2.5">
@@ -208,7 +210,7 @@ export function SectionForm({
             className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--ink)] no-underline"
           >
             <ChevronLeft size={16} strokeWidth={2.4} aria-hidden />
-            Back
+            {t("form.back")}
           </Link>
         ) : null}
         <button
@@ -216,7 +218,7 @@ export function SectionForm({
           disabled={pending}
           className="h-11 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-5 text-sm font-semibold text-[var(--ink)] disabled:opacity-60"
         >
-          {pending ? "Saving…" : "Save"}
+          {pending ? t("form.saving") : t("form.save")}
         </button>
         {nextKey ? (
           <button
@@ -231,7 +233,7 @@ export function SectionForm({
             }
             className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Save and continue
+            {t("form.saveContinue")}
             <ChevronRight size={16} strokeWidth={2.4} aria-hidden />
           </button>
         ) : null}

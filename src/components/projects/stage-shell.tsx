@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { STAGE_BLURBS, STAGE_TITLES } from "@/lib/workflow/labels";
+import { getTranslations } from "next-intl/server";
 import { STAGE_KEYS } from "@/lib/workflow/stages";
 import { loadProjectHeader } from "@/lib/projects/header";
 import { can, canSeeMoney } from "@/lib/rbac/permissions";
@@ -45,28 +45,34 @@ export async function StageShell({
   width?: "wide" | "narrow";
   children: React.ReactNode;
 }) {
-  const [actor, data] = await Promise.all([getActor(), loadProjectHeader(projectId)]);
+  const [actor, data, tl, t, tn] = await Promise.all([
+    getActor(),
+    loadProjectHeader(projectId),
+    getTranslations("labels"),
+    getTranslations("projects.c"),
+    getTranslations("nav"),
+  ]);
   if (!actor || !data) notFound();
 
   const key = stageNo ? STAGE_KEYS[stageNo - 1] : undefined;
-  const heading = title ?? (key ? STAGE_TITLES[key] : "Project");
-  const blurb = note ?? (key ? STAGE_BLURBS[key] : null);
+  const heading = title ?? (key ? tl(`stageTitles.${key}`) : tl("project"));
+  const blurb = note ?? (key ? tl(`stageBlurbs.${key}`) : null);
 
   return (
     /* The frame is always full width — the header and the stepper want the
        room. `narrow` holds in the work itself, for the stages that are a
        single column of fields and would otherwise run to 1300px of line. */
     <main className="mx-auto w-full max-w-[1320px] px-4 pt-4 pb-16 sm:px-6">
-      <nav aria-label="Breadcrumb" className="mb-3 text-[12.5px] text-[var(--muted)]">
+      <nav aria-label={t("breadcrumb")} className="mb-3 text-[12.5px] text-[var(--muted)]">
         <Link href="/projects" className="no-underline">
-          Projects
+          {tn("projects")}
         </Link>
         <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
         <Link href={`/projects/${projectId}`} className="ref no-underline">
           {data.code}
         </Link>
         <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
-        <span>{stageNo ? `Stage ${stageNo}` : heading}</span>
+        <span>{stageNo ? tl("stageN", { no: stageNo }) : heading}</span>
       </nav>
 
       <ProjectHeader
@@ -78,10 +84,10 @@ export async function StageShell({
       <section className="mt-3.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-3 pt-3 pb-2 sm:px-5">
         <div className="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 px-1">
           <h2 className="text-[12px] font-bold tracking-[0.06em] text-[var(--muted)] uppercase">
-            Pipeline
+            {t("pipeline")}
           </h2>
           <span className="ref text-[12px] text-[var(--muted)]">
-            {data.completed.size} of {STAGE_KEYS.length} complete
+            {t("nOfComplete", { done: data.completed.size, total: STAGE_KEYS.length })}
           </span>
         </div>
         <StageStepper
@@ -96,7 +102,7 @@ export async function StageShell({
         <div className="min-w-60 flex-1">
           {stageNo ? (
             <div className="mb-0.5 text-[11.5px] font-bold tracking-[0.07em] text-[var(--orange-text)] uppercase">
-              Stage {stageNo} of {STAGE_KEYS.length}
+              {t("stageOf", { no: stageNo, total: STAGE_KEYS.length })}
             </div>
           ) : null}
           <h2 className="text-[21px] leading-tight font-bold tracking-[-0.02em] sm:text-[23px]">

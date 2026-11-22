@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { quickGenerateAgreement } from "@/app/actions/agreements";
 
 /**
@@ -23,6 +24,7 @@ import { quickGenerateAgreement } from "@/app/actions/agreements";
  * missing changes as the stage 1 form is filled.
  */
 export function QuickGenerateAgreement({ projectId }: { projectId: string }) {
+  const t = useTranslations("agreements.c");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +58,7 @@ export function QuickGenerateAgreement({ projectId }: { projectId: string }) {
         onClick={run}
         className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
       >
-        {pending ? "Preparing…" : "Generate agreement"}
+        {pending ? t("preparing") : t("generate")}
       </button>
 
       {error ? (

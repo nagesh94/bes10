@@ -31,7 +31,7 @@ export default async function SettingsPage() {
     <main className="mx-auto max-w-[860px] px-6 pt-7 pb-14">
       <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">{t("nav.settings")}</h1>
       <p className="mb-6 text-sm text-[var(--muted)]">
-        Your account, how the app looks, and what it says.
+        {t("settings.intro")}
       </p>
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
@@ -47,14 +47,14 @@ export default async function SettingsPage() {
           </div>
           <div className="text-right">
             <div className="text-[12px] font-semibold text-[var(--muted)]">
-              Sees money
+              {t("settings.seesMoney")}
             </div>
             <div
               className={`mt-0.5 text-sm font-semibold ${
                 canSeeMoney(actor.roles) ? "text-[var(--green-text)]" : "text-[var(--muted)]"
               }`}
             >
-              {canSeeMoney(actor.roles) ? "Yes" : "No"}
+              {canSeeMoney(actor.roles) ? t("settings.yes") : t("settings.no")}
             </div>
           </div>
         </div>
@@ -62,26 +62,26 @@ export default async function SettingsPage() {
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-1 text-base font-bold">{t("common.appearance")}</h2>
-        <p className="mb-4.5 text-[13px] text-[var(--muted)]">System follows your device.</p>
+        <p className="mb-4.5 text-[13px] text-[var(--muted)]">{t("settings.appearanceHint")}</p>
         <ThemePicker initial={theme} />
       </section>
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-1 text-base font-bold">{t("common.language")}</h2>
-        <p className="mb-4.5 text-[13px] text-[var(--muted)]">Labels only — numbers stay as they are.</p>
+        <p className="mb-4.5 text-[13px] text-[var(--muted)]">{t("settings.languageHint")}</p>
         <LanguagePicker initial={locale === "hi" ? "hi" : "en"} />
 
         <div className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3.5 py-3">
           <div className="mb-2 text-[12px] font-semibold text-[var(--muted)]">
-            Example
+            {t("settings.example")}
           </div>
           <div className="flex flex-wrap gap-x-7 gap-y-2.5">
             <div>
-              <div className="text-xs text-[var(--muted)]">Consumer number</div>
+              <div className="text-xs text-[var(--muted)]">{t("settings.consumerNumber")}</div>
               <div className="ref mt-0.5 text-sm font-medium">2317015620</div>
             </div>
             <div>
-              <div className="text-xs text-[var(--muted)]">Portal ID</div>
+              <div className="text-xs text-[var(--muted)]">{t("settings.portalId")}</div>
               <div className="ref mt-0.5 text-sm font-medium">NP-MPMK26-14534479</div>
             </div>
             <div>
@@ -93,7 +93,7 @@ export default async function SettingsPage() {
       </section>
 
       <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-        <h2 className="mb-3 text-base font-bold">Security</h2>
+        <h2 className="mb-3 text-base font-bold">{t("settings.security")}</h2>
         <PasswordForm />
       </section>
     </main>

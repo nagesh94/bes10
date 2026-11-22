@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { DocumentRowActions } from "@/components/documents/document-row-actions";
 import { db } from "@/lib/db";
@@ -43,7 +44,12 @@ function when(d: Date): string {
 
 export default async function ProjectDocumentsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t, tl, te] = await Promise.all([
+    getActor(),
+    getTranslations("documents.page"),
+    getTranslations("labels"),
+    getTranslations("enums"),
+  ]);
   if (!actor || !can(actor, "document.read")) notFound();
 
   const [row] = await db
@@ -83,7 +89,7 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
 
   const docGroups = DOC_CATEGORY_ORDER.map((key) => ({
     key,
-    label: DOC_CATEGORIES[key].label,
+    label: tl.has(`docCategories.${key}`) ? tl(`docCategories.${key}`) : DOC_CATEGORIES[key].label,
     rows: docs.filter((d) => docCategory(d.docType) === key),
   }));
   const otherDocs = docs.filter((d) => docCategory(d.docType) === "other");
@@ -92,14 +98,8 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
     <StageShell
       projectId={project.id}
       stageNo={null}
-      title="Documents"
-      note={
-        <>
-          Everything filed against this project, by category — {docs.length} document
-          {docs.length === 1 ? "" : "s"} and {photoRows.length} photo
-          {photoRows.length === 1 ? "" : "s"}.
-        </>
-      }
+      title={t("title")}
+      note={t("projectNote", { docs: docs.length, photos: photoRows.length })}
     >
 
       <div className="space-y-6">
@@ -112,7 +112,11 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
               </h2>
               <div className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
                 {group.rows.map((d, i) => {
-                  const label = isDocType(d.docType) ? DOC_TYPES[d.docType].label : d.docType;
+                  const label = tl.has(`docTypes.${d.docType}`)
+                    ? tl(`docTypes.${d.docType}`)
+                    : isDocType(d.docType)
+                      ? DOC_TYPES[d.docType].label
+                      : d.docType;
                   return (
                     <div
                       key={d.id}
@@ -123,7 +127,7 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
                       <span className="min-w-52 flex-[2_1_240px]">
                         <span className="block text-[14px] font-semibold">{label}</span>
                         <span className="ref mt-0.5 block text-[11.5px] text-[var(--muted)]">
-                          {d.fileName ?? "no file name"}
+                          {d.fileName ?? t("noFileName")}
                           {d.sizeBytes ? ` · ${size(d.sizeBytes)}` : ""}
                           {d.pageCount ? ` · ${d.pageCount}pp` : ""}
                         </span>
@@ -132,7 +136,7 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
                         <span className="block text-[11.5px] text-[var(--muted)]">{when(d.uploadedAt)}</span>
                         {d.portalUploadedAt ? (
                           <span className="mt-0.5 block text-[10.5px] font-bold text-[var(--green-text)]">
-                            on the portal
+                            {t("onPortal")}
                           </span>
                         ) : null}
                       </span>
@@ -154,7 +158,7 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
         {otherDocs.length > 0 ? (
           <section>
             <h2 className="mb-2 flex items-baseline gap-2 text-[15px] font-bold tracking-[-0.01em]">
-              Other
+              {t("other")}
               <span className="ref text-[12px] font-semibold text-[var(--muted)]">{otherDocs.length}</span>
             </h2>
             <div className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
@@ -180,8 +184,8 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
         ) : null}
 
         {([
-          { key: "pre", label: "Pre-installation photos", rows: photoGroups.pre },
-          { key: "post", label: "Post-installation photos", rows: photoGroups.post },
+          { key: "pre", label: t("prePhotos"), rows: photoGroups.pre },
+          { key: "post", label: t("postPhotos"), rows: photoGroups.post },
         ] as const).map((group) =>
           group.rows.length === 0 ? null : (
             <section key={group.key}>
@@ -203,12 +207,12 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
                           <img src={url} alt="" className="h-full w-full object-cover" />
                         ) : (
                           <span className="flex h-full items-center justify-center text-[11px] text-[var(--muted)]">
-                            No preview
+                            {t("noPreview")}
                           </span>
                         )}
                       </span>
                       <figcaption className="px-2 py-1.5 text-[10.5px] font-semibold text-[var(--muted)]">
-                        {p.photoType.replaceAll("_", " ")}
+                        {tl.has(`photos.${p.photoType}.label`) ? tl(`photos.${p.photoType}.label`) : p.photoType.replaceAll("_", " ")}
                       </figcaption>
                     </figure>
                   );
@@ -220,8 +224,8 @@ export default async function ProjectDocumentsPage({ params }: { params: Promise
 
         {docs.length === 0 && photoRows.length === 0 ? (
           <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 py-12 text-center">
-            <p className="mb-1 text-[15px] font-semibold">Nothing here yet</p>
-            <p className="text-[13.5px] text-[var(--muted)]">Nothing uploaded or generated.</p>
+            <p className="mb-1 text-[15px] font-semibold">{t("nothingYet")}</p>
+            <p className="text-[13.5px] text-[var(--muted)]">{t("nothingUploaded")}</p>
           </div>
         ) : null}
       </div>

@@ -1,0 +1,159 @@
+{
+  "stageTitles": {
+    "onboarding": "ऑनबोर्डिंग और दस्तावेज़",
+    "agreement": "अनुबंध",
+    "installation": "स्थापना",
+    "evidence": "साइट साक्ष्य",
+    "dcr": "डीसीआर प्रमाणपत्र",
+    "meter": "मीटर भुगतान",
+    "documents": "दस्तावेज़ और पोर्टल अपलोड",
+    "commissioning": "कमीशनिंग",
+    "settlement": "सब्सिडी और निपटान"
+  },
+  "stageBlurbs": {
+    "onboarding": "सेक्शन, फ़्लैग, फिर भुगतान योजना।",
+    "agreement": "यहाँ बनाएँ, कागज़ पर हस्ताक्षर, फिर स्कैन अपलोड।",
+    "installation": "छत पर क्या लगा, हर सीरियल के साथ।",
+    "evidence": "जियोटैग फ़ोटो और इस्तेमाल हुई सामग्री।",
+    "dcr": "डीसीआर पोर्टल पर बनाएँ, फिर यहाँ दर्ज करें।",
+    "meter": "डिस्कॉम पोर्टल पर भुगतान, रसीद यहाँ रखें।",
+    "documents": "पूरा सेट बनाएँ, फिर हर एक को अपलोड चिह्नित करें।",
+    "commissioning": "डिस्कॉम निरीक्षण और कमीशनिंग प्रमाणपत्र।",
+    "settlement": "सब्सिडी मिली, बकाया वसूला, परियोजना बंद।"
+  },
+  "gates": {
+    "prospectForm": "प्रॉस्पेक्ट फ़ॉर्म पूरा",
+    "flagsResolved": "फ़्लैग हल या माफ़",
+    "paymentPlanSaved": "भुगतान योजना सहेजी गई",
+    "quotation": "कोटेशन अपलोड हुआ",
+    "customerSignature": "ग्राहक के हस्ताक्षर उपलब्ध",
+    "agreementGenerated": "अनुबंध बनाया गया",
+    "agreementSigned": "हस्ताक्षरित स्कैन अपलोड हुआ",
+    "digitalApprovalLetter": "डिजिटल अनुमोदन पत्र अपलोड हुआ",
+    "installationRecord": "स्थापना रिकॉर्ड पूरा",
+    "panelSerials": "हर पैनल का सीरियल दर्ज",
+    "dcrSerialsMatched": "पैनल सीरियल DCR प्रमाणपत्र से मेल खाते हैं",
+    "structureMembers": "स्ट्रक्चर के पुर्ज़े दर्ज",
+    "batteryBank": "बैटरी बैंक दर्ज",
+    "photos": "ज़रूरी फ़ोटो लिए गए",
+    "material": "सामग्री खपत दर्ज",
+    "earthResistance": "अर्थ रेज़िस्टेंस 2 Ω से कम",
+    "certificate": "प्रमाणपत्र अपलोड हुआ",
+    "number": "नंबर दर्ज",
+    "notApplicable": "डीसीआर परियोजना नहीं — कुछ नहीं चाहिए",
+    "paymentRecorded": "मीटर भुगतान दर्ज",
+    "receipt": "रसीद अपलोड हुई",
+    "generated": "दस्तावेज़ बनाए गए",
+    "portalUploaded": "पोर्टल पर अपलोड चिह्नित",
+    "performanceCheck": "परफ़ॉर्मेंस जाँच की तारीख दर्ज",
+    "certificateGenerated": "कमीशनिंग प्रमाणपत्र बनाया गया",
+    "subsidyReceived": "सब्सिडी प्राप्त",
+    "balanceCleared": "बकाया राशि चुकता"
+  },
+  "flags": {
+    "NAME_MISMATCH": "नाम परिवर्तन",
+    "LOAD_ENHANCEMENT": "लोड वृद्धि",
+    "DCR_SERIAL_MISMATCH": "DCR सीरियल जाँच"
+  },
+  "roleChip": {
+    "ADMIN": "एडमिन",
+    "EMPLOYEE": "एग्ज़ीक्यूटिव",
+    "INSTALLER": "इंस्टॉलर",
+    "PARTNER": "पार्टनर"
+  },
+  "stageN": "चरण {no}",
+  "stageNTitle": "चरण {no} · {title}",
+  "inProgress": "प्रगति में",
+  "project": "परियोजना",
+  "photos": {
+    "CUSTOMER_WITH_PANEL": {
+      "label": "पैनलों के साथ ग्राहक",
+      "hint": "लगे हुए मॉड्यूल के सामने खड़े उपभोक्ता"
+    },
+    "CUSTOMER_WITH_INVERTER": {
+      "label": "इन्वर्टर के साथ ग्राहक",
+      "hint": "लगे हुए इन्वर्टर के पास उपभोक्ता"
+    },
+    "INVERTER_SERIAL": {
+      "label": "इन्वर्टर सीरियल नंबर",
+      "hint": "रेटिंग प्लेट, इतनी पास से कि सीरियल पढ़ा जा सके"
+    },
+    "EARTHING_AC": {
+      "label": "AC अर्थिंग",
+      "hint": "AC साइड का अर्थिंग कनेक्शन"
+    },
+    "EARTHING_DC": {
+      "label": "DC अर्थिंग",
+      "hint": "DC साइड का अर्थिंग कनेक्शन"
+    },
+    "EARTHING_PIT": {
+      "label": "अर्थिंग पिट",
+      "hint": "ढक्कन हटाकर पिट"
+    },
+    "SITE_OVERVIEW": {
+      "label": "पूरा एरे",
+      "hint": "दूर से पूरा एरे, छत और स्ट्रक्चर दिखे"
+    }
+  },
+  "docTypes": {
+    "AADHAAR": "आधार कार्ड",
+    "PAN": "पैन कार्ड",
+    "ELECTRICITY_BILL": "बिजली बिल",
+    "CANCELLED_CHEQUE": "रद्द चेक",
+    "BANK_STATEMENT": "बैंक स्टेटमेंट",
+    "PASSBOOK": "पासबुक फ़ोटो",
+    "COAPP_AADHAAR": "सह-आवेदक का आधार कार्ड",
+    "COAPP_PAN": "सह-आवेदक का पैन कार्ड",
+    "COAPP_PASSBOOK": "सह-आवेदक की बैंक पासबुक",
+    "COAPP_PHOTO": "सह-आवेदक की फ़ोटो",
+    "PASSPORT_PHOTO": "पासपोर्ट फ़ोटो",
+    "QUOTATION": "कोटेशन",
+    "NOC": "एनओसी प्रमाणपत्र",
+    "KHASRA": "खसरा नकल",
+    "APPLICANT_PHOTO": "आवेदक की फ़ोटो",
+    "ACKNOWLEDGEMENT": "पावती",
+    "FEASIBILITY_REPORT": "व्यवहार्यता रिपोर्ट",
+    "SITE_FEASIBILITY": "साइट व्यवहार्यता रिपोर्ट",
+    "E_TOKEN": "ई-टोकन",
+    "DIGITAL_APPROVAL_LETTER": "डिजिटल अनुमोदन पत्र",
+    "DCR_CERTIFICATE": "डीसीआर प्रमाणपत्र",
+    "METER_RECEIPT": "मीटर भुगतान रसीद",
+    "AGREEMENT": "वेंडर अनुबंध",
+    "WORK_COMPLETION": "कार्य पूर्णता रिपोर्ट",
+    "JOINT_INSPECTION": "संयुक्त निरीक्षण रिपोर्ट",
+    "ALMM_DECLARATION": "ALMM घोषणा",
+    "DCR_UNDERTAKING": "डीसीआर अंडरटेकिंग (एनेक्सचर-I)",
+    "COMMISSIONING_CERT": "कमीशनिंग प्रमाणपत्र (एनेक्सचर-II)",
+    "SUBMISSION_PACK": "सबमिशन पैक (संयुक्त PDF)",
+    "COMMISSIONING_CERT_SIGNED": "कमीशनिंग प्रमाणपत्र — हस्ताक्षरित स्कैन",
+    "AGREEMENT_SIGNED": "वेंडर अनुबंध — हस्ताक्षरित स्कैन",
+    "CUSTOMER_SIGNATURE": "ग्राहक के हस्ताक्षर"
+  },
+  "docGroups": {
+    "aadhaar": "आधार",
+    "pan": "पैन",
+    "bank": "बैंक",
+    "electricity": "बिजली बिल",
+    "coApplicant": "सह-आवेदक",
+    "photos": "फ़ोटो",
+    "property": "कोटेशन और संपत्ति",
+    "portal": "पोर्टल",
+    "generated": "बनाए गए",
+    "signed": "हस्ताक्षरित स्कैन"
+  },
+  "docCategories": {
+    "GENERAL": "सामान्य दस्तावेज़",
+    "BANK": "बैंक",
+    "LEGAL": "कानूनी",
+    "DISCOM": "डिस्कॉम"
+  },
+  "portalHints": {
+    "WORK_COMPLETION": "यहाँ बना, छापा, इंस्टॉलर और आवेदक के हस्ताक्षर, स्कैन किया",
+    "JOINT_INSPECTION": "यहाँ बना; निरीक्षण पर डिस्कॉम अपना कॉलम साइन करता है",
+    "ALMM_DECLARATION": "लेटरहेड पर बना, प्रोप्राइटर के हस्ताक्षर",
+    "DCR_UNDERTAKING": "यहाँ बना, प्रोप्राइटर के हस्ताक्षर",
+    "DCR_CERTIFICATE": "चरण 5 में NISE पोर्टल पर बना",
+    "AGREEMENT_SIGNED": "चरण 2 की हाथ से हस्ताक्षरित प्रति",
+    "METER_RECEIPT": "चरण 6 में डिस्कॉम पोर्टल पर भुगतान"
+  }
+}

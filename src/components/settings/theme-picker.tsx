@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { setTheme } from "@/app/actions/preferences";
 
 type Theme = "system" | "light" | "dark";
@@ -17,6 +18,7 @@ const THEME_KEY = "bhim_theme";
  * freeze the choice at page load instead of following the OS live.
  */
 export function ThemePicker({ initial }: { initial: Theme }) {
+  const t = useTranslations("common.theme");
   const [value, setValue] = useState<Theme>(initial);
   const [, startTransition] = useTransition();
 
@@ -40,9 +42,9 @@ export function ThemePicker({ initial }: { initial: Theme }) {
   }
 
   const options: Array<{ key: Theme; label: string; left: string; right: string }> = [
-    { key: "system", label: "System", left: "#FFFFFF", right: "#07121F" },
-    { key: "light", label: "Light", left: "#FFFFFF", right: "#FFFFFF" },
-    { key: "dark", label: "Dark", left: "#07121F", right: "#07121F" },
+    { key: "system", label: t("system"), left: "#FFFFFF", right: "#07121F" },
+    { key: "light", label: t("light"), left: "#FFFFFF", right: "#FFFFFF" },
+    { key: "dark", label: t("dark"), left: "#07121F", right: "#07121F" },
   ];
 
   return (

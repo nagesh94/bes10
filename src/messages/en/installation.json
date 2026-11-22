@@ -1,0 +1,177 @@
+{
+  "form": {
+    "blocks": {
+      "panels": {
+        "title": "Panels",
+        "note": "Modules actually mounted on the roof."
+      },
+      "inverter": {
+        "title": "Inverter",
+        "note": "Serial and model as printed on the unit — manufacturer and brand name are the same thing, so there is one field for it."
+      },
+      "boxes": {
+        "title": "ACDB and DCDB",
+        "note": "Distribution boxes on either side of the inverter."
+      }
+    },
+    "fields": {
+      "panelCompany": "Panel company",
+      "panelModelNo": "Panel model number",
+      "panelWattPeak": "Watt peak each",
+      "totalPanels": "Total panels",
+      "totalCapacityKw": "Total capacity (kW)",
+      "inverterManufacturer": "Manufacturer",
+      "inverterModelNo": "Model number",
+      "inverterSerial": "Serial number",
+      "inverterCapacityKw": "AC capacity (kW)",
+      "inverterCount": "Number of inverters",
+      "acdbMake": "ACDB make",
+      "acdbSizeType": "ACDB size & type",
+      "acdbSpd": "AC surge protection",
+      "acdbMcb": "MCB / isolator",
+      "dcdbMake": "DCDB make",
+      "dcdbSizeType": "DCDB size & type",
+      "dcdbSpd": "DC surge protection",
+      "dcdbMcb": "MCB / isolator"
+    },
+    "installationDate": "Installation date",
+    "phase": "Phase",
+    "single": "Single phase",
+    "three": "Three phase",
+    "hybrid": "Hybrid system?",
+    "yes": "Yes",
+    "no": "No",
+    "batteryBelow": "Battery details are asked for below.",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "save": "Save installation"
+  },
+  "structure": {
+    "title": "Structure",
+    "totals": "{pieces} pieces · {length} ft",
+    "intro": "Size and length for each member.",
+    "company": "Structure company",
+    "legs": "Number of legs",
+    "groups": {
+      "COLUMN": {
+        "label": "Column",
+        "add": "Add a column"
+      },
+      "RAFTER": {
+        "label": "Rafter",
+        "add": "Add a rafter"
+      },
+      "PURLIN": {
+        "label": "Purlin",
+        "add": "Add a purlin"
+      }
+    },
+    "groupTotals": "{pieces, plural, one {# piece} other {# pieces}} · {length} ft",
+    "size": "Size",
+    "length": "Length (ft)",
+    "qty": "Qty",
+    "noRuns": "No {label} runs yet.",
+    "sizeAria": "{label} {n} size",
+    "lengthAria": "{label} {n} length in feet",
+    "qtyAria": "{label} {n} quantity",
+    "removeAria": "Remove {label} {n}",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "save": "Save structure"
+  },
+  "common": {
+    "saving": "Saving…",
+    "saved": "Saved",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "serials": {
+    "removeTitle": "Remove panel {n}?",
+    "removeBody": "Serial <ref>{serial}</ref> will be taken off this list. Save the list afterwards to make it stick.",
+    "remove": "Remove",
+    "title": "Panel serial numbers",
+    "ofExpected": "{filled} of {expected}",
+    "pasteHint": "Paste a column to split across rows.",
+    "serialAria": "Panel {n} serial",
+    "removeAria": "Remove panel {n}",
+    "duplicate": "The same serial appears more than once.",
+    "add": "+ Add a panel",
+    "save": "Save serials"
+  },
+  "battery": {
+    "fields": {
+      "manufacturer": "Manufacturer",
+      "batteryType": "Battery type",
+      "cellCapacity": "Capacity of each cell",
+      "seriesCount": "Cells in series",
+      "parallelCount": "Strings in parallel",
+      "totalVoltage": "Total voltage",
+      "totalCapacity": "Total capacity"
+    },
+    "title": "Battery bank",
+    "shownBecause": "Shown because the system is hybrid",
+    "cellSerials": "Cell serial numbers",
+    "save": "Save battery bank"
+  },
+  "material": {
+    "categories": {
+      "AC": "AC wire",
+      "DC": "DC wire",
+      "LA": "Lightning arrester",
+      "EARTHING": "Earthing wire"
+    },
+    "core": {
+      "single core": "single core",
+      "multi core": "multi core"
+    },
+    "conductor": {
+      "copper": "copper",
+      "aluminium": "aluminium"
+    },
+    "title": "Material used",
+    "intro": "Actual runs, not the estimate.",
+    "categoryAria": "Run {n} category",
+    "removeAria": "Remove run {n}",
+    "make": "Make",
+    "length": "Length (m)",
+    "size": "Size (sqmm)",
+    "coreLabel": "Core",
+    "conductorLabel": "Conductor",
+    "add": "+ Add {what}",
+    "pipesUsed": "Pipes used",
+    "onSurvey": "{count} on the survey",
+    "save": "Save material"
+  },
+  "earthing": {
+    "toggles": {
+      "twoSeparatePoints": "Two separate earthing points",
+      "cautionSignage": "Caution signage fitted",
+      "omManualProvided": "O&M manual given to the customer"
+    },
+    "title": "Earthing",
+    "intro": "Measured on site. The DISCOM limit is under 2 ohms.",
+    "resistance": "Measured resistance",
+    "passes": "Under 2 Ω — passes",
+    "fails": "2 Ω or over — the DISCOM will not pass this",
+    "wireSize": "Earth wire size (sqmm)",
+    "wireType": "Wire type",
+    "save": "Save earthing"
+  },
+  "refs": {
+    "serialsTitle": "Panel serial numbers",
+    "onePerLine": "One per line.",
+    "copied": "Copied",
+    "copyAll": "Copy all",
+    "certTitle": "Certificate details",
+    "copyFromCert": "Copy from the certificate.",
+    "dcrNumber": "DCR certificate number",
+    "issuedOn": "Issued on",
+    "saveCert": "Save certificate details",
+    "paymentRef": "Payment reference",
+    "amountPaid": "Amount paid (₹)",
+    "paymentTitle": "Payment details",
+    "fromReceipt": "From the portal receipt.",
+    "paidOn": "Paid on",
+    "savePayment": "Save payment details"
+  }
+}

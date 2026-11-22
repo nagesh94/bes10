@@ -46,6 +46,7 @@ export const GATE_LABELS: Record<string, string> = {
   // Stage 3
   installationRecord: "Installation record complete",
   panelSerials: "Every panel serial captured",
+  dcrSerialsMatched: "Panel serials match a DCR certificate",
   structureMembers: "Structure members recorded",
   batteryBank: "Battery bank recorded",
   // Stage 4
@@ -82,6 +83,7 @@ export function gateLabel(id: string): string {
 export const FLAG_LABELS: Record<string, string> = {
   NAME_MISMATCH: "Name change",
   LOAD_ENHANCEMENT: "Load enhancement",
+  DCR_SERIAL_MISMATCH: "DCR serial check",
 };
 
 export function flagLabel(type: string): string {

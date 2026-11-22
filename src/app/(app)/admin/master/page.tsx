@@ -27,6 +27,8 @@ import {
   structureCompanies,
 } from "@/lib/db/schema";
 import { LENDER_KINDS, LENDER_KIND_LABEL, type LenderKind } from "@/lib/finance/lender-kinds";
+import { SupplierManager } from "@/components/dcr/supplier-manager";
+import { loadSupplierRows } from "@/lib/dcr/suppliers";
 
 function kwLabel(raw: string): string {
   const n = Number(raw);
@@ -44,6 +46,7 @@ export default async function MasterPage({
   searchParams: Promise<{ cat?: string }>;
 }) {
   const cat = masterCategory((await searchParams).cat);
+  const supplierRows = await loadSupplierRows();
 
   const [
     companies,
@@ -113,6 +116,7 @@ export default async function MasterPage({
     "panel-companies": companies.length,
     "panel-types": types.length,
     "panel-models": models.length,
+    suppliers: supplierRows.length,
     inverters: inverters.length,
     structures: structures.length,
     "cable-makes": cableMakeRows.length,
@@ -167,7 +171,7 @@ export default async function MasterPage({
         <section className="min-w-80 flex-[1_1_420px] overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
           <div className="flex flex-wrap items-center gap-3 border-b border-[var(--line)] px-5 py-4">
             <h2 className="m-0 flex-1 text-base font-bold">{current.label}</h2>
-            {cat === "rate-card" ? null : (
+            {cat === "rate-card" || cat === "suppliers" ? null : (
               <AddMaster
                 key={cat}
                 category={cat}
@@ -177,6 +181,11 @@ export default async function MasterPage({
               />
             )}
           </div>
+          {cat === "suppliers" ? (
+            <div className="p-5">
+              <SupplierManager rows={supplierRows} canAdd canEdit />
+            </div>
+          ) : null}
           {cat === "rate-card" ? (
             <div>
               <p className="border-b border-[var(--line-soft)] bg-[var(--surface-2)] px-5 py-3 text-[12.5px] text-[var(--muted)]">
@@ -341,7 +350,7 @@ function Catalog({
   }
 
   // Drawn above the catalog, where its rows can be edited in place.
-  if (cat === "rate-card") return null;
+  if (cat === "rate-card" || cat === "suppliers") return null;
 
   if (cat === "expense-categories") {
     const flag = (on: boolean, text: string) =>

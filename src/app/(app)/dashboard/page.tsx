@@ -29,7 +29,10 @@ import { getActor } from "@/lib/session";
  * Every query here is an aggregate. Nothing identifying is read.
  */
 
-export const metadata: Metadata = { title: "Dashboard" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("nav");
+  return { title: t("dashboard") };
+}
 
 /** Madhya Pradesh sits at roughly 4.2 kWh per kWp per day over the year. */
 const YIELD_KWH_PER_KWP_DAY = 4.2;
@@ -52,7 +55,7 @@ const titleCase = (value: string) =>
   value.replace(/\b[a-z]/g, (c) => c.toUpperCase());
 
 export default async function DashboardPage() {
-  const [actor, t] = await Promise.all([getActor(), getTranslations()]);
+  const [actor, t, d] = await Promise.all([getActor(), getTranslations(), getTranslations("dashboard")]);
   if (!actor) return null;
 
   // A channel partner sees their own referrals and nothing else; an
@@ -120,11 +123,13 @@ export default async function DashboardPage() {
     else if (hit) dcrModules += num(r.totalPanels);
   }
 
-  const byMake = group(rows, (r) => r.panelCompany, (r) => num(r.totalPanels), (r) =>
+  const notRecorded = d("notRecorded");
+  const byMake = group(notRecorded, rows, (r) => r.panelCompany, (r) => num(r.totalPanels), (r) =>
     num(r.totalCapacityKw) || (num(r.totalPanels) * num(r.panelWattPeak)) / 1000,
   );
 
   const byRating = group(
+    notRecorded,
     rows.filter((r) => num(r.panelWattPeak) > 0),
     (r) => String(num(r.panelWattPeak)),
     (r) => num(r.totalPanels),
@@ -135,7 +140,7 @@ export default async function DashboardPage() {
   const units = (r: (typeof rows)[number]) => Math.max(num(r.inverterCount), r.inverterManufacturer ? 1 : 0);
   const inverterUnits = rows.reduce((sum, r) => sum + units(r), 0);
   const acKw = rows.reduce((sum, r) => sum + num(r.inverterCapacityKw) * Math.max(num(r.inverterCount), 1), 0);
-  const byInverter = group(rows, (r) => r.inverterManufacturer, units, (r) =>
+  const byInverter = group(notRecorded, rows, (r) => r.inverterManufacturer, units, (r) =>
     num(r.inverterCapacityKw) * Math.max(num(r.inverterCount), 1),
   );
 
@@ -152,11 +157,11 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-[27px] font-extrabold">{t("nav.dashboard")}</h1>
         <p className="mt-0.5 text-[13.5px] text-[var(--muted)]">
-          Panels and inverters across every commissioned array.
+          {d("subtitle")}
         </p>
       </div>
       <p className="text-[13px] text-[var(--muted-soft)]">
-        {rows.length === 1 ? "1 array" : `${n(rows.length)} arrays`} on record
+        {d("arraysOnRecord", { count: rows.length })}
       </p>
     </div>
   );
@@ -167,13 +172,13 @@ export default async function DashboardPage() {
         {heading}
         <Panel raised>
           <div className="px-6 py-16 text-center">
-            <p className="text-[17px] font-bold">No hardware recorded yet</p>
-            <p className="mx-auto mt-2 text-[14px] text-[var(--muted)]">Filled from stage 3.</p>
+            <p className="text-[17px] font-bold">{d("emptyTitle")}</p>
+            <p className="mx-auto mt-2 text-[14px] text-[var(--muted)]">{d("emptyHint")}</p>
             <Link
               href="/projects"
               className="mt-6 inline-flex h-11 items-center rounded-[var(--radius-control)] bg-[var(--orange)] px-5 text-[14px] font-bold text-[var(--orange-ink)] no-underline"
             >
-              Open projects
+              {d("openProjects")}
             </Link>
           </div>
         </Panel>
@@ -194,7 +199,7 @@ export default async function DashboardPage() {
               tone="gold"
               value={n(dcKw, 2)}
               unit="kWp"
-              label={`${n(modules)} modules installed, direct current rating`}
+              label={d("modulesInstalledDc", { count: n(modules) })}
             />
 
             <div className="mt-7">
@@ -228,19 +233,19 @@ export default async function DashboardPage() {
               boxed: four cards here would turn the page into a card grid. */}
           <dl className="grid grid-cols-2 gap-x-6 gap-y-6 self-start border-[var(--line-soft)] lg:grid-cols-1 lg:gap-y-5 lg:border-l lg:pl-8">
             <div>
-              <Figure value={n(acKw, 2)} unit="kW" label="Inverter capacity, alternating current" />
+              <Figure value={n(acKw, 2)} unit="kW" label={d("inverterCapacity")} />
             </div>
             <div>
-              <Figure value={ratio > 0 ? ratio.toFixed(2) : "—"} label="DC to AC ratio" />
+              <Figure value={ratio > 0 ? ratio.toFixed(2) : "—"} label={d("dcAcRatio")} />
             </div>
             <div>
-              <Figure value={n(dailyKwh)} unit="kWh" label="Estimated generation per day" />
+              <Figure value={n(dailyKwh)} unit="kWh" label={d("genPerDay")} />
             </div>
             <div>
               <Figure
                 value={n(annualMwh * GRID_CO2_T_PER_MWH)}
                 unit="t"
-                label="Estimated CO₂ avoided per year"
+                label={d("co2PerYear")}
               />
             </div>
           </dl>
@@ -248,31 +253,31 @@ export default async function DashboardPage() {
       </Panel>
 
       <div className="mb-4 grid gap-4 md:grid-cols-2">
-        <Panel title="Modules" note={`${byMake.length} ${byMake.length === 1 ? "make" : "makes"} in service`}>
-          <Line label="Average rating" value={`${n(avgWp)} Wp`} />
-          <Line label="Highest rating fitted" value={`${n(peakWp)} Wp`} />
+        <Panel title={d("modules")} note={d("makesInService", { count: byMake.length })}>
+          <Line label={d("avgRating")} value={`${n(avgWp)} Wp`} />
+          <Line label={d("highestRating")} value={`${n(peakWp)} Wp`} />
           <Line
-            label="Serial numbers recorded"
-            value={`${n(serialsRecorded)} of ${n(modules)}`}
+            label={d("serialsRecorded")}
+            value={d("xOfY", { x: n(serialsRecorded), y: n(modules) })}
             hint={modules > 0 ? `${Math.round((serialsRecorded / modules) * 100)}%` : undefined}
           />
           <Line
-            label="DCR modules, subsidy eligible"
-            value={`${n(dcrModules)} of ${n(modules)}`}
-            hint={unmatchedModules > 0 ? `${n(unmatchedModules)} unmatched` : undefined}
+            label={d("dcrModules")}
+            value={d("xOfY", { x: n(dcrModules), y: n(modules) })}
+            hint={unmatchedModules > 0 ? d("unmatched", { count: n(unmatchedModules) }) : undefined}
           />
         </Panel>
 
-        <Panel title="Inverters" note={`${n(inverterUnits)} ${inverterUnits === 1 ? "unit" : "units"}`}>
-          <Line label="Single phase" value={n(singlePhase)} />
-          <Line label="Three phase" value={n(threePhase)} />
-          <Line label="Hybrid systems" value={n(hybrid)} />
-          <Line label="Battery banks commissioned" value={n(batteryBanksCount)} />
+        <Panel title={d("inverters")} note={d("units", { count: inverterUnits })}>
+          <Line label={d("singlePhase")} value={n(singlePhase)} />
+          <Line label={d("threePhase")} value={n(threePhase)} />
+          <Line label={d("hybrid")} value={n(hybrid)} />
+          <Line label={d("batteryBanks")} value={n(batteryBanksCount)} />
         </Panel>
       </div>
 
       <div className="mb-4 grid gap-4 md:grid-cols-2">
-        <Panel title="Modules by rating" note="Watt peak per module">
+        <Panel title={d("byRating")} note={d("byRatingNote")}>
           <ul>
             {byRating.map((g, i) => (
               <BarRow
@@ -287,7 +292,7 @@ export default async function DashboardPage() {
           </ul>
         </Panel>
 
-        <Panel title="Inverters by manufacturer" note="Units and rated output">
+        <Panel title={d("byManufacturer")} note={d("byManufacturerNote")}>
           <ul>
             {byInverter.map((g, i) => (
               <BarRow
@@ -303,14 +308,14 @@ export default async function DashboardPage() {
         </Panel>
       </div>
 
-      <Panel title="Catalogue" note="What a quotation can be built from today">
+      <Panel title={d("catalogue")} note={d("catalogueNote")}>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           {[
-            { label: "Panel models", value: catalogue?.panelModels ?? 0 },
-            { label: "Panel makes", value: catalogue?.panelMakes ?? 0 },
-            { label: "Panel types", value: catalogue?.panelTypes ?? 0 },
-            { label: "Inverter models", value: catalogue?.inverterModels ?? 0 },
-            { label: "Inverter makes", value: catalogue?.inverterMakes ?? 0 },
+            { label: d("panelModels"), value: catalogue?.panelModels ?? 0 },
+            { label: d("panelMakes"), value: catalogue?.panelMakes ?? 0 },
+            { label: d("panelTypes"), value: catalogue?.panelTypes ?? 0 },
+            { label: d("inverterModels"), value: catalogue?.inverterModels ?? 0 },
+            { label: d("inverterMakes"), value: catalogue?.inverterMakes ?? 0 },
           ].map((c) => (
             <div
               key={c.label}
@@ -328,6 +333,7 @@ export default async function DashboardPage() {
 
 /** Sums `value` and `weight` per key, biggest first, with blanks last. */
 function group<T>(
+  notRecorded: string,
   rows: T[],
   label: (row: T) => string | null,
   value: (row: T) => number,
@@ -341,7 +347,7 @@ function group<T>(
     const key = keyOf(label(row)) || "—";
     const entry = out.get(key) ?? {
       key,
-      label: raw ? titleCase(raw) : "Not recorded",
+      label: raw ? titleCase(raw) : notRecorded,
       value: 0,
       weight: 0,
     };

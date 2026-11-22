@@ -1,8 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { lookupPanelSerials } from "@/app/actions/dcr";
 import { saveBatteryBank, savePanelSerials } from "@/app/actions/installation";
+import { normaliseSerial } from "@/lib/dcr/fields";
+import type { SerialCheck } from "@/lib/dcr/matching";
 import { useConfirm } from "@/components/shell/confirm";
 
 const cell =
@@ -20,17 +24,52 @@ export function PanelSerials({
   projectId,
   initial,
   expected,
+  checkDcr = false,
+  wattPeak = null,
 }: {
   projectId: string;
   initial: string[];
   expected: number;
+  /** A DCR project: look every serial up against the stored certificates. */
+  checkDcr?: boolean;
+  /** The module rating recorded on stage 3, to catch a serial from another model. */
+  wattPeak?: number | null;
 }) {
+  const t = useTranslations("installation");
   const router = useRouter();
   const ask = useConfirm();
   const [serials, setSerials] = useState<string[]>(initial.length ? initial : [""]);
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checks, setChecks] = useState<Map<string, SerialCheck>>(new Map());
+
+  // Looked up as the list changes, half a second after the last keystroke, so
+  // a serial shows whether it is on a certificate before anything is saved.
+  const key = serials.map((s) => normaliseSerial(s)).filter(Boolean).join("|");
+  useEffect(() => {
+    if (!checkDcr || !key) {
+      setChecks(new Map());
+      return;
+    }
+    let live = true;
+    const timer = setTimeout(async () => {
+      try {
+        const result = await lookupPanelSerials(projectId, key.split("|"));
+        if (live) setChecks(new Map(result.map((c) => [normaliseSerial(c.serialNo), c])));
+      } catch {
+        // A failed lookup leaves the badges off; saving still works and re-checks.
+      }
+    }, 500);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [checkDcr, key, projectId]);
+
+  const checked = serials.map((s) => (s.trim() ? checks.get(normaliseSerial(s)) : undefined));
+  const unmatched = checked.filter((c) => c && c.status !== "matched").length;
+  const matched = checked.filter((c) => c?.status === "matched").length;
 
   const filled = serials.filter((s) => s.trim()).length;
   const duplicates = new Set(
@@ -62,14 +101,12 @@ export function PanelSerials({
     const serial = (serials[i] ?? "").trim();
     if (serial) {
       const answer = await ask({
-        title: `Remove panel ${i + 1}?`,
-        body: (
-          <>
-            Serial <span className="ref font-semibold text-[var(--ink)]">{serial}</span> will be
-            taken off this list. Save the list afterwards to make it stick.
-          </>
-        ),
-        confirmLabel: "Remove",
+        title: t("serials.removeTitle", { n: i + 1 }),
+        body: t.rich("serials.removeBody", {
+          serial,
+          ref: (chunks) => <span className="ref font-semibold text-[var(--ink)]">{chunks}</span>,
+        }),
+        confirmLabel: t("serials.remove"),
       });
       if (!answer.confirmed) return;
     }
@@ -90,7 +127,7 @@ export function PanelSerials({
   return (
     <div>
       <div className="mb-1 flex flex-wrap items-baseline gap-2">
-        <h3 className="flex-1 text-base font-bold">Panel serial numbers</h3>
+        <h3 className="flex-1 text-base font-bold">{t("serials.title")}</h3>
         <span
           className={`ref text-[12.5px] font-semibold ${
             expected > 0 && filled >= expected
@@ -98,21 +135,23 @@ export function PanelSerials({
               : "text-[var(--amber-text)]"
           }`}
         >
-          {filled}{expected > 0 ? ` of ${expected}` : ""}
+          {expected > 0 ? t("serials.ofExpected", { filled, expected }) : filled}
         </span>
       </div>
-      <p className="mb-3.5 text-[13px] text-[var(--muted)]">Paste a column to split across rows.</p>
+      <p className="mb-3.5 text-[13px] text-[var(--muted)]">{t("serials.pasteHint")}</p>
 
       <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {serials.map((s, i) => {
           const dup = s.trim() !== "" && duplicates.has(s);
+          const check = checked[i];
           return (
-            <div key={i} className="flex items-center gap-2">
-              <span className="ref w-6 shrink-0 text-right text-[11.5px] text-[var(--muted)]">
+            <div key={i} className="flex items-start gap-2">
+              <span className="ref mt-3.5 w-6 shrink-0 text-right text-[11.5px] text-[var(--muted)]">
                 {i + 1}
               </span>
+              <div className="min-w-0 flex-1">
               <input
-                aria-label={`Panel ${i + 1} serial`}
+                aria-label={t("serials.serialAria", { n: i + 1 })}
                 value={s}
                 onChange={(e) => {
                   const v = e.target.value;
@@ -123,11 +162,21 @@ export function PanelSerials({
                   if (handlePaste(i, e.clipboardData.getData("text"))) e.preventDefault();
                 }}
                 placeholder="WS07269074296330"
-                className={`${cell} ref ${dup ? "border-[var(--red-text)]" : ""}`}
+                className={`${cell} ref ${
+                  dup || check?.status === "missing"
+                    ? "border-[var(--red-text)]"
+                    : check?.status === "elsewhere"
+                      ? "border-[var(--amber-text)]"
+                      : check?.status === "matched"
+                        ? "border-[var(--green-text)]"
+                        : ""
+                }`}
               />
+              {check ? <SerialBadge check={check} wattPeak={wattPeak} /> : null}
+              </div>
               <button
                 type="button"
-                aria-label={`Remove panel ${i + 1}`}
+                aria-label={t("serials.removeAria", { n: i + 1 })}
                 onClick={() => void removeAt(i)}
                 className="h-10 w-10 shrink-0 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] text-[var(--red-text)]"
               >
@@ -140,7 +189,22 @@ export function PanelSerials({
 
       {duplicates.size > 0 ? (
         <p className="mb-3 text-[12.5px] font-medium text-[var(--red-text)]">
-The same serial appears more than once.
+{t("serials.duplicate")}
+        </p>
+      ) : null}
+      {checkDcr && matched + unmatched > 0 ? (
+        <p
+          className={`mb-3 rounded-lg px-3 py-2 text-[12.5px] ${
+            unmatched > 0
+              ? "bg-[var(--amber-surface)] text-[var(--amber-body)]"
+              : "bg-[var(--green-soft)] text-[var(--green-text)]"
+          }`}
+        >
+          {matched} of {matched + unmatched} serial{matched + unmatched === 1 ? "" : "s"} found on a stored DCR
+          certificate.
+          {unmatched > 0
+            ? " You can still save — the project will be flagged for a DCR check until every serial matches."
+            : ""}
         </p>
       ) : null}
       {error ? (
@@ -156,7 +220,7 @@ The same serial appears more than once.
           }}
           className="h-11 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy-text)]"
         >
-          + Add a panel
+          {t("serials.add")}
         </button>
         <button
           type="button"
@@ -164,10 +228,39 @@ The same serial appears more than once.
           onClick={save}
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
-          {pending ? "Saving…" : saved ? "Saved" : "Save serials"}
+          {pending ? t("common.saving") : saved ? t("common.saved") : t("serials.save")}
         </button>
       </div>
     </div>
+  );
+}
+
+/** What the DCR lookup found for one serial. */
+function SerialBadge({ check, wattPeak }: { check: SerialCheck; wattPeak: number | null }) {
+  if (check.status === "missing") {
+    return (
+      <span className="mt-1 block text-[11.5px] font-semibold text-[var(--red-text)]">
+        ✗ Not on any stored DCR certificate
+      </span>
+    );
+  }
+  if (check.status === "elsewhere") {
+    return (
+      <span className="mt-1 block text-[11.5px] font-semibold text-[var(--amber-text)]">
+        ⚠ Also recorded on {check.otherProjects.map((p) => p.label).join(", ")}
+      </span>
+    );
+  }
+  const wrongWp = wattPeak && check.wattPeak && check.wattPeak !== wattPeak;
+  return (
+    <span
+      className={`mt-1 block text-[11.5px] font-semibold ${
+        wrongWp ? "text-[var(--amber-text)]" : "text-[var(--green-text)]"
+      }`}
+    >
+      ✓ DCR <span className="ref">{check.certificateNo}</span>
+      {wrongWp ? ` · ${check.wattPeak} Wp, but this job records ${wattPeak} Wp` : ""}
+    </span>
   );
 }
 
@@ -188,6 +281,7 @@ export function BatteryBank({
     serials: string[];
   };
 }) {
+  const t = useTranslations("installation");
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -199,21 +293,21 @@ export function BatteryBank({
   };
 
   const fields: Array<[keyof typeof initial, string, string?]> = [
-    ["manufacturer", "Manufacturer", "Luminous"],
-    ["batteryType", "Battery type", "Lithium LFP"],
-    ["cellCapacity", "Capacity of each cell", "100 Ah"],
-    ["seriesCount", "Cells in series", "4"],
-    ["parallelCount", "Strings in parallel", "1"],
-    ["totalVoltage", "Total voltage", "51.2 V"],
-    ["totalCapacity", "Total capacity", "5.12 kWh"],
+    ["manufacturer", t("battery.fields.manufacturer"), "Luminous"],
+    ["batteryType", t("battery.fields.batteryType"), "Lithium LFP"],
+    ["cellCapacity", t("battery.fields.cellCapacity"), "100 Ah"],
+    ["seriesCount", t("battery.fields.seriesCount"), "4"],
+    ["parallelCount", t("battery.fields.parallelCount"), "1"],
+    ["totalVoltage", t("battery.fields.totalVoltage"), "51.2 V"],
+    ["totalCapacity", t("battery.fields.totalCapacity"), "5.12 kWh"],
   ];
 
   return (
     <div className="overflow-hidden rounded-[var(--radius)] border-[1.5px] border-[var(--orange)]">
       <div className="flex flex-wrap items-center gap-2.5 border-b border-[var(--orange-border)] bg-[var(--amber-surface)] px-5 py-3.5">
-        <h3 className="flex-1 text-base font-bold">Battery bank</h3>
+        <h3 className="flex-1 text-base font-bold">{t("battery.title")}</h3>
         <span className="text-[11.5px] font-bold text-[var(--orange-text)]">
-          Shown because the system is hybrid
+          {t("battery.shownBecause")}
         </span>
       </div>
 
@@ -233,7 +327,7 @@ export function BatteryBank({
           ))}
         </div>
 
-        <label className={labelCls} htmlFor="bb-serials">Cell serial numbers</label>
+        <label className={labelCls} htmlFor="bb-serials">{t("battery.cellSerials")}</label>
         <textarea
           id="bb-serials"
           rows={3}
@@ -255,7 +349,7 @@ export function BatteryBank({
           }}
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
-          {pending ? "Saving…" : saved ? "Saved" : "Save battery bank"}
+          {pending ? t("common.saving") : saved ? t("common.saved") : t("battery.save")}
         </button>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { agreements, documents, photos, projects, quotations } from "@/lib/db/schema";
+import { agreements, dcrCertificates, documents, photos, projects, quotations } from "@/lib/db/schema";
 import { installerIdsFor } from "@/lib/projects/crew";
 import { can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
@@ -127,8 +127,26 @@ async function resolveAgreement(id: string): Promise<Resolved> {
   return { ok: true, key: row.s3Key, fileName: row.fileName ?? nameFromKey(row.s3Key) };
 }
 
+async function resolveDcr(id: string): Promise<Resolved> {
+  const actor = await getActor();
+  if (!can(actor, "document.read")) return NOT_ALLOWED;
+  const n = Number(id);
+  if (!Number.isInteger(n)) return NOT_FOUND;
+
+  const [row] = await db
+    .select({ s3Key: dcrCertificates.s3Key, fileName: dcrCertificates.fileName })
+    .from(dcrCertificates)
+    .where(eq(dcrCertificates.id, n))
+    .limit(1);
+
+  if (!row?.s3Key) return NOT_FOUND;
+  return { ok: true, key: row.s3Key, fileName: row.fileName ?? nameFromKey(row.s3Key) };
+}
+
 function resolve(kind: FileKind, id: string, variant: FileVariant): Promise<Resolved> {
   switch (kind) {
+    case "dcr":
+      return resolveDcr(id);
     case "document":
       return resolveDocument(id, variant);
     case "photo":

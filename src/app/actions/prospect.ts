@@ -380,6 +380,9 @@ export async function recomputeFlags(projectId: string): Promise<number> {
   // A flag whose cause has gone resolves itself — a corrected bill name should
   // not leave a stale warning sitting on the project.
   for (const row of existing) {
+    // Only the types this engine derives. The DCR flag belongs to stage 3's
+    // serial check and must not be resolved by a prospect-form save.
+    if (row.type !== "NAME_MISMATCH" && row.type !== "LOAD_ENHANCEMENT") continue;
     const stillDerived = derived.some((d) => d.type === row.type);
     if (!stillDerived && row.status === "OPEN") {
       await db

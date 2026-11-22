@@ -51,6 +51,8 @@ export interface ProjectSnapshot {
   // Stage 3
   installationRecorded: boolean;
   panelSerialsCaptured: number;
+  /** A serial is not on any stored DCR certificate, or is on another project too. */
+  dcrSerialFlagOpen: boolean;
   panelCount: number;
   structureMemberCount: number;
   isHybrid: boolean;
@@ -163,6 +165,10 @@ export const STAGES: StageDefinition[] = [
         ),
         ok("structureMembers", p.structureMemberCount > 0, `${p.structureMemberCount} members`),
       ];
+      // Only a DCR project claims domestic modules, so only it is checked.
+      if (p.isDcr && p.panelSerialsCaptured > 0) {
+        items.push(ok("dcrSerialsMatched", !p.dcrSerialFlagOpen));
+      }
       if (p.isHybrid) {
         items.push(ok("batteryBank", p.batteryBankRecorded));
       }

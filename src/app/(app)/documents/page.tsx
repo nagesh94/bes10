@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { desc, eq, isNull } from "drizzle-orm";
 import { DocumentRowActions } from "@/components/documents/document-row-actions";
 import { db } from "@/lib/db";
@@ -56,7 +57,16 @@ export default async function DocumentsPage({
 }: {
   searchParams: Promise<{ category?: string; q?: string }>;
 }) {
-  const actor = await getActor();
+  const [actor, t, tl, te] = await Promise.all([
+    getActor(),
+    getTranslations("documents.page"),
+    getTranslations("labels"),
+    getTranslations("enums"),
+  ]);
+  const docLabel = (type: string) =>
+    tl.has(`docTypes.${type}`) ? tl(`docTypes.${type}`) : isDocType(type) ? DOC_TYPES[type].label : type;
+  const filterLabel = (key: string, fallback: string) =>
+    key === "all" ? t("everything") : tl.has(`docGroups.${key}`) ? tl(`docGroups.${key}`) : fallback;
   if (!actor || !can(actor, "document.read")) notFound();
 
   const { category: requested = "all", q = "" } = await searchParams;
@@ -86,7 +96,7 @@ export default async function DocumentsPage({
   const needle = q.trim().toLowerCase();
   const matched = visible.filter((r) => {
     if (!needle) return true;
-    const label = isDocType(r.doc.docType) ? DOC_TYPES[r.doc.docType].label : r.doc.docType;
+    const label = docLabel(r.doc.docType);
     const consumer = `${r.contact.firstName} ${r.contact.lastName ?? ""}`;
     return [r.project.code, consumer, label, r.doc.fileName ?? ""]
       .join(" ")
@@ -103,7 +113,7 @@ export default async function DocumentsPage({
   const groups = [
     ...DOC_GROUPS.map((group) => ({
       key: group.key,
-      label: group.label,
+      label: filterLabel(group.key, group.label),
       rows: matched
         .filter((r) => docGroup(r.doc.docType) === group.key)
         .sort(
@@ -114,7 +124,7 @@ export default async function DocumentsPage({
     })),
     {
       key: "other" as const,
-      label: "Other",
+      label: t("other"),
       rows: matched
         .filter((r) => docGroup(r.doc.docType) === "other")
         .sort((a, b) => b.doc.uploadedAt.getTime() - a.doc.uploadedAt.getTime()),
@@ -135,9 +145,9 @@ export default async function DocumentsPage({
     <main className="mx-auto max-w-[1280px] px-6 pt-5 pb-14">
       <div className="mb-5 flex flex-wrap items-end gap-3">
         <div className="min-w-60 flex-1">
-          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Documents</h1>
+          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">{t("title")}</h1>
           <p className="text-sm text-[var(--muted)]">
-            {visible.length} in all
+            {t("inAll", { count: visible.length })}
           </p>
         </div>
       </div>
@@ -149,22 +159,22 @@ export default async function DocumentsPage({
         <input
           name="q"
           defaultValue={q}
-          placeholder="Search by consumer, project code, document or file name"
-          aria-label="Search documents"
+          placeholder={t("searchPlaceholder")}
+          aria-label={t("searchAria")}
           className="h-11 min-w-60 flex-1 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[14px] text-[var(--ink)] outline-none focus:border-[var(--orange)]"
         />
         <button
           type="submit"
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)]"
         >
-          Search
+          {t("search")}
         </button>
         {q ? (
           <Link
             href={href({ q: "" })}
             className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13.5px] font-bold text-[var(--navy-text)] no-underline"
           >
-            Clear
+            {t("clear")}
           </Link>
         ) : null}
       </form>
@@ -185,7 +195,7 @@ export default async function DocumentsPage({
                   : "border border-[var(--line)] bg-[var(--surface)] font-semibold text-[var(--muted)]"
               }`}
             >
-              {c.label}
+              {filterLabel(c.key, c.label)}
               <span className={`ref text-[11px] ${active ? "opacity-75" : "text-[var(--muted-soft)]"}`}>
                 {n}
               </span>
@@ -196,13 +206,13 @@ export default async function DocumentsPage({
 
       {groups.length === 0 ? (
         <div className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 py-12 text-center">
-          <p className="mb-1 text-[15px] font-semibold">Nothing here</p>
+          <p className="mb-1 text-[15px] font-semibold">{t("nothingHere")}</p>
           <p className="text-[13.5px] text-[var(--muted)]">
             {needle
-              ? `No document matches "${q}".`
+              ? t("noMatch", { q })
               : visible.length === 0
-                ? "Nothing uploaded yet."
-                : "Nothing in this category yet."}
+                ? t("noneUploaded")
+                : t("noneInCategory")}
           </p>
         </div>
       ) : (
@@ -215,9 +225,7 @@ export default async function DocumentsPage({
               </h2>
               <div className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
                 {group.rows.map((r, i) => {
-                  const label = isDocType(r.doc.docType)
-                    ? DOC_TYPES[r.doc.docType].label
-                    : r.doc.docType;
+                  const label = docLabel(r.doc.docType);
                   const consumer = `${r.contact.firstName} ${r.contact.lastName ?? ""}`.trim();
                   return (
                     <div
@@ -229,7 +237,7 @@ export default async function DocumentsPage({
                       <span className="min-w-52 flex-[2_1_240px]">
                         <span className="block text-[14px] font-semibold">{label}</span>
                         <span className="ref mt-0.5 block text-[11.5px] text-[var(--muted)]">
-                          {r.doc.fileName ?? "no file name"}
+                          {r.doc.fileName ?? t("noFileName")}
                           {r.doc.sizeBytes ? ` · ${size(r.doc.sizeBytes)}` : ""}
                           {r.doc.pageCount ? ` · ${r.doc.pageCount}pp` : ""}
                         </span>
@@ -250,7 +258,7 @@ export default async function DocumentsPage({
                           CLASS_TONE[r.doc.docClass] ?? CLASS_TONE.EXTERNAL
                         }`}
                       >
-                        {r.doc.docClass}
+                        {te.has(`docClass.${r.doc.docClass}`) ? te(`docClass.${r.doc.docClass}`) : r.doc.docClass}
                       </span>
 
                       <span className="min-w-32 shrink-0 text-right">
@@ -259,7 +267,7 @@ export default async function DocumentsPage({
                         </span>
                         {r.doc.portalUploadedAt ? (
                           <span className="mt-0.5 block text-[10.5px] font-bold text-[var(--green-text)]">
-                            on the portal
+                            {t("onPortal")}
                           </span>
                         ) : null}
                       </span>
@@ -282,7 +290,7 @@ export default async function DocumentsPage({
 
       {visible.length >= 500 ? (
         <p className="mt-4 text-center text-[12.5px] text-[var(--muted)]">
-          Showing the 500 most recent.
+          {t("showing500")}
         </p>
       ) : null}
     </main>

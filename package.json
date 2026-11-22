@@ -2,7 +2,7 @@
   "name": "bhim-crm",
   "version": "0.1.0",
   "private": true,
-  "description": "BHIM Energy Solutions \u2014 residential rooftop solar CRM for PM Surya Ghar",
+  "description": "BHIM Energy Solutions — residential rooftop solar CRM for PM Surya Ghar",
   "scripts": {
     "dev": "node scripts/with-swc-cache.mjs next dev",
     "build": "node scripts/with-swc-cache.mjs next build",
@@ -44,6 +44,7 @@
     "sharp": "^0.35.5",
     "tailwind-merge": "^3.3.1",
     "tsx": "^4.20.5",
+    "unpdf": "^1.3.2",
     "zod": "^3.25.76"
   },
   "devDependencies": {

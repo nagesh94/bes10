@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   generateAll,
   generateDocument,
@@ -69,6 +70,7 @@ export function GeneratePack({
    */
   missingFields?: string[];
 }) {
+  const t = useTranslations("documents.gen");
   const router = useRouter();
   const ask = useConfirm();
   const [busy, setBusy] = useState<string | null>(null);
@@ -103,7 +105,7 @@ export function GeneratePack({
     setErrors(next);
     setNotice(
       result.generated.length
-        ? `${result.generated.length} document${result.generated.length === 1 ? "" : "s"} generated.`
+        ? t("nGenerated", { count: result.generated.length })
         : null,
     );
     router.refresh();
@@ -124,9 +126,9 @@ export function GeneratePack({
   async function remove(d: GeneratedDoc) {
     if (!d.documentId) return;
     const answer = await ask({
-      title: `Delete “${d.label}”?`,
-      body: "The file is removed from storage. It can be generated again from the project's current data.",
-      confirmLabel: "Delete it",
+      title: t("deleteTitle", { label: d.label }),
+      body: t("deleteBody"),
+      confirmLabel: t("deleteIt"),
       reason: {},
     });
     if (!answer.confirmed) return;
@@ -148,8 +150,8 @@ export function GeneratePack({
     <div>
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">
-          <h2 className="mb-0.5 text-base font-bold">Generated documents</h2>
-          <p className="text-[13px] text-[var(--muted)]">Print-ready PDF</p>
+          <h2 className="mb-0.5 text-base font-bold">{t("title")}</h2>
+          <p className="text-[13px] text-[var(--muted)]">{t("printReady")}</p>
         </div>
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -158,7 +160,7 @@ export function GeneratePack({
               : "bg-[var(--amber-soft)] text-[var(--amber-text)]"
           }`}
         >
-          {ready} of {docs.length}
+          {t("xOfY", { x: ready, y: docs.length })}
         </span>
       </div>
 
@@ -168,9 +170,16 @@ export function GeneratePack({
           className="mb-4 rounded-[9px] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-4 py-3.5 text-[13px] leading-relaxed text-[var(--amber-body)]"
         >
           <strong className="block font-bold text-[var(--amber-text)]">
-            Nothing here can be generated yet
+            {t("locked")}
           </strong>
-          Still missing: {missingFields.join(", ")}.
+          {t("stillMissing", {
+            fields: missingFields
+              .map((f) => {
+                const k = `missing.${f.replace(/\s+/g, "_")}`;
+                return t.has(k) ? t(k) : f;
+              })
+              .join(", "),
+          })}
         </div>
       ) : null}
 
@@ -219,7 +228,7 @@ export function GeneratePack({
                   onClick={() => void download(d.documentId!)}
                   className={secondary}
                 >
-                  Download
+                  {t("download")}
                 </button>
               ) : null}
               <button
@@ -229,10 +238,10 @@ export function GeneratePack({
                 className={secondary}
               >
                 {busy === d.docType
-                  ? "Generating…"
+                  ? t("generating")
                   : d.documentId
-                    ? "Regenerate"
-                    : "Generate"}
+                    ? t("regenerate")
+                    : t("generate")}
               </button>
               {d.documentId && canDelete ? (
                 <button
@@ -241,7 +250,7 @@ export function GeneratePack({
                   onClick={() => void remove(d)}
                   className="h-10 cursor-pointer rounded-lg border border-[var(--red-border)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--red-text)] disabled:opacity-60"
                 >
-                  Delete
+                  {t("delete")}
                 </button>
               ) : null}
             </span>
@@ -252,10 +261,10 @@ export function GeneratePack({
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" disabled={busy !== null || locked} onClick={() => void all()} className={primary}>
           {busy === "ALL"
-            ? "Generating…"
+            ? t("generating")
             : docs.length === 1
-              ? "Generate it"
-              : "Generate the whole set"}
+              ? t("generateIt")
+              : t("generateAll")}
         </button>
         {notice ? (
           <span className="text-[13px] font-semibold text-[var(--green-text)]">{notice}</span>
@@ -290,6 +299,7 @@ export function PortalChecklist({
   rows: PortalRow[];
   portalUrl: string;
 }) {
+  const t = useTranslations("documents.gen");
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -310,8 +320,8 @@ export function PortalChecklist({
     <div>
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">
-          <h2 className="mb-0.5 text-base font-bold">Uploaded to PM Surya Ghar</h2>
-          <p className="text-[13px] text-[var(--muted)]">Tick each one off manually.</p>
+          <h2 className="mb-0.5 text-base font-bold">{t("portalTitle")}</h2>
+          <p className="text-[13px] text-[var(--muted)]">{t("tickManually")}</p>
         </div>
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -320,7 +330,7 @@ export function PortalChecklist({
               : "bg-[var(--amber-soft)] text-[var(--amber-text)]"
           }`}
         >
-          {done} of {rows.length}
+          {t("xOfY", { x: done, y: rows.length })}
         </span>
       </div>
 
@@ -331,9 +341,9 @@ export function PortalChecklist({
         className="mb-4 flex items-center gap-3 rounded-[9px] bg-[var(--navy)] px-4 py-3.5 text-[var(--navy-ink)] no-underline"
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-bold">Open the national portal</span>
+          <span className="block text-sm font-bold">{t("openPortal")}</span>
           <span className="ref mt-0.5 block text-[11.5px] opacity-75">
-            pmsuryaghar.gov.in · opens in a new tab
+            {t("opensNewTab")}
           </span>
         </span>
         <span aria-hidden className="shrink-0 text-base">
@@ -365,12 +375,12 @@ export function PortalChecklist({
                 {row.label}
               </span>
               <span className="mt-0.5 block text-[11.5px] text-[var(--muted)]">
-                {row.documentId ? row.hint : "Not on file yet — nothing to upload"}
+                {row.documentId ? row.hint : t("notOnFile")}
               </span>
             </span>
             {busy === row.docType ? (
               <span className="shrink-0 text-[11.5px] font-semibold text-[var(--muted)]">
-                Saving&#8230;
+                {t("saving")}
               </span>
             ) : null}
           </label>
@@ -403,6 +413,7 @@ export function ProcurementForm({
     cellGstInvoiceNo: string;
   };
 }) {
+  const t = useTranslations("documents.gen");
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -411,16 +422,16 @@ export function ProcurementForm({
   const today = new Date().toISOString().slice(0, 10);
 
   const fields: Array<[keyof typeof initial, string, string, "text" | "date"]> = [
-    ["purchaseOrderNo", "Purchase order number", "22", "text"],
-    ["purchaseOrderDate", "Purchase order date", "", "date"],
-    ["cellManufacturer", "Cell manufacturer", "Waaree Energies Limited", "text"],
-    ["cellGstInvoiceNo", "Cell GST invoice number", "WEL/26/44821", "text"],
+    ["purchaseOrderNo", t("procFields.purchaseOrderNo"), "22", "text"],
+    ["purchaseOrderDate", t("procFields.purchaseOrderDate"), "", "date"],
+    ["cellManufacturer", t("procFields.cellManufacturer"), "Waaree Energies Limited", "text"],
+    ["cellGstInvoiceNo", t("procFields.cellGstInvoiceNo"), "WEL/26/44821", "text"],
   ];
 
   return (
     <div>
-      <h2 className="mb-0.5 text-base font-bold">Module procurement</h2>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">All four are needed for the DCR undertaking.</p>
+      <h2 className="mb-0.5 text-base font-bold">{t("procTitle")}</h2>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">{t("procIntro")}</p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         {fields.map(([key, label, placeholder, type]) => (
@@ -458,7 +469,7 @@ export function ProcurementForm({
         }}
         className={primary}
       >
-        {pending ? "Saving…" : saved ? "Saved" : "Save procurement details"}
+        {pending ? t("saving") : saved ? t("saved") : t("procSave")}
       </button>
     </div>
   );
@@ -482,6 +493,7 @@ export function InspectionDates({
     performanceCheckDate: string;
   };
 }) {
+  const t = useTranslations("documents.gen");
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -490,15 +502,15 @@ export function InspectionDates({
   const today = new Date().toISOString().slice(0, 10);
 
   const fields: Array<[keyof typeof initial, string, string]> = [
-    ["performanceCheckDate", "Date of performance check", "Asked for — the others may stay blank"],
-    ["commissioningDate", "Date of commissioning", "After the net meter is fitted — this one may be booked ahead"],
-    ["jointInspectionDate", "Date of joint inspection", "When the DISCOM attends"],
+    ["performanceCheckDate", t("dateFields.performanceCheckDate.label"), t("dateFields.performanceCheckDate.hint")],
+    ["commissioningDate", t("dateFields.commissioningDate.label"), t("dateFields.commissioningDate.hint")],
+    ["jointInspectionDate", t("dateFields.jointInspectionDate.label"), t("dateFields.jointInspectionDate.hint")],
   ];
 
   return (
     <div>
-      <h2 className="mb-0.5 text-base font-bold">Inspection dates</h2>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">Empty ones print as a blank line.</p>
+      <h2 className="mb-0.5 text-base font-bold">{t("datesTitle")}</h2>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">{t("datesIntro")}</p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         {fields.map(([key, label, hint]) => (
@@ -536,7 +548,7 @@ export function InspectionDates({
         }}
         className={primary}
       >
-        {pending ? "Saving…" : saved ? "Saved" : "Save dates"}
+        {pending ? t("saving") : saved ? t("saved") : t("datesSave")}
       </button>
     </div>
   );

@@ -1,0 +1,30 @@
+{
+  "intro": "Your account, how the app looks, and what it says.",
+  "seesMoney": "Sees money",
+  "yes": "Yes",
+  "no": "No",
+  "appearanceHint": "System follows your device.",
+  "languageHint": "Labels only — numbers stay as they are.",
+  "example": "Example",
+  "consumerNumber": "Consumer number",
+  "portalId": "Portal ID",
+  "security": "Security",
+  "default": "Default",
+  "hindi": "Hindi",
+  "password": {
+    "tooShort": "A new password needs at least 10 characters.",
+    "mismatch": "The two new passwords do not match.",
+    "wrongCurrent": "That current password is not right.",
+    "label": "Password",
+    "changedNow": "Changed just now — other sessions were signed out.",
+    "hint": "At least 10 characters.",
+    "change": "Change",
+    "changeTitle": "Change password",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm",
+    "saving": "Saving…",
+    "update": "Update password",
+    "cancel": "Cancel"
+  }
+}

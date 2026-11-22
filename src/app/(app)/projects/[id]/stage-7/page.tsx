@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, eq, isNull } from "drizzle-orm";
 import {
   GeneratePack,
@@ -28,18 +29,10 @@ import { getActor } from "@/lib/session";
 const day = (v: Date | null | undefined) => (v ? v.toISOString().slice(0, 10) : "");
 const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
 
-const NOTES: Record<string, string> = {
-  WORK_COMPLETION: "Gets the system inspected and commissioned",
-  JOINT_INSPECTION: "Signed by the DISCOM, us and the consumer",
-  ALMM_DECLARATION: "On company letterhead, with every module serial",
-  DCR_UNDERTAKING: "Needs the procurement details below",
-  COMMISSIONING_CERT: "Needs the date of commissioning below",
-  SUBMISSION_PACK: "Meter receipt, ALMM, DCR undertaking, work completion, joint inspection and the commissioning certificate, merged into one PDF — needs the meter payment receipt uploaded at stage 6",
-};
 
 export default async function Stage7Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t, tl] = await Promise.all([getActor(), getTranslations("stage"), getTranslations("labels")]);
   if (!actor || !can(actor, "document.generate")) notFound();
   const canDeleteDocs = can(actor, "document.delete");
 
@@ -75,8 +68,8 @@ export default async function Stage7Page({ params }: { params: Promise<{ id: str
     const doc = latestOf(docType);
     return {
       docType,
-      label: DOC_TYPES[docType].label,
-      note: NOTES[docType] ?? "",
+      label: tl.has(`docTypes.${docType}`) ? tl(`docTypes.${docType}`) : DOC_TYPES[docType].label,
+      note: t.has(`s7.notes.${docType}`) ? t(`s7.notes.${docType}`) : "",
       documentId: doc?.id ?? null,
       fileName: doc?.fileName ?? null,
       generatedAt: doc?.generatedAt ?? null,
@@ -95,8 +88,8 @@ export default async function Stage7Page({ params }: { params: Promise<{ id: str
     const doc = latestOf(item.docType);
     return {
       docType: item.docType,
-      label: item.label,
-      hint: item.hint,
+      label: tl.has(`docTypes.${item.docType}`) ? tl(`docTypes.${item.docType}`) : item.label,
+      hint: tl.has(`portalHints.${item.docType}`) ? tl(`portalHints.${item.docType}`) : item.hint,
       documentId: doc?.id ?? null,
       uploaded: Boolean(doc?.portalUploadedAt),
     };
@@ -108,8 +101,7 @@ export default async function Stage7Page({ params }: { params: Promise<{ id: str
       stageNo={7}
       note={
         <>
-          Everything the DISCOM and the
-          national portal need, produced from what was recorded on the roof.
+          {t("s7.note")}
         </>
       }
     >
@@ -117,17 +109,17 @@ export default async function Stage7Page({ params }: { params: Promise<{ id: str
         <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
           <span className="min-w-60 flex-1">
             <strong className="block text-sm font-bold text-[var(--amber-text)]">
-              No installation record yet
+              {t("s7.noInstall")}
             </strong>
             <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
-              Stage 3 fills these documents.
+              {t("s7.noInstallBody")}
             </span>
           </span>
           <Link
             href={`/projects/${id}/stage-3`}
             className="inline-flex h-11 shrink-0 items-center rounded-lg border border-[var(--orange)] bg-[var(--surface)] px-4.5 text-[13.5px] font-bold text-[var(--orange-text)] no-underline"
           >
-            Go to stage 3
+            {t("s7.goStage3")}
           </Link>
         </div>
       ) : null}
@@ -176,7 +168,7 @@ export default async function Stage7Page({ params }: { params: Promise<{ id: str
         href={`/projects/${id}`}
         className="mt-5 inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
       >
-        Back to the stage gate
+        {t("s2.backToGate")}
       </Link>
     </StageShell>
   );

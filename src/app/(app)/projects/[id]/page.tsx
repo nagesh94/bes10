@@ -9,7 +9,7 @@ import { ProjectHeader } from "@/components/projects/project-header";
 import { StageGate } from "@/components/projects/stage-gate";
 import { StageStepper } from "@/components/projects/stage-stepper";
 import { ProjectQuotations } from "@/components/quotations/project-quotations";
-import { STAGE_BLURBS, STAGE_TITLES, gateLabel } from "@/lib/workflow/labels";
+import { getTranslations } from "next-intl/server";
 import { STAGE_KEYS, evaluateGate, stageByNo } from "@/lib/workflow/stages";
 import { buildSnapshot } from "@/lib/workflow/snapshot";
 import { availableInstallers, crewFor, installerIdsFor } from "@/lib/projects/crew";
@@ -29,7 +29,12 @@ import { getActor } from "@/lib/session";
  */
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t, tl, tn] = await Promise.all([
+    getActor(),
+    getTranslations("projects.c"),
+    getTranslations("labels"),
+    getTranslations("nav"),
+  ]);
   if (!actor) notFound();
 
   const [[row], data] = await Promise.all([
@@ -67,9 +72,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
   return (
     <main className="mx-auto w-full max-w-[1320px] px-4 pt-4 pb-16 sm:px-6">
-      <nav aria-label="Breadcrumb" className="mb-3 text-[12.5px] text-[var(--muted)]">
+      <nav aria-label={t("breadcrumb")} className="mb-3 text-[12.5px] text-[var(--muted)]">
         <Link href="/projects" className="no-underline">
-          Projects
+          {tn("projects")}
         </Link>
         <span className="mx-1.5 text-[var(--muted-soft)]">/</span>
         <span className="ref">{data.code}</span>
@@ -98,8 +103,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       {isLead ? (
         <div className="mt-3.5 flex flex-wrap items-start gap-3.5">
           <section className="min-w-80 flex-[999_1_480px] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-            <h2 className="mb-1 text-base font-bold">Still a lead</h2>
-            <p className="text-[13.5px] text-[var(--muted)]">Convert to open the pipeline.</p>
+            <h2 className="mb-1 text-base font-bold">{t("stillLead")}</h2>
+            <p className="text-[13.5px] text-[var(--muted)]">{t("convertToOpen")}</p>
           </section>
           <div className="min-w-72 flex-[1_1_320px]">
             <ConvertPanel projectId={id} />
@@ -110,10 +115,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
           <section className="mt-3.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-3 pt-3 pb-2 sm:px-5">
             <div className="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 px-1">
               <h2 className="flex-1 text-[12px] font-bold tracking-[0.06em] text-[var(--muted)] uppercase">
-                Pipeline
+                {t("pipeline")}
               </h2>
               <span className="ref text-[12px] text-[var(--muted)]">
-                {data.completed.size} of {STAGE_KEYS.length} complete
+                {t("nOfComplete", { done: data.completed.size, total: STAGE_KEYS.length })}
               </span>
             </div>
             <StageStepper
@@ -128,11 +133,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
               <StageGate
                 projectId={id}
                 stageNo={currentStage.no}
-                title={`Stage ${currentStage.no} · ${STAGE_TITLES[currentStage.key]}`}
-                blurb={STAGE_BLURBS[currentStage.key]}
+                title={tl("stageNTitle", { no: currentStage.no, title: tl(`stageTitles.${currentStage.key}`) })}
+                blurb={tl(`stageBlurbs.${currentStage.key}`)}
                 items={gate.items.map((i) => ({
                   id: i.id,
-                  label: gateLabel(i.id),
+                  label: tl.has(`gates.${i.id}`) ? tl(`gates.${i.id}`) : i.id,
                   passed: i.passed,
                   detail: i.detail,
                 }))}
@@ -142,29 +147,29 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
             <div className="min-w-72 flex-[1_1_300px] space-y-3.5">
               <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
-                <h2 className="mb-1 text-[15px] font-bold">Carry on with the work</h2>
-                <p className="mb-3.5 text-[13px] text-[var(--muted)]">On stage {currentStage.no}.</p>
+                <h2 className="mb-1 text-[15px] font-bold">{t("carryOn")}</h2>
+                <p className="mb-3.5 text-[13px] text-[var(--muted)]">{t("onStage", { no: currentStage.no })}</p>
                 <Link
                   href={`/projects/${id}/stage-${currentStage.no}`}
                   className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
                 >
-                  Open stage {currentStage.no}
+                  {t("openStage", { no: currentStage.no })}
                 </Link>
               </section>
 
               {data.openFlagCount > 0 ? (
                 <section className="rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4.5">
                   <h2 className="mb-1 text-[15px] font-bold text-[var(--amber-text)]">
-                    {data.openFlagCount} flag{data.openFlagCount > 1 ? "s" : ""} open
+                    {t("flagsOpen", { count: data.openFlagCount })}
                   </h2>
                   <p className="mb-3.5 text-[13px] leading-relaxed text-[var(--amber-body)]">
-                    Stage 1 cannot close until they are resolved or waived.
+                    {t("stage1Blocked")}
                   </p>
                   <Link
                     href={`/projects/${id}/flags`}
                     className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
                   >
-                    Resolve flags
+                    {t("resolveFlags")}
                   </Link>
                 </section>
               ) : null}

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { setProjectCrew } from "@/app/actions/assign";
 import type { CrewMember } from "@/lib/projects/crew";
 
@@ -24,6 +25,7 @@ export function CrewPanel({
   installers: CrewMember[];
   canAssign: boolean;
 }) {
+  const t = useTranslations("projects.c");
   const router = useRouter();
   const [selected, setSelected] = useState<string[]>(() => crew.map((c) => c.id));
   const [pending, setPending] = useState(false);
@@ -57,10 +59,10 @@ export function CrewPanel({
     return (
       <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
         <h2 className="mb-3 text-[15px] font-bold">
-          Installers
+          {t("installers")}
         </h2>
         {crew.length === 0 ? (
-          <p className="text-[13.5px] text-[var(--muted)]">Nobody assigned yet.</p>
+          <p className="text-[13.5px] text-[var(--muted)]">{t("nobodyAssigned")}</p>
         ) : (
           <ul className="list-none space-y-1.5 p-0">
             {crew.map((c) => (
@@ -78,17 +80,17 @@ export function CrewPanel({
     <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
       <div className="mb-1 flex flex-wrap items-baseline gap-2">
         <h2 className="flex-1 text-[15px] font-bold">
-          Installers
+          {t("installers")}
         </h2>
         <span className="ref text-[12px] text-[var(--muted)]">
-          {selected.length} on the crew
+          {t("onCrew", { count: selected.length })}
         </span>
       </div>
-      <p className="mb-3.5 text-[12.5px] text-[var(--muted)]">Tick anyone on this job.</p>
+      <p className="mb-3.5 text-[12.5px] text-[var(--muted)]">{t("tickAnyone")}</p>
 
       {installers.length === 0 ? (
         <p className="text-[13.5px] text-[var(--muted)]">
-No installer accounts yet.
+{t("noInstallers")}
         </p>
       ) : (
         <ul className="list-none space-y-1.5 p-0">
@@ -134,7 +136,7 @@ No installer accounts yet.
       ) : null}
       {saved && !error ? (
         <p className="mt-3 text-[12.5px] font-semibold text-[var(--green-text)]">
-          Crew saved.
+          {t("crewSaved")}
         </p>
       ) : null}
 
@@ -153,7 +155,7 @@ No installer accounts yet.
               : "cursor-default border border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)]"
           }`}
         >
-          {pending ? "Saving…" : dirty ? "Save the crew" : "Crew is up to date"}
+          {pending ? t("saving") : dirty ? t("saveCrew") : t("crewUpToDate")}
         </button>
       ) : null}
     </section>

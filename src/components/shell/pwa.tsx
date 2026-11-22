@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface InstallEvent extends Event {
   prompt: () => Promise<void>;
@@ -17,6 +18,7 @@ const DISMISSED = "bhim_install_dismissed";
  * build assets it would cache change on every keystroke.
  */
 export function Pwa() {
+  const t = useTranslations("shell");
   const [installer, setInstaller] = useState<InstallEvent | null>(null);
 
   useEffect(() => {
@@ -64,9 +66,9 @@ export function Pwa() {
         <img src="/icons/icon-192.png" alt="" width={38} height={38} className="rounded-[7px]" />
         <div className="min-w-0 flex-1">
           <p className="text-[13.5px] font-semibold text-[var(--chrome-ink)]">
-            Add BHIM CRM to your home screen
+            {t("installTitle")}
           </p>
-          <p className="text-[12.5px] text-[var(--chrome-muted)]">Opens full screen, works offline</p>
+          <p className="text-[12.5px] text-[var(--chrome-muted)]">{t("installSub")}</p>
         </div>
         <button
           type="button"
@@ -76,12 +78,12 @@ export function Pwa() {
           }}
           className="h-10 shrink-0 cursor-pointer rounded-[var(--radius-control)] bg-[var(--orange)] px-3.5 text-[13.5px] font-bold text-[var(--orange-ink)]"
         >
-          Install
+          {t("install")}
         </button>
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Not now"
+          aria-label={t("notNow")}
           className="h-10 w-8 shrink-0 cursor-pointer text-[18px] leading-none text-[var(--chrome-muted)] hover:text-[var(--chrome-ink)]"
         >
           ×

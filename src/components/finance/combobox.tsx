@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronDown, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * A dropdown you can type into.
@@ -37,6 +38,7 @@ export function Combobox({
   emptyLabel?: string;
   invalid?: boolean;
 }) {
+  const t = useTranslations("finance.combo");
   const listId = useId();
   const selected = options.find((o) => o.value === value) ?? null;
   const [open, setOpen] = useState(false);
@@ -130,7 +132,7 @@ export function Combobox({
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Show options"
+          aria-label={t("showOptions")}
           onClick={() => {
             setOpen((o) => !o);
             input.current?.focus();
@@ -148,7 +150,7 @@ export function Combobox({
           className="absolute inset-x-0 top-[calc(100%+4px)] z-20 max-h-64 overflow-y-auto rounded-lg border border-[var(--line)] bg-[var(--surface)] py-1 shadow-[var(--shadow-float)]"
         >
           {matches.length === 0 ? (
-            <li className="px-3 py-2.5 text-[13px] text-[var(--muted)]">Nothing matches “{query}”.</li>
+            <li className="px-3 py-2.5 text-[13px] text-[var(--muted)]">{t("nothing", { q: query })}</li>
           ) : (
             matches.map((o, i) => (
               <li

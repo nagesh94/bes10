@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { asc, eq } from "drizzle-orm";
 import { getPhotoThumbUrls } from "@/app/actions/photos";
 import { PhotoGrid } from "@/components/documents/photo-grid";
@@ -18,13 +19,13 @@ import { installerIdsFor } from "@/lib/projects/crew";
 import { can } from "@/lib/rbac/permissions";
 import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
-import { PHOTO_LABELS, REQUIRED_PHOTO_TYPES } from "@/lib/workflow/photo-requirements";
+import { REQUIRED_PHOTO_TYPES } from "@/lib/workflow/photo-requirements";
 
 const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
 
 export default async function Stage4Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t, tl] = await Promise.all([getActor(), getTranslations("stage"), getTranslations("labels")]);
   if (!actor) notFound();
 
   const [row] = await db
@@ -90,7 +91,7 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
     <StageShell
       projectId={id}
       stageNo={4}
-      note="Photos, material and earth resistance"
+      note={t("s4.note")}
       badge={
         <span
           className={`ref shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -99,15 +100,15 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
               : "bg-[var(--amber-soft)] text-[var(--amber-text)]"
           }`}
         >
-          {covered} of {REQUIRED_PHOTO_TYPES.length} shots
+          {t("s4.shots", { done: covered, total: REQUIRED_PHOTO_TYPES.length })}
         </span>
       }
     >
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-        <h2 className="mb-0.5 text-base font-bold">Required photographs</h2>
+        <h2 className="mb-0.5 text-base font-bold">{t("s4.requiredPhotos")}</h2>
         <p className="mb-4 text-[13px] text-[var(--muted)]">
-          {REQUIRED_PHOTO_TYPES.length} distinct shots, location on.
+          {t("s4.distinctShots", { count: REQUIRED_PHOTO_TYPES.length })}
         </p>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(290px,1fr))] gap-4">
@@ -123,8 +124,8 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
               <PhotoGrid
                 projectId={id}
                 photoType={type}
-                label={PHOTO_LABELS[type].label}
-                hint={PHOTO_LABELS[type].hint}
+                label={tl(`photos.${type}.label`)}
+                hint={tl(`photos.${type}.hint`)}
                 photos={photos}
               />
             </div>
@@ -169,7 +170,7 @@ export default async function Stage4Page({ params }: { params: Promise<{ id: str
         href={`/projects/${id}`}
         className="mt-5 inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
       >
-        Back to the stage gate
+        {t("s2.backToGate")}
       </Link>
     </StageShell>
   );

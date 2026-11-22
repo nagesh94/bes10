@@ -15,6 +15,7 @@ import {
   projects,
   structureMembers,
 } from "@/lib/db/schema";
+import { syncProjectDcr } from "@/lib/dcr/matching";
 import { installerIdsFor } from "@/lib/projects/crew";
 import { assertCan } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
@@ -179,6 +180,12 @@ export async function savePanelSerials(
       after: { count: clean.length },
     });
   });
+
+  // Matches the serials against stored DCR certificates: raises or clears
+  // the DCR flag and fills the DCR undertaking fields where still empty.
+  await syncProjectDcr(projectId);
+  revalidatePath(`/projects/${projectId}/flags`);
+  revalidatePath(`/projects/${projectId}/stage-7`);
 
   revalidatePath(`/projects/${projectId}/stage-3`);
   revalidatePath(`/projects/${projectId}`);

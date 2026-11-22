@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { quotations } from "@/lib/db/schema";
@@ -58,6 +59,7 @@ export async function QuotationStep({
   // Everything listed here is attached to this project, so deleting one is
   // the admin-only decision rather than the counter-mistake one.
   const canDelete = can(await getActor(), "quotation.delete.filed");
+  const [t, te] = await Promise.all([getTranslations("quotations.c"), getTranslations("enums")]);
 
   const chosen = rows.find((row) => row.isChosen) ?? null;
 
@@ -69,7 +71,7 @@ export async function QuotationStep({
             href={`/quotations/new?project=${projectId}`}
             className="inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
           >
-            {rows.length ? "Create another quotation" : "Create quotation"}
+            {rows.length ? t("createAnother") : t("create")}
           </Link>
         ) : null}
 
@@ -78,7 +80,7 @@ export async function QuotationStep({
             href="/quotations"
             className="inline-flex h-11 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--ink)] no-underline"
           >
-            All quotations
+            {t("all")}
           </Link>
         ) : null}
       </div>
@@ -105,13 +107,13 @@ export async function QuotationStep({
                 {quotation.quotationDate}
               </span>
               <span className="rounded-full bg-[var(--chip-soft)] px-2 py-0.5 text-[10.5px] font-bold text-[var(--chip-text)]">
-                {STATUS_LABEL[quotation.status] ?? quotation.status}
+                {te.has(`quotationStatus.${quotation.status}`) ? te(`quotationStatus.${quotation.status}`) : (STATUS_LABEL[quotation.status] ?? quotation.status)}
               </span>
               {canWrite ? (
                 <ChooseQuotation id={quotation.id} chosen={quotation.isChosen} attached />
               ) : quotation.isChosen ? (
                 <span className="rounded-full bg-[var(--green-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--green-text)]">
-                  Chosen
+                  {t("chosen")}
                 </span>
               ) : null}
               <QuotationRowActions
@@ -125,7 +127,7 @@ export async function QuotationStep({
       ) : null}
 
       <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">
-        Filled from this project.
+        {t("filledFromProject")}
       </p>
 
       {rows.length > 0 && !chosen ? (
@@ -133,7 +135,7 @@ export async function QuotationStep({
           role="alert"
           className="mt-2.5 rounded-lg border border-[var(--amber-border)] bg-[var(--amber-surface)] px-3.5 py-2.5 text-[12.5px] font-medium text-[var(--amber-text)]"
         >
-          None of these is chosen. Pick one.
+          {t("noneChosen")}
         </p>
       ) : null}
     </div>

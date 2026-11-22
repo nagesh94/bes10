@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   deletePhoto,
   finalisePhotoUpload,
@@ -46,6 +47,7 @@ export function PhotoGrid({
   hint?: string;
   photos: PhotoItem[];
 }) {
+  const t = useTranslations("documents.photos");
   const router = useRouter();
   const ask = useConfirm();
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -59,7 +61,7 @@ export function PhotoGrid({
     setNotice(null);
 
     // One location fix for the batch — they were all taken in the same place.
-    setBusy("Getting location…");
+    setBusy(t("gettingLocation"));
     const pos = await currentPosition();
     const geo = pos
       ? {
@@ -76,7 +78,7 @@ export function PhotoGrid({
 
     for (const file of files) {
       started += 1;
-      setBusy(`Uploading ${started} of ${files.length}…`);
+      setBusy(t("uploadingNofM", { n: started, total: files.length }));
       try {
         const presigned = await requestPhotoUpload(projectId, photoType, file.name, file.type);
         if (!presigned.ok) {
@@ -108,7 +110,7 @@ export function PhotoGrid({
         // own failures above. Production redacts the message, so the console
         // is the only place the reason can be read.
         console.error(`[photo] upload failed on ${file.name}`, err);
-        setError(`Something went wrong on ${file.name}.`);
+        setError(t("failedOn", { name: file.name }));
         break;
       }
     }
@@ -117,8 +119,8 @@ export function PhotoGrid({
     if (uploaded > 0) {
       setNotice(
         geo
-          ? `${stampedCount} of ${uploaded} geotagged and stamped.`
-          : `${uploaded} uploaded. Location was unavailable, so nothing was stamped.`,
+          ? t("stamped", { stamped: stampedCount, uploaded })
+          : t("noLocation", { uploaded }),
       );
     }
     router.refresh();
@@ -141,9 +143,9 @@ export function PhotoGrid({
    */
   async function remove(id: string) {
     const answer = await ask({
-      title: "Remove this photo?",
-      body: "It is deleted from the project and cannot be recovered. The photo can be taken again.",
-      confirmLabel: "Remove it",
+      title: t("removeTitle"),
+      body: t("removeBody"),
+      confirmLabel: t("removeIt"),
     });
     if (!answer.confirmed) return;
 
@@ -160,7 +162,7 @@ export function PhotoGrid({
       <div className="mb-2.5 flex flex-wrap items-baseline gap-2">
         <h4 className="flex-1 text-sm font-bold">{label}</h4>
         <span className="ref text-[12px] text-[var(--muted)]">
-          {photos.length} {photos.length === 1 ? "photo" : "photos"}
+          {t("count", { count: photos.length })}
         </span>
       </div>
       {hint ? <p className="mb-3 text-[12.5px] text-[var(--muted)]">{hint}</p> : null}
@@ -175,14 +177,14 @@ export function PhotoGrid({
               type="button"
               onClick={() => open(p.id)}
               className="block aspect-[4/3] w-full cursor-pointer"
-              aria-label="Open the full-size photo"
+              aria-label={t("openFull")}
             >
               {p.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={p.url} alt="" className="h-full w-full object-cover" />
               ) : (
                 <span className="flex h-full items-center justify-center text-[11px] text-[var(--muted)]">
-                  No preview
+                  {t("noPreview")}
                 </span>
               )}
             </button>
@@ -196,8 +198,8 @@ export function PhotoGrid({
             <button
               type="button"
               onClick={() => void download(p.id)}
-              aria-label="Download the full-size photo"
-              title="Save this photo to this computer"
+              aria-label={t("downloadFull")}
+              title={t("saveToComputer")}
               className="absolute top-1.5 right-9 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-[rgba(2,13,30,0.72)] text-white"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -210,7 +212,7 @@ export function PhotoGrid({
             <button
               type="button"
               onClick={() => remove(p.id)}
-              aria-label="Remove this photo"
+              aria-label={t("remove")}
               className="absolute top-1.5 right-1.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-[rgba(2,13,30,0.72)] text-xs font-bold text-white"
             >
               ×
@@ -229,7 +231,7 @@ export function PhotoGrid({
             <circle cx="12" cy="12.5" r="3.4" />
           </svg>
           <span className="px-2 text-center text-[11.5px] font-bold">
-            {busy ?? "Take photo"}
+            {busy ?? t("take")}
           </span>
         </button>
 
@@ -245,7 +247,7 @@ export function PhotoGrid({
             <path d="M3.5 17l5-5 4.5 4.5 3-2.5 4.5 4" />
           </svg>
           <span className="px-2 text-center text-[11.5px] font-bold">
-            {busy ?? "Upload from gallery"}
+            {busy ?? t("gallery")}
           </span>
         </button>
       </div>

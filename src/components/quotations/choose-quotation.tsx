@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { chooseQuotation } from "@/app/actions/quotations";
 
 /**
@@ -26,6 +27,7 @@ export function ChooseQuotation({
   /** Nothing can be the offer for a project it is not on. */
   attached: boolean;
 }) {
+  const t = useTranslations("quotations.c");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export function ChooseQuotation({
         >
           <path d="M20 6 9 17l-5-5" />
         </svg>
-        Chosen
+        {t("chosen")}
       </span>
     );
   }
@@ -58,7 +60,7 @@ export function ChooseQuotation({
       <button
         type="button"
         disabled={pending}
-        title="Make this the project's quotation — it replaces the current one in the bank loan pack"
+        title={t("chooseTitle")}
         onClick={async () => {
           setPending(true);
           setError(null);
@@ -69,7 +71,7 @@ export function ChooseQuotation({
         }}
         className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy-text)] disabled:opacity-60"
       >
-        {pending ? "Choosing…" : "Choose this one"}
+        {pending ? t("choosing") : t("choose")}
       </button>
       {error ? (
         <span role="alert" className="mt-1 text-[11px] font-medium text-[var(--red-text)]">

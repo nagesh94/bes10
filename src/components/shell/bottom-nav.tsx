@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MoreHorizontal, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { NAV_ICON } from "./nav-icons";
 import { isActive } from "./nav-links";
 import { SignOutButton } from "./sign-out-button";
@@ -30,6 +31,7 @@ export function BottomNav({
   moreLabel: string;
   signOutLabel: string;
 }) {
+  const t = useTranslations("shell");
   const path = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -54,7 +56,7 @@ export function BottomNav({
         <div className="fixed inset-0 z-50 md:hidden">
           <button
             type="button"
-            aria-label="Close menu"
+            aria-label={t("closeMenu")}
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-[rgb(3_11_22/0.55)]"
           />
@@ -100,7 +102,7 @@ export function BottomNav({
       ) : null}
 
       <nav
-        aria-label="Primary"
+        aria-label={t("primaryNav")}
         className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--chrome-line)] bg-[var(--chrome)] pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         <ul className="grid auto-cols-fr grid-flow-col">

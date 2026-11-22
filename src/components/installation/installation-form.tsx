@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { saveInstallation, type InstallationInput } from "@/app/actions/installation";
 
 const cell =
@@ -11,8 +12,7 @@ const labelCls = "mb-1.5 block text-xs font-semibold text-[var(--muted)]";
 type Key = keyof InstallationInput;
 
 const BLOCKS: Array<{
-  title: string;
-  note: string;
+  id: "panels" | "inverter" | "boxes";
   fields: Array<{
     key: Key;
     label: string;
@@ -29,8 +29,7 @@ const BLOCKS: Array<{
   }>;
 }> = [
   {
-    title: "Panels",
-    note: "Modules actually mounted on the roof.",
+    id: "panels",
     fields: [
       { key: "panelCompany", label: "Panel company", placeholder: "Waaree Energies Limited", comboKey: "panelCompanies" },
       { key: "panelModelNo", label: "Panel model number", placeholder: "BiN-08-535", mono: true, comboKey: "panelModels" },
@@ -40,8 +39,7 @@ const BLOCKS: Array<{
     ],
   },
   {
-    title: "Inverter",
-    note: "Serial and model as printed on the unit — manufacturer and brand name are the same thing, so there is one field for it.",
+    id: "inverter",
     fields: [
       { key: "inverterManufacturer", label: "Manufacturer", placeholder: "Polycab", comboKey: "inverterManufacturers" },
       { key: "inverterModelNo", label: "Model number", placeholder: "PSIS-5K0", mono: true, comboKey: "inverterModels" },
@@ -51,8 +49,7 @@ const BLOCKS: Array<{
     ],
   },
   {
-    title: "ACDB and DCDB",
-    note: "Distribution boxes on either side of the inverter.",
+    id: "boxes",
     fields: [
       { key: "acdbMake", label: "ACDB make", defaultValue: "Havells" },
       { key: "acdbSizeType", label: "ACDB size & type", defaultValue: "5 kW moisture proof" },
@@ -76,6 +73,7 @@ export function InstallationForm({
   /** Suggestion lists for combo fields — master data, but manual entry always works. */
   comboOptions?: Record<string, string[]>;
 }) {
+  const t = useTranslations("installation.form");
   const router = useRouter();
   // Fields carrying a default start filled, so what is on screen is what gets
   // saved. A field that already has something recorded is never overwritten.
@@ -105,7 +103,7 @@ export function InstallationForm({
     <div>
       <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         <div>
-          <label className={labelCls} htmlFor="installationDate">Installation date</label>
+          <label className={labelCls} htmlFor="installationDate">{t("installationDate")}</label>
           <input
             id="installationDate"
             type="date"
@@ -118,13 +116,13 @@ export function InstallationForm({
       </div>
 
       {BLOCKS.map((block) => (
-        <section key={block.title} className="mb-5">
-          <h3 className="mb-0.5 text-base font-bold">{block.title}</h3>
-          <p className="mb-3 text-[13px] text-[var(--muted)]">{block.note}</p>
+        <section key={block.id} className="mb-5">
+          <h3 className="mb-0.5 text-base font-bold">{t(`blocks.${block.id}.title`)}</h3>
+          <p className="mb-3 text-[13px] text-[var(--muted)]">{t(`blocks.${block.id}.note`)}</p>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
             {block.fields.map((f) => (
               <div key={f.key}>
-                <label className={labelCls} htmlFor={f.key}>{f.label}</label>
+                <label className={labelCls} htmlFor={f.key}>{t.has(`fields.${f.key}`) ? t(`fields.${f.key}`) : f.label}</label>
                 <input
                   id={f.key}
                   value={v[f.key] as string}
@@ -145,10 +143,10 @@ export function InstallationForm({
             ))}
           </div>
 
-          {block.title === "Inverter" ? (
+          {block.id === "inverter" ? (
             <div className="mt-3.5 flex flex-wrap gap-6">
               <div>
-                <div className={labelCls}>Phase</div>
+                <div className={labelCls}>{t("phase")}</div>
                 <div className="inline-flex rounded-lg bg-[var(--surface-sunken)] p-[3px]">
                   {(["SINGLE", "THREE"] as const).map((p) => (
                     <button
@@ -162,14 +160,14 @@ export function InstallationForm({
                           : "font-semibold text-[var(--muted)]"
                       }`}
                     >
-                      {p === "SINGLE" ? "Single phase" : "Three phase"}
+                      {p === "SINGLE" ? t("single") : t("three")}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <div className={labelCls}>Hybrid system?</div>
+                <div className={labelCls}>{t("hybrid")}</div>
                 <div className="inline-flex rounded-lg bg-[var(--surface-sunken)] p-[3px]">
                   {[true, false].map((b) => (
                     <button
@@ -183,13 +181,13 @@ export function InstallationForm({
                           : "font-semibold text-[var(--muted)]"
                       }`}
                     >
-                      {b ? "Yes" : "No"}
+                      {b ? t("yes") : t("no")}
                     </button>
                   ))}
                 </div>
                 {v.isHybrid ? (
                   <p className="mt-1.5 text-[11.5px] font-semibold text-[var(--orange-text)]">
-                    Battery details are asked for below.
+                    {t("batteryBelow")}
                   </p>
                 ) : null}
               </div>
@@ -216,7 +214,7 @@ export function InstallationForm({
         }}
         className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
       >
-        {pending ? "Saving…" : saved ? "Saved" : "Save installation"}
+        {pending ? t("saving") : saved ? t("saved") : t("save")}
       </button>
     </div>
   );

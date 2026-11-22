@@ -116,10 +116,27 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
     isSectionComplete(k, sectionValues[k]!),
   ).length;
 
+  // Stage 1's flags only. The DCR serial flag is raised at stage 3 and gated there.
   const [flagCount] = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(flags)
-    .where(and(eq(flags.projectId, projectId), sql`${flags.status} in ('OPEN','IN_PROGRESS')`));
+    .where(
+      and(
+        eq(flags.projectId, projectId),
+        sql`${flags.status} in ('OPEN','IN_PROGRESS')`,
+        sql`${flags.type} in ('NAME_MISMATCH','LOAD_ENHANCEMENT')`,
+      ),
+    );
+  const [dcrFlag] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(flags)
+    .where(
+      and(
+        eq(flags.projectId, projectId),
+        sql`${flags.status} in ('OPEN','IN_PROGRESS')`,
+        eq(flags.type, "DCR_SERIAL_MISMATCH"),
+      ),
+    );
 
   const docRows = await db
     .select()
@@ -215,6 +232,7 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
   return {
     prospectSectionsComplete,
     openFlagCount: flagCount?.n ?? 0,
+    dcrSerialFlagOpen: (dcrFlag?.n ?? 0) > 0,
     paymentPlanSaved: (outstandingRow?.total ?? 0) > 0,
     paymentMode,
 

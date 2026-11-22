@@ -558,3 +558,40 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ── DCR certificate reading ─────────────────────────────────────────────
+   The upload screen while a certificate is read: a scan line sweeping the
+   page, text lines filling in, and a soft pulse on the step in progress.
+   The reduced-motion block above already collapses these to one frame. */
+@keyframes dcr-scan {
+  0% { transform: translateY(-8px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(150px); opacity: 0; }
+}
+@keyframes dcr-line {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+@keyframes dcr-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes dcr-rise {
+  0% { transform: translateY(6px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes dcr-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.dcr-scan-line { animation: dcr-scan 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.dcr-text-line { transform-origin: left; animation: dcr-line 0.9s ease-out both; }
+.dcr-pop { animation: dcr-pop 0.35s ease-out both; }
+.dcr-rise { animation: dcr-rise 0.4s ease-out both; }
+.dcr-shimmer {
+  background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.45) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: dcr-shimmer 1.4s linear infinite;
+}

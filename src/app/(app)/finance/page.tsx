@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   ArrowUpRight,
   Banknote,
@@ -19,9 +20,9 @@ import { Donut, MonthlyBars, type Series } from "@/components/finance/charts";
 import { RecordPaymentDialog } from "@/components/finance/action-dialogs";
 import { FinanceFilters } from "@/components/finance/finance-filters";
 import {
-  LOAN_STATUS_LABEL,
-  PAY_STATUS_LABEL,
-  PLAN_MODE_LABEL,
+  LOAN_STATUS_LABEL as LOAN_STATUS_LABEL_EN,
+  PAY_STATUS_LABEL as PAY_STATUS_LABEL_EN,
+  PLAN_MODE_LABEL as PLAN_MODE_LABEL_EN,
   compact,
   filterRows,
   inRange,
@@ -33,7 +34,7 @@ import {
   type PayStatus,
 } from "@/lib/finance/ledger";
 import { RECEIVED_MODE_LABELS, type ReceivedMode } from "@/lib/payments/schedule";
-import { LENDER_KINDS, LENDER_KIND_LABEL } from "@/lib/finance/lender-kinds";
+import { LENDER_KINDS } from "@/lib/finance/lender-kinds";
 import { loadExpenses, spendByProject } from "@/lib/finance/expenses";
 import { loadCostSheetTotals } from "@/lib/finance/cost-sheet";
 import { notFound } from "next/navigation";
@@ -55,10 +56,13 @@ import { getActor } from "@/lib/session";
  * balance, because an outstanding amount is lifetime by definition.
  */
 
-export const metadata: Metadata = { title: "Finance" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("finance.dash");
+  return { title: t("metaTitle") };
+}
 
 /** Colour follows the payment mode, never its rank. */
-const MODE_SERIES: Series[] = [
+const MODE_SERIES_EN: Series[] = [
   { key: "NEFT", label: "NEFT", color: "var(--data-1)" },
   { key: "LOAN_DISBURSAL_PSS1", label: "Loan — PSS1", color: "var(--data-2)" },
   { key: "CASH", label: "Cash", color: "var(--data-3)" },
@@ -118,7 +122,22 @@ export default async function FinanceDashboard({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const actor = await getActor();
+  const [actor, tf, te] = await Promise.all([
+    getActor(),
+    getTranslations("finance"),
+    getTranslations("enums"),
+  ]);
+  const relabel = <T extends Record<string, string>>(map: T, group: string): T =>
+    Object.fromEntries(
+      Object.entries(map).map(([k, v]) => [k, tf.has(`${group}.${k}`) ? tf(`${group}.${k}`) : v]),
+    ) as T;
+  const PAY_STATUS_LABEL = relabel(PAY_STATUS_LABEL_EN, "payStatus");
+  const PLAN_MODE_LABEL = relabel(PLAN_MODE_LABEL_EN, "planMode");
+  const LOAN_STATUS_LABEL = Object.fromEntries(
+    Object.entries(LOAN_STATUS_LABEL_EN).map(([k, v]) => [k, te.has(`financeStatus.${k}`) ? te(`financeStatus.${k}`) : v]),
+  ) as typeof LOAN_STATUS_LABEL_EN;
+  const LENDER_KIND_LABEL = (k: string) => te(`lenderKind.${k}`);
+  const MODE_SERIES: Series[] = MODE_SERIES_EN.map((s) => ({ ...s, label: tf.has(`modes.${s.key}`) ? tf(`modes.${s.key}`) : s.label }));
   // The layout closes the section too, but Next renders a page alongside its
   // layout, not after it — so the page must not reach the ledger on its own.
   if (!actor || !canSeeMoney(actor.roles)) notFound();
@@ -275,63 +294,61 @@ export default async function FinanceDashboard({
   };
 
   const periodLabel = dated
-    ? `${params.from ? fmtDay(params.from) : "the start"} – ${params.to ? fmtDay(params.to) : "today"}`
-    : "All time";
+    ? `${params.from ? fmtDay(params.from) : tf("dash.theStart")} – ${params.to ? fmtDay(params.to) : tf("dash.today")}`
+    : tf("dash.allTime");
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 pt-5 pb-14 sm:px-6">
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="min-w-60 flex-1">
-          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">Finance dashboard</h1>
+          <h1 className="mb-1 text-[25px] font-bold tracking-[-0.02em]">{tf("dash.title")}</h1>
           <p className="text-sm text-[var(--muted)]">
-            {rows.length} of {ledger.rows.length} customers with a payment plan · money moved: {periodLabel}
+            {tf("dash.header", { shown: rows.length, total: ledger.rows.length, period: periodLabel })}
           </p>
         </div>
         <span className="ref shrink-0 rounded-full bg-[var(--amber-soft)] px-3 py-1.5 text-[12px] font-bold text-[var(--amber-text)]">
-          {inr(outstanding)} outstanding
+          {tf("dash.outstanding", { amount: inr(outstanding) })}
         </span>
       </div>
 
       <FinanceFilters
-        placeholder="Search customer, project code or phone"
+        placeholder={tf("dash.search")}
         filters={[
           {
             name: "status",
-            anyLabel: "Any payment status",
-            options: [
-              { value: "SETTLED", label: "Fully paid" },
-              { value: "PARTIAL", label: "Partly paid" },
-              { value: "UNPAID", label: "Nothing received" },
-              { value: "UNPRICED", label: "No value set" },
-            ],
+            anyLabel: tf("dash.anyPayStatus"),
+            options: (["SETTLED", "PARTIAL", "UNPAID", "UNPRICED"] as const).map((value) => ({
+              value,
+              label: PAY_STATUS_LABEL[value],
+            })),
           },
           {
             name: "plan",
-            anyLabel: "Any plan",
+            anyLabel: tf("dash.anyPlan"),
             options: Object.entries(PLAN_MODE_LABEL).map(([value, label]) => ({ value, label })),
           },
           {
             name: "via",
-            anyLabel: "Paid by any mode",
+            anyLabel: tf("dash.anyMode"),
             options: MODE_SERIES.filter((s) => s.key !== "LOAN_DISBURSAL").map((s) => ({
               value: s.key,
-              label: `Paid by ${s.label}`,
+              label: tf("dash.paidBy", { mode: s.label }),
             })),
           },
           {
             name: "loan",
-            anyLabel: "Any loan status",
+            anyLabel: tf("dash.anyLoan"),
             options: [
               ...Object.entries(LOAN_STATUS_LABEL).map(([value, label]) => ({ value, label })),
-              { value: "NONE", label: "No loan on file" },
+              { value: "NONE", label: tf("dash.noLoan") },
             ],
           },
           {
             name: "lender",
-            anyLabel: "Any lender type",
+            anyLabel: tf("dash.anyLender"),
             options: [
-              ...LENDER_KINDS.map((k) => ({ value: k, label: LENDER_KIND_LABEL[k] })),
-              { value: "UNLISTED", label: "Lender typed by hand" },
+              ...LENDER_KINDS.map((k) => ({ value: k, label: LENDER_KIND_LABEL(k) })),
+              { value: "UNLISTED", label: tf("dash.typedLender") },
             ],
           },
         ]}
@@ -340,7 +357,7 @@ export default async function FinanceDashboard({
 
       {ledger.rows.length === 0 ? (
         <p className="rounded-[var(--radius)] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 py-14 text-center text-[13.5px] text-[var(--muted)]">
-          No payment plan saved yet. Plans are set on each project&rsquo;s payments page.
+          {tf("dash.noPlans")}
         </p>
       ) : (
         <>
@@ -349,25 +366,25 @@ export default async function FinanceDashboard({
             <div className="flex flex-wrap gap-x-10 gap-y-5 px-6 pt-6 pb-5">
               <div className="min-w-56 flex-[2_1_280px]">
                 <div className="text-[12.5px] font-semibold tracking-[0.04em] uppercase opacity-70">
-                  Collected · {periodLabel}
+                  {tf("dash.collected", { period: periodLabel })}
                 </div>
                 <div className="num mt-1.5 text-[clamp(2.25rem,6vw,3.25rem)] leading-none font-extrabold">
                   {inr(periodIn)}
                 </div>
                 <div className="mt-2 text-[13px] opacity-75">
-                  {periodPayments.length} payment{periodPayments.length === 1 ? "" : "s"} from {periodCustomers}{" "}
-                  customer{periodCustomers === 1 ? "" : "s"}
-                  {periodOut > 0 ? ` · ${inr(periodOut)} given out` : ""}
+                  {tf("dash.paymentsFrom", { payments: periodPayments.length, customers: periodCustomers })}
+                  
+                  {periodOut > 0 ? ` · ${tf("dash.givenOut", { amount: inr(periodOut) })}` : ""}
                 </div>
               </div>
               <dl className="grid flex-[3_1_420px] grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
                 {[
-                  ["Direct (cash, UPI, bank)", inr(directIn)],
-                  ["Through loans", inr(loanIn)],
-                  ["Spent (all expenses)", inr(periodSpent)],
-                  ["Net cash in", `${netCash < 0 ? "−" : ""}${inr(Math.abs(netCash))}`],
-                  ["Booked, lifetime", `₹${compact(booked)}`],
-                  ["Received, lifetime", `₹${compact(receivedAll)}`],
+                  [tf("dash.direct"), inr(directIn)],
+                  [tf("dash.throughLoans"), inr(loanIn)],
+                  [tf("dash.spent"), inr(periodSpent)],
+                  [tf("dash.netCash"), `${netCash < 0 ? "−" : ""}${inr(Math.abs(netCash))}`],
+                  [tf("dash.bookedLifetime"), `₹${compact(booked)}`],
+                  [tf("dash.receivedLifetime"), `₹${compact(receivedAll)}`],
                 ].map(([k, v]) => (
                   <div key={k}>
                     <dt className="text-[12px] opacity-70">{k}</dt>
@@ -378,9 +395,9 @@ export default async function FinanceDashboard({
             </div>
             <div className="border-t border-white/10 bg-black/10 px-6 py-4">
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 text-[12.5px]">
-                <span className="font-semibold opacity-85">Collection progress</span>
+                <span className="font-semibold opacity-85">{tf("dash.progress")}</span>
                 <span className="num opacity-75">
-                  {collectedPct}% of {inr(collectible)} collectible · {inr(outstanding)} to go
+                  {tf("dash.progressLine", { pct: collectedPct, collectible: inr(collectible), left: inr(outstanding) })}
                 </span>
               </div>
               <div className="h-2.5 overflow-hidden rounded-full bg-white/15">
@@ -395,17 +412,17 @@ export default async function FinanceDashboard({
           {/* ── KPI tiles ── */}
           <section className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
             {[
-              { Icon: Receipt, label: "Quoted", value: `₹${compact(quotedTotal)}`, hint: `${quotedRows.length} with a quote` },
-              { Icon: HandCoins, label: "Agreed value", value: `₹${compact(booked)}`, hint: `${priced.length} priced jobs` },
+              { Icon: Receipt, label: tf("dash.quoted"), value: `₹${compact(quotedTotal)}`, hint: tf("dash.withQuote", { count: quotedRows.length }) },
+              { Icon: HandCoins, label: tf("dash.agreedValue"), value: `₹${compact(booked)}`, hint: tf("dash.pricedJobs", { count: priced.length }) },
               {
                 Icon: TrendingDown,
-                label: "Discount on quotes",
+                label: tf("dash.discount"),
                 value: `₹${compact(Math.max(discountTotal, 0))}`,
-                hint: `${discountPct.toFixed(1)}% · ${belowQuote.length} below quote`,
+                hint: tf("dash.belowQuote", { pct: discountPct.toFixed(1), count: belowQuote.length }),
               },
-              { Icon: Wallet, label: "Outstanding", value: `₹${compact(outstanding)}`, hint: `${rows.filter((r) => r.outstanding > 0).length} customers owe`, tone: "gold" },
-              { Icon: Banknote, label: "Avg deal size", value: `₹${compact(avgDeal)}`, hint: "agreed value per job" },
-              { Icon: ArrowUpRight, label: "Given to customers", value: `₹${compact(givenAll)}`, hint: "recoverable advances" },
+              { Icon: Wallet, label: tf("dash.outstandingLabel"), value: `₹${compact(outstanding)}`, hint: tf("dash.customersOwe", { count: rows.filter((r) => r.outstanding > 0).length }), tone: "gold" },
+              { Icon: Banknote, label: tf("dash.avgDeal"), value: `₹${compact(avgDeal)}`, hint: tf("dash.perJob") },
+              { Icon: ArrowUpRight, label: tf("dash.given"), value: `₹${compact(givenAll)}`, hint: tf("dash.recoverable") },
             ].map((t) => (
               <div
                 key={t.label}
@@ -430,7 +447,7 @@ export default async function FinanceDashboard({
           </section>
 
           {/* ── Payment status ── */}
-          <Panel title="Who has paid" note={`${statusTotal} customers · click a segment to filter`} className="mb-4">
+          <Panel title={tf("dash.whoPaid")} note={tf("dash.whoPaidNote", { count: statusTotal })} className="mb-4">
             <div className="px-5 pt-4 pb-5">
               <div className="flex h-3.5 gap-[2px] overflow-hidden rounded-full bg-[var(--data-track)]">
                 {statusCounts
@@ -465,7 +482,7 @@ export default async function FinanceDashboard({
                       <span className="min-w-0 flex-1">
                         <span className="block text-[13px] font-semibold text-[var(--ink)]">{PAY_STATUS_LABEL[s.status]}</span>
                         <span className="num block text-[11.5px] text-[var(--muted)]">
-                          {s.outstanding > 0 ? `₹${compact(s.outstanding)} due` : "nothing due"}
+                          {s.outstanding > 0 ? tf("dash.due", { amount: `₹${compact(s.outstanding)}` }) : tf("dash.nothingDue")}
                         </span>
                       </span>
                       <span className="num text-[22px] font-extrabold text-[var(--ink)]">{s.count}</span>
@@ -479,8 +496,8 @@ export default async function FinanceDashboard({
           {/* ── Mode tiles ── */}
           <section className="mb-4">
             <div className="mb-2.5 flex flex-wrap items-baseline gap-x-3">
-              <h2 className="text-[15px] font-bold">How the money arrived</h2>
-              <p className="text-[12.5px] text-[var(--muted)]">{periodLabel} · amount, payments and customers per mode</p>
+              <h2 className="text-[15px] font-bold">{tf("dash.howArrived")}</h2>
+              <p className="text-[12.5px] text-[var(--muted)]">{periodLabel} · {tf("dash.perMode")}</p>
             </div>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5">
               {modeCards.map((m) => (
@@ -495,7 +512,7 @@ export default async function FinanceDashboard({
                   </div>
                   <div className="num mt-1.5 text-[20px] font-extrabold">₹{compact(m.amount)}</div>
                   <div className="num mt-0.5 text-[11.5px] text-[var(--muted)]">
-                    {m.count} payment{m.count === 1 ? "" : "s"} · {m.customers} customer{m.customers === 1 ? "" : "s"}
+                    {tf("dash.paymentsCustomers", { payments: m.count, customers: m.customers })}
                   </div>
                 </div>
               ))}
@@ -505,21 +522,21 @@ export default async function FinanceDashboard({
           {/* ── Charts ── */}
           <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
             <Panel
-              title="Collections by month"
+              title={tf("dash.byMonth")}
               note={
                 bestMonth && bestMonthTotal > 0
-                  ? `best: ${bestMonth.label}, ${inr(bestMonthTotal)}`
-                  : "no payments in this range"
+                  ? tf("dash.best", { month: bestMonth.label, amount: inr(bestMonthTotal) })
+                  : tf("dash.noPayments")
               }
             >
               <div className="px-5 pt-4 pb-5">
                 <MonthlyBars months={months} series={MODE_SERIES} />
               </div>
             </Panel>
-            <Panel title="Share by mode" note={periodLabel}>
+            <Panel title={tf("dash.share")} note={periodLabel}>
               <div className="px-5 py-5">
                 <Donut
-                  centerLabel="collected"
+                  centerLabel={tf("dash.collectedLower")}
                   centerValue={`₹${compact(periodIn)}`}
                   slices={MODE_SERIES.filter((s) => s.key !== "LOAN_DISBURSAL" || byMode.has(s.key)).map((s) => ({
                     key: s.key,
@@ -534,16 +551,16 @@ export default async function FinanceDashboard({
 
           {/* ── Plan mix ── */}
           <div className="mb-4">
-            <Panel title="How jobs are paid for" note={`${rows.length} plans`}>
+            <Panel title={tf("dash.howJobs")} note={tf("dash.plans", { count: rows.length })}>
               <ul className="py-1.5">
                 {byPlan.map((m, i) => (
                   <BarRow
                     key={m.mode}
-                    label={`${PLAN_MODE_LABEL[m.mode]} · ${m.count} job${m.count === 1 ? "" : "s"}`}
+                    label={tf("dash.jobs", { label: PLAN_MODE_LABEL[m.mode] ?? m.mode, count: m.count })}
                     share={booked > 0 ? m.value / booked : 0}
                     color={["var(--data-3)", "var(--data-1)", "var(--data-2)"][i]!}
                     primary={`₹${compact(m.value)}`}
-                    secondary={m.outstanding > 0 ? `₹${compact(m.outstanding)} due` : "settled"}
+                    secondary={m.outstanding > 0 ? tf("dash.due", { amount: `₹${compact(m.outstanding)}` }) : tf("dash.settled")}
                   />
                 ))}
               </ul>
@@ -552,24 +569,24 @@ export default async function FinanceDashboard({
 
           {/* ── Customers ── */}
           <Panel
-            title="Customers"
+            title={tf("dash.customers")}
             note={
               <>
-                {rows.length} match · balances are lifetime
+                {tf("dash.matchLifetime", { count: rows.length })}
               </>
             }
             className="mb-4 overflow-hidden"
           >
             <div className="flex flex-wrap items-center gap-2 border-b border-[var(--line-soft)] px-5 py-2.5">
-              <span className="text-[12px] font-semibold text-[var(--muted)]">Sort by</span>
+              <span className="text-[12px] font-semibold text-[var(--muted)]">{tf("dash.sortBy")}</span>
               {(
                 [
-                  ["OUTSTANDING", "Outstanding"],
-                  ["PROGRESS", "Least paid"],
-                  ["RECENT", "Last payment"],
-                  ["VALUE", "Value"],
-                  ["DISCOUNT", "Discount"],
-                  ["NAME", "Name"],
+                  ["OUTSTANDING", tf("dash.sorts.OUTSTANDING")],
+                  ["PROGRESS", tf("dash.sorts.PROGRESS")],
+                  ["RECENT", tf("dash.sorts.RECENT")],
+                  ["VALUE", tf("dash.sorts.VALUE")],
+                  ["DISCOUNT", tf("dash.sorts.DISCOUNT")],
+                  ["NAME", tf("dash.sorts.NAME")],
                 ] as const
               ).map(([key, label]) => {
                 const next = new URLSearchParams();
@@ -596,22 +613,22 @@ export default async function FinanceDashboard({
             </div>
 
             {rows.length === 0 ? (
-              <p className="px-5 py-10 text-center text-[13px] text-[var(--muted)]">No customer matches these filters.</p>
+              <p className="px-5 py-10 text-center text-[13px] text-[var(--muted)]">{tf("dash.noMatch")}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1080px] border-collapse text-left">
                   <thead>
                     <tr className="border-b border-[var(--line)] bg-[var(--surface-2)] text-[11.5px] font-bold tracking-[0.04em] text-[var(--muted)] uppercase">
-                      <th className="px-5 py-2.5">Customer</th>
-                      <th className="px-3 py-2.5">Plan</th>
-                      <th className="px-3 py-2.5 text-right">Quoted</th>
-                      <th className="px-3 py-2.5 text-right">Agreed</th>
-                      <th className="px-3 py-2.5 text-right">Received</th>
-                      <th className="px-3 py-2.5 text-right">Site cost</th>
-                      <th className="px-3 py-2.5">Outstanding</th>
-                      <th className="px-3 py-2.5">Last paid</th>
-                      <th className="px-3 py-2.5">Status</th>
-                      <th className="px-5 py-2.5 text-right">Action</th>
+                      <th className="px-5 py-2.5">{tf("dash.cols.customer")}</th>
+                      <th className="px-3 py-2.5">{tf("dash.cols.plan")}</th>
+                      <th className="px-3 py-2.5 text-right">{tf("dash.cols.quoted")}</th>
+                      <th className="px-3 py-2.5 text-right">{tf("dash.cols.agreed")}</th>
+                      <th className="px-3 py-2.5 text-right">{tf("dash.cols.received")}</th>
+                      <th className="px-3 py-2.5 text-right">{tf("dash.cols.siteCost")}</th>
+                      <th className="px-3 py-2.5">{tf("dash.cols.outstanding")}</th>
+                      <th className="px-3 py-2.5">{tf("dash.cols.lastPaid")}</th>
+                      <th className="px-3 py-2.5">{tf("dash.cols.status")}</th>
+                      <th className="px-5 py-2.5 text-right">{tf("dash.cols.action")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -628,7 +645,7 @@ export default async function FinanceDashboard({
                             </Link>
                             <div className="max-w-56 truncate text-[13.5px] font-semibold">{r.customer || "—"}</div>
                             <div className="text-[11.5px] text-[var(--muted)]">
-                              Stage {r.pipelineStage}
+                              {tf("dash.stage", { no: r.pipelineStage })}
                               {r.phone ? ` · ${r.phone}` : ""}
                             </div>
                           </td>
@@ -652,7 +669,7 @@ export default async function FinanceDashboard({
                           <td className="num px-3 py-3 text-right text-[13px] font-semibold">{r.value ? inr(r.value) : "—"}</td>
                           <td className="num px-3 py-3 text-right text-[13px]">
                             {inr(r.received)}
-                            {r.given > 0 ? <div className="text-[11px] text-[var(--muted)]">+{inr(r.given)} given</div> : null}
+                            {r.given > 0 ? <div className="text-[11px] text-[var(--muted)]">{tf("dash.givenPlus", { amount: inr(r.given) })}</div> : null}
                           </td>
                           <td className="num px-3 py-3 text-right text-[13px]">
                             {(() => {
@@ -667,7 +684,7 @@ export default async function FinanceDashboard({
                                   {inr(spent)}
                                   {r.value ? (
                                     <div className={`text-[11px] ${margin < 0 ? "text-[var(--red-text)]" : "text-[var(--muted)]"}`}>
-                                      margin {margin < 0 ? "−" : ""}
+                                      {tf("dash.marginWord")} {margin < 0 ? "−" : ""}
                                       {inr(Math.abs(margin))}
                                     </div>
                                   ) : null}
@@ -690,10 +707,10 @@ export default async function FinanceDashboard({
                             </div>
                           </td>
                           <td className="px-3 py-3 text-[12.5px] whitespace-nowrap">
-                            {r.lastPaidOn ? fmtDay(r.lastPaidOn) : <span className="text-[var(--muted-soft)]">never</span>}
+                            {r.lastPaidOn ? fmtDay(r.lastPaidOn) : <span className="text-[var(--muted-soft)]">{tf("dash.never")}</span>}
                             {r.paymentCount ? (
                               <div className="text-[11px] text-[var(--muted)]">
-                                {r.paymentCount} payment{r.paymentCount === 1 ? "" : "s"}
+                                {tf("dash.payments", { count: r.paymentCount })}
                               </div>
                             ) : null}
                           </td>
@@ -719,7 +736,7 @@ export default async function FinanceDashboard({
                                 href={`/projects/${r.projectId}/payments`}
                                 className="inline-flex h-8 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-2.5 text-[12px] font-bold text-[var(--navy-text)] no-underline hover:bg-[var(--surface-2)]"
                               >
-                                Open
+                                {tf("dash.open")}
                               </Link>
                             </div>
                           </td>
@@ -730,7 +747,7 @@ export default async function FinanceDashboard({
                   <tfoot>
                     <tr className="border-t border-[var(--line)] bg-[var(--surface-2)] text-[12.5px] font-bold">
                       <td className="px-5 py-3" colSpan={2}>
-                        Total · {rows.length} customers
+                        {tf("dash.total", { count: rows.length })}
                       </td>
                       <td className="num px-3 py-3 text-right">{inr(sum(rows, (r) => r.quoted))}</td>
                       <td className="num px-3 py-3 text-right">{inr(booked)}</td>
@@ -744,7 +761,7 @@ export default async function FinanceDashboard({
               </div>
             )}
             <div className="border-t border-[var(--line-soft)] px-5 pb-3.5">
-              <ListPager total={rows.length} page={pageOf.page} per={pageOf.per} noun="customers" />
+              <ListPager total={rows.length} page={pageOf.page} per={pageOf.per} noun={tf("dash.noun")} />
             </div>
           </Panel>
         </>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { IndianRupee, Landmark } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { FinanceForm, RecordPaymentForm } from "@/components/payments/payment-plan-form";
 
 /**
@@ -71,6 +72,7 @@ export function RecordPaymentDialog({
   milestones: Array<{ id: number; label: string }>;
   compact?: boolean;
 }) {
+  const t = useTranslations("finance.dialogs");
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -82,16 +84,16 @@ export function RecordPaymentDialog({
         }`}
       >
         <IndianRupee size={13} strokeWidth={2.6} aria-hidden />
-        Record payment
+        {t("recordPayment")}
       </button>
       <Shell
         open={open}
         onClose={() => setOpen(false)}
-        title="Record a payment"
+        title={t("recordTitle")}
         subtitle={
           <>
             <span className="ref font-bold text-[var(--navy-text)]">{code}</span> · {customer} ·{" "}
-            <span className="num font-semibold text-[var(--ink)]">{outstanding}</span> outstanding
+            <span className="num font-semibold text-[var(--ink)]">{outstanding}</span> {t("outstanding")}
           </>
         }
       >
@@ -120,6 +122,7 @@ export function LoanDialog({
   /** The lender chosen in the payment plan, shown read-only. */
   lenderLabel: string | null;
 }) {
+  const t = useTranslations("finance.dialogs");
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -129,12 +132,12 @@ export function LoanDialog({
         className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-2.5 text-[12px] font-bold text-[var(--navy-text)] hover:bg-[var(--surface-2)]"
       >
         <Landmark size={13} strokeWidth={2.4} aria-hidden />
-        Update loan
+        {t("updateLoan")}
       </button>
       <Shell
         open={open}
         onClose={() => setOpen(false)}
-        title="Update the loan"
+        title={t("updateTitle")}
         subtitle={
           <>
             <span className="ref font-bold text-[var(--navy-text)]">{code}</span> · {customer}

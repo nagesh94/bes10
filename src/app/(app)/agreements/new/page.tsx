@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { companyBranches } from "@/lib/db/schema";
@@ -49,14 +50,14 @@ export default async function NewAgreementPage({
 }: {
   searchParams: Promise<{ project?: string; missing?: string }>;
 }) {
-  const actor = await getActor();
+  const [actor, t] = await Promise.all([getActor(), getTranslations("agreements.new")]);
   if (!actor || !can(actor, "agreement.write")) notFound();
 
   const { project: projectId, missing } = await searchParams;
 
   const stillNeeded = (missing ?? "")
     .split(",")
-    .map((code) => MISSING_PHRASE[code.trim()])
+    .map((code) => (MISSING_PHRASE[code.trim()] ? t(`missing.${code.trim()}`) : undefined))
     .filter((phrase): phrase is string => Boolean(phrase));
 
   const [branches] = await Promise.all([
@@ -89,28 +90,31 @@ export default async function NewAgreementPage({
           href={projectId ? `/projects/${projectId}/stage-2` : "/agreements"}
           className="mb-3 inline-block text-[13px] font-semibold text-[var(--link)] no-underline"
         >
-          ← {projectId && projectCode ? projectCode : "Agreements"}
+          ← {projectId && projectCode ? projectCode : t("back")}
         </Link>
-        <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">New agreement</h1>
+        <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">{t("title")}</h1>
         <p className="text-sm text-[var(--muted)]">
           {projectCode
-            ? `For ${projectCode} — ${SOURCE_LINE[source] ?? SOURCE_LINE.typed}`
-            : "Not linked to a project"}
+            ? t("forProject", {
+                code: projectCode,
+                source: t(`source.${SOURCE_LINE[source] ? source : "typed"}`),
+              })
+            : t("notLinked")}
         </p>
       </div>
 
       {stillNeeded.length > 0 ? (
         <p className="mb-5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-4 py-3 text-[13px] leading-relaxed text-[var(--amber-body)]">
-          <strong className="font-bold text-[var(--amber-text)]">Still needed:</strong>{" "}
+          <strong className="font-bold text-[var(--amber-text)]">{t("stillNeeded")}</strong>{" "}
           {stillNeeded.length === 1
             ? stillNeeded[0]
-            : `${stillNeeded.slice(0, -1).join(", ")} and ${stillNeeded.at(-1)}`}
+            : `${stillNeeded.slice(0, -1).join(", ")}${t("and")}${stillNeeded.at(-1)}`}
         </p>
       ) : null}
 
       {!branch ? (
         <p className="rounded-[var(--radius)] border border-[var(--red-border)] bg-[var(--red-surface)] px-4 py-3.5 text-[13.5px] font-medium text-[var(--red-text)]">
-          No company branch is set up. Add one under Admin first.
+          {t("noBranch")}
         </p>
       ) : (
         <AgreementForm mode="create" initial={initial} projectCode={projectCode} />

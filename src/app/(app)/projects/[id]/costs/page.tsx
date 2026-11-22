@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { paymentPlans, projects } from "@/lib/db/schema";
@@ -27,7 +28,7 @@ const DAY = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" })
 
 export default async function CostsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, tc] = await Promise.all([getActor(), getTranslations("payments.costs")]);
   if (!actor || !canSeeMoney(actor.roles)) notFound();
   const canWrite = can(actor, "money.write");
 
@@ -70,8 +71,8 @@ export default async function CostsPage({ params }: { params: Promise<{ id: stri
     <StageShell
       projectId={id}
       stageNo={null}
-      title="Cost calculator"
-      note="What this site cost against what it was sold for. Admin only."
+      title={tc("title")}
+      note={tc("note")}
     >
       <CostSheetEditor
         projectId={id}
@@ -87,21 +88,22 @@ export default async function CostsPage({ params }: { params: Promise<{ id: stri
       <section className="mt-4.5 overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
         <div className="flex flex-wrap items-center gap-3 border-b border-[var(--line)] px-5 py-4">
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold">Site expenses</h2>
+            <h2 className="text-base font-bold">{tc("siteExpenses")}</h2>
             <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">
-              Money paid out for this site, from{" "}
-              <Link href={`/finance/expenses?project=${id}`} className="font-semibold text-[var(--navy-text)]">
-                Expenses
-              </Link>
-              . Adding one here records a real expense. Dealer stock already in the calculator above
-              does not belong here.
+              {tc.rich("intro", {
+                link: (chunks) => (
+                  <Link href={`/finance/expenses?project=${id}`} className="font-semibold text-[var(--navy-text)]">
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           </div>
           <span className="num text-[18px] font-extrabold">{inr(expensesTotal)}</span>
         </div>
 
         {categoryRows.length === 0 ? (
-          <p className="px-5 py-6 text-[13px] text-[var(--muted)]">No expense recorded for this site yet.</p>
+          <p className="px-5 py-6 text-[13px] text-[var(--muted)]">{tc("none")}</p>
         ) : (
           <ul>
             {categoryRows.map((c) => {
@@ -120,7 +122,7 @@ export default async function CostsPage({ params }: { params: Promise<{ id: stri
                           </li>
                         ))}
                         {t.items.length > 4 ? (
-                          <li className="text-[11.5px] text-[var(--muted)]">and {t.items.length - 4} more</li>
+                          <li className="text-[11.5px] text-[var(--muted)]">{tc("andMore", { count: t.items.length - 4 })}</li>
                         ) : null}
                       </ul>
                     ) : c.hint ? (
@@ -131,7 +133,7 @@ export default async function CostsPage({ params }: { params: Promise<{ id: stri
                     {t ? inr(t.amount) : "—"}
                   </span>
                   {options ? (
-                    <AddExpenseDialog options={options} defaultProjectId={id} defaultCategoryId={c.id} label="Add" ghost />
+                    <AddExpenseDialog options={options} defaultProjectId={id} defaultCategoryId={c.id} label={tc("add")} ghost />
                   ) : null}
                 </li>
               );

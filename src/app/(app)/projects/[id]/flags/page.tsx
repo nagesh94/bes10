@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -21,6 +23,7 @@ import { documents as documentsTable } from "@/lib/db/schema";
 import { can, hasRole } from "@/lib/rbac/permissions";
 import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
+import type { DcrFlagDetail } from "@/lib/dcr/matching";
 
 const STATUS_CHIP: Record<string, string> = {
   OPEN: "bg-[var(--amber-soft)] text-[var(--amber-text)]",
@@ -29,16 +32,11 @@ const STATUS_CHIP: Record<string, string> = {
   WAIVED: "bg-[var(--chip-soft)] text-[var(--chip-text)]",
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  OPEN: "Open",
-  IN_PROGRESS: "In progress",
-  RESOLVED: "Resolved",
-  WAIVED: "Waived",
-};
 
 export default async function FlagsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t, te] = await Promise.all([getActor(), getTranslations("flags"), getTranslations("enums")]);
+  const STATUS_LABEL = (s: string) => (te.has(`flagStatus.${s}`) ? te(`flagStatus.${s}`) : s);
   if (!actor || !can(actor, "flag.resolve")) notFound();
   const canDeleteDocs = can(actor, "document.delete");
 
@@ -63,6 +61,8 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
 
   const nameFlag = rows.find((r) => r.type === "NAME_MISMATCH");
   const loadFlag = rows.find((r) => r.type === "LOAD_ENHANCEMENT");
+  const dcrFlag = rows.find((r) => r.type === "DCR_SERIAL_MISMATCH");
+  const dcrDetail: Partial<DcrFlagDetail> = dcrFlag?.detail ? JSON.parse(dcrFlag.detail) : {};
 
   const [nameReq] = nameFlag
     ? await db.select().from(nameChangeRequests).where(eq(nameChangeRequests.flagId, nameFlag.id)).limit(1)
@@ -118,13 +118,13 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
     <StageShell
       projectId={id}
       stageNo={null}
-      title="Flags"
-      note="Both close before stage 1"
+      title={t("title")}
+      note={t("note")}
     >
 
       {rows.length === 0 ? (
         <div className="rounded-[var(--radius)] border border-[var(--green-border)] bg-[var(--green-soft)] px-6 py-8 text-center">
-          <p className="font-semibold text-[var(--green-text)]">No flags on this project.</p>
+          <p className="font-semibold text-[var(--green-text)]">{t("none")}</p>
         </div>
       ) : null}
 
@@ -132,15 +132,15 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
         {nameFlag ? (
           <section className="min-w-80 flex-[1_1_480px] overflow-hidden rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--surface)]">
             <div className="flex flex-wrap items-center gap-2.5 border-b border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
-              <h2 className="flex-1 text-[17px] font-bold">Name change on the electricity bill</h2>
+              <h2 className="flex-1 text-[17px] font-bold">{t("nameTitle")}</h2>
               <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.06em] uppercase ${STATUS_CHIP[nameFlag.status]}`}>
-                {STATUS_LABEL[nameFlag.status]}
+                {STATUS_LABEL(nameFlag.status)}
               </span>
             </div>
 
             <div className="px-5 py-4.5">
               <div className="mb-2 text-[12px] font-semibold text-[var(--muted)]">
-                What the documents say
+                {t("whatDocsSay")}
               </div>
               <div className="mb-5 overflow-hidden rounded-[9px] border border-[var(--line-soft)]">
                 {(nameDetail.entries ?? []).map((e, i) => {
@@ -157,7 +157,7 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
                       }`}
                     >
                       <span className="w-24 shrink-0 text-xs font-semibold text-[var(--muted)]">
-                        {e.source}
+                        {t.has(`sources.${e.source}`) ? t(`sources.${e.source}`) : e.source}
                       </span>
                       <span className="min-w-0 flex-1 text-sm font-semibold">{e.name || "—"}</span>
                       <span
@@ -176,20 +176,20 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
 
               <PortalLink
                 href={discom?.nameChangeUrl ?? null}
-                title="Apply for a name change on Saral Sanyojan"
-                note="other services"
+                title={t("nameChangePortal")}
+                note={t("otherServices")}
               />
 
               <div className="mb-2.5 text-[12px] font-semibold text-[var(--muted)]">
-                What the DISCOM needs
+                {t("discomNeeds")}
               </div>
 
               <div className="mb-4 space-y-2.5">
                 <UploadSlot
                   projectId={id}
                   docType="APPLICANT_PHOTO"
-                  label="Applicant photo"
-                  hint="Photo or PDF"
+                  label={t("applicantPhoto")}
+                  hint={t("photoOrPdf")}
                   existing={docFor("APPLICANT_PHOTO")}
                   onAttached={attachApplicantPhoto}
                   canDelete={canDeleteDocs}
@@ -198,8 +198,8 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
                 <UploadSlot
                   projectId={id}
                   docType="KHASRA"
-                  label="Khasra extract"
-                  hint="Downloaded from MP Bhulekh, below"
+                  label={t("khasra")}
+                  hint={t("khasraHint")}
                   existing={docFor("KHASRA")}
                   canDelete={canDeleteDocs}
                 />
@@ -207,8 +207,8 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
                 <UploadSlot
                   projectId={id}
                   docType="NOC"
-                  label="NOC certificate — signed scan"
-                  hint="Prepared outside the app, signed, then scanned back"
+                  label={t("noc")}
+                  hint={t("nocHint")}
                   existing={docFor("NOC")}
                   onAttached={attachNoc}
                   canDelete={canDeleteDocs}
@@ -217,8 +217,8 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
 
               <PortalLink
                 href={discom?.landRecordsUrl ?? null}
-                title="Download the khasra from MP Bhulekh"
-                note="bhu-abhilekh · land records"
+                title={t("khasraPortal")}
+                note={t("landRecords")}
               />
 
               <NameChangeForm
@@ -232,7 +232,7 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
               ) : null}
               {nameFlag.waiverReason ? (
                 <p className="mt-3 rounded-lg bg-[var(--surface-2)] px-3.5 py-2.5 text-[12.5px] text-[var(--muted)]">
-                  Waived: {nameFlag.waiverReason}
+                  {t("waived", { reason: nameFlag.waiverReason })}
                 </p>
               ) : null}
             </div>
@@ -242,9 +242,9 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
         {loadFlag ? (
           <section className="min-w-80 flex-[1_1_420px] overflow-hidden rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--surface)]">
             <div className="flex flex-wrap items-center gap-2.5 border-b border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
-              <h2 className="flex-1 text-[17px] font-bold">Load enhancement</h2>
+              <h2 className="flex-1 text-[17px] font-bold">{t("loadTitle")}</h2>
               <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.06em] uppercase ${STATUS_CHIP[loadFlag.status]}`}>
-                {STATUS_LABEL[loadFlag.status]}
+                {STATUS_LABEL(loadFlag.status)}
               </span>
             </div>
 
@@ -252,7 +252,7 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
               <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[10px] border border-[var(--line)] bg-[var(--surface-2)] px-4.5 py-4">
                 <div className="flex-[1_1_100px]">
                   <div className="text-[12px] font-semibold text-[var(--muted)]">
-                    Sanctioned
+                    {t("sanctioned")}
                   </div>
                   <div className="ref mt-1 text-2xl font-medium text-[var(--red-text)]">
                     {loadDetail.sanctionedKw ?? "—"} kW
@@ -261,7 +261,7 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
                 <span aria-hidden className="text-[var(--muted-soft)]">→</span>
                 <div className="flex-[1_1_100px]">
                   <div className="text-[12px] font-semibold text-[var(--muted)]">
-                    Needs to be
+                    {t("needsToBe")}
                   </div>
                   <div className="ref mt-1 text-2xl font-medium text-[var(--green-text)]">
                     {loadDetail.requiredKw ?? "—"} kW
@@ -270,13 +270,13 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
               </div>
 
               <p className="mb-4.5 text-[13.5px] text-[var(--muted)]">
-                Sanctioned load must exceed the plant size.
+                {t("mustExceed")}
               </p>
 
               <PortalLink
                 href={discom?.loadEnhancementUrl ?? null}
-                title="Apply for a load enhancement on Saral Sanyojan"
-                note="other services"
+                title={t("loadPortal")}
+                note={t("otherServices")}
               />
 
               <LoadChangeForm
@@ -291,7 +291,88 @@ export default async function FlagsPage({ params }: { params: Promise<{ id: stri
               ) : null}
               {loadFlag.waiverReason ? (
                 <p className="mt-3 rounded-lg bg-[var(--surface-2)] px-3.5 py-2.5 text-[12.5px] text-[var(--muted)]">
-                  Waived: {loadFlag.waiverReason}
+                  {t("waived", { reason: loadFlag.waiverReason })}
+                </p>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+
+        {dcrFlag ? (
+          <section className="min-w-80 flex-[1_1_420px] overflow-hidden rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--surface)]">
+            <div className="flex flex-wrap items-center gap-2.5 border-b border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
+              <h2 className="flex-1 text-[17px] font-bold">DCR serial check</h2>
+              <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.06em] uppercase ${STATUS_CHIP[dcrFlag.status]}`}>
+                {STATUS_LABEL(dcrFlag.status)}
+              </span>
+            </div>
+            <div className="px-5 py-4.5">
+              <p className="mb-4 text-[13.5px] text-[var(--muted)]">
+                {dcrDetail.matched ?? 0} of {dcrDetail.total ?? 0} panel serials are on a stored DCR certificate.
+                This clears by itself once every serial matches — upload the missing certificate, or correct the
+                serial on stage 3.
+              </p>
+
+              {dcrDetail.missing?.length ? (
+                <div className="mb-4">
+                  <div className="mb-1.5 text-[12px] font-semibold text-[var(--muted)]">
+                    Not on any certificate ({dcrDetail.missing.length})
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {dcrDetail.missing.map((s) => (
+                      <span
+                        key={s}
+                        className="ref rounded-full border border-[var(--red-border)] bg-[var(--red-surface)] px-2.5 py-0.5 text-[12px] text-[var(--red-text)]"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {dcrDetail.elsewhere?.length ? (
+                <div className="mb-4">
+                  <div className="mb-1.5 text-[12px] font-semibold text-[var(--muted)]">
+                    Also recorded on another project ({dcrDetail.elsewhere.length})
+                  </div>
+                  <ul className="space-y-1 text-[13px]">
+                    {dcrDetail.elsewhere.map((e) => (
+                      <li key={e.serialNo}>
+                        <span className="ref">{e.serialNo}</span> —{" "}
+                        {e.projects.map((p, i) => (
+                          <span key={p.id || i}>
+                            {i > 0 ? ", " : ""}
+                            {p.id ? <Link href={`/projects/${p.id}/stage-3`}>{p.label}</Link> : p.label}
+                          </span>
+                        ))}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <div className="mb-2 flex flex-wrap gap-2.5">
+                <Link
+                  href={`/projects/${id}/stage-3`}
+                  className="inline-flex h-10 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy-text)] no-underline"
+                >
+                  Check serials on stage 3
+                </Link>
+                {can(actor, "document.upload") ? (
+                  <Link
+                    href="/dcr/new"
+                    className="inline-flex h-10 items-center rounded-lg bg-[var(--orange)] px-4 text-[13px] font-bold text-[var(--orange-ink)] no-underline"
+                  >
+                    Upload a DCR certificate
+                  </Link>
+                ) : null}
+              </div>
+
+              {isAdmin && dcrFlag.status !== "WAIVED" ? <WaiveFlag projectId={id} flagId={dcrFlag.id} /> : null}
+              {dcrFlag.waiverReason ? (
+                <p className="mt-3 rounded-lg bg-[var(--surface-2)] px-3.5 py-2.5 text-[12.5px] text-[var(--muted)]">
+                  {t("waived", { reason: dcrFlag.waiverReason })}
                 </p>
               ) : null}
             </div>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Plus, RotateCcw, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { resetCostSheet, saveCostSheet } from "@/app/actions/costs";
 import { useConfirm } from "@/components/shell/confirm";
 import type { CostLine } from "@/lib/finance/cost-sheet";
@@ -69,6 +70,8 @@ export function CostSheetEditor({
   systemKw: number;
   canWrite: boolean;
 }) {
+  const t = useTranslations("finance.sheet");
+  const te = useTranslations("enums");
   const router = useRouter();
   const ask = useConfirm();
   const [rows, setRows] = useState<Row[]>(() => toRows(lines));
@@ -106,7 +109,7 @@ export function CostSheetEditor({
     setPending(false);
     if (!result.ok) return setError(result.error);
     setDirty(false);
-    setNotice("Saved.");
+    setNotice(t("saved"));
     router.refresh();
   }
 
@@ -115,11 +118,11 @@ export function CostSheetEditor({
       <section className="min-w-0 flex-[999_1_620px] overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
         <div className="flex flex-wrap items-center gap-3 border-b border-[var(--line)] px-5 py-4">
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold">Material from dealers</h2>
+            <h2 className="text-base font-bold">{t("title")}</h2>
             <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">
               {saved
-                ? "Saved sheet. Quantities shown under each line are what installation records now."
-                : "Proposed from installation and the rate card — check, edit and save."}
+                ? t("savedNote")
+                : t("proposedNote")}
             </p>
           </div>
           {canWrite ? (
@@ -128,12 +131,12 @@ export function CostSheetEditor({
               onClick={() => {
                 setRows(toRows(proposed));
                 setDirty(true);
-                setNotice("Refilled from installation and the rate card. Save to keep it.");
+                setNotice(t("refilled"));
               }}
               className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-semibold text-[var(--navy-text)] hover:bg-[var(--surface-2)]"
             >
               <RotateCcw size={13} aria-hidden />
-              Refill from installation
+              {t("refill")}
             </button>
           ) : null}
         </div>
@@ -142,12 +145,12 @@ export function CostSheetEditor({
           <table className="w-full min-w-[860px] border-collapse text-left">
             <thead>
               <tr className="border-b border-[var(--line)] bg-[var(--surface-2)] text-[11.5px] font-bold tracking-[0.04em] text-[var(--muted)] uppercase">
-                <th className="px-5 py-2.5">Item</th>
-                <th className="w-28 px-2 py-2.5">Quantity</th>
-                <th className="w-20 px-2 py-2.5">Unit</th>
-                <th className="w-32 px-2 py-2.5">Rate (₹)</th>
-                <th className="w-36 px-2 py-2.5">Paid by</th>
-                <th className="w-32 px-3 py-2.5 text-right">Amount</th>
+                <th className="px-5 py-2.5">{t("cols.item")}</th>
+                <th className="w-28 px-2 py-2.5">{t("cols.qty")}</th>
+                <th className="w-20 px-2 py-2.5">{t("cols.unit")}</th>
+                <th className="w-32 px-2 py-2.5">{t("cols.rate")}</th>
+                <th className="w-36 px-2 py-2.5">{t("cols.paidBy")}</th>
+                <th className="w-32 px-3 py-2.5 text-right">{t("cols.amount")}</th>
                 {canWrite ? <th className="w-10" /> : null}
               </tr>
             </thead>
@@ -162,7 +165,7 @@ export function CostSheetEditor({
                         value={r.label}
                         onChange={(e) => patch(r.key, { label: e.target.value })}
                         disabled={!canWrite}
-                        aria-label="Item"
+                        aria-label={t("cols.item")}
                         className={`${cell} font-semibold`}
                       />
                       {r.source ? <div className="mt-1 text-[11.5px] text-[var(--muted)]">{r.source}</div> : null}
@@ -182,7 +185,7 @@ export function CostSheetEditor({
                         inputMode="decimal"
                         onChange={(e) => patch(r.key, { quantity: e.target.value })}
                         disabled={!canWrite}
-                        aria-label={`${r.label} quantity`}
+                        aria-label={t("qtyAria", { label: r.label })}
                         className={`${cell} ref text-right`}
                       />
                     </td>
@@ -191,7 +194,7 @@ export function CostSheetEditor({
                         value={r.unit}
                         onChange={(e) => patch(r.key, { unit: e.target.value })}
                         disabled={!canWrite || r.code !== "CUSTOM"}
-                        aria-label={`${r.label} unit`}
+                        aria-label={t("unitAria", { label: r.label })}
                         className={`${cell} disabled:bg-[var(--surface-2)] disabled:text-[var(--muted)]`}
                       />
                     </td>
@@ -201,7 +204,7 @@ export function CostSheetEditor({
                         inputMode="decimal"
                         onChange={(e) => patch(r.key, { rate: e.target.value })}
                         disabled={!canWrite}
-                        aria-label={`${r.label} rate`}
+                        aria-label={t("rateAria", { label: r.label })}
                         className={`${cell} ref text-right`}
                       />
                       {p && Math.abs(p.rate - num(r.rate)) > 0.001 ? (
@@ -213,12 +216,12 @@ export function CostSheetEditor({
                         value={r.paymentMode}
                         onChange={(e) => patch(r.key, { paymentMode: e.target.value })}
                         disabled={!canWrite}
-                        aria-label={`How ${r.label} was paid`}
+                        aria-label={t("paidAria", { label: r.label })}
                         className={`${cell} cursor-pointer ${r.paymentMode ? "" : "text-[var(--muted)]"}`}
                       >
-                        <option value="">Not set</option>
+                        <option value="">{t("notSet")}</option>
                         {COST_PAYMENT_MODES.map((m) => (
-                          <option key={m} value={m}>{COST_PAYMENT_LABEL[m]}</option>
+                          <option key={m} value={m}>{te.has(`costPayment.${m}`) ? te(`costPayment.${m}`) : COST_PAYMENT_LABEL[m]}</option>
                         ))}
                       </select>
                       {r.paymentMode === "OTHER" ? (
@@ -226,8 +229,8 @@ export function CostSheetEditor({
                           value={r.paymentNote}
                           onChange={(e) => patch(r.key, { paymentNote: e.target.value })}
                           disabled={!canWrite}
-                          placeholder="How? e.g. dealer credit"
-                          aria-label={`How ${r.label} was paid, in words`}
+                          placeholder={t("howPlaceholder")}
+                          aria-label={t("paidWordsAria", { label: r.label })}
                           className={`${cell} mt-1.5 h-9 text-[13px]`}
                         />
                       ) : null}
@@ -239,7 +242,7 @@ export function CostSheetEditor({
                       <td className="py-2.5 pr-3">
                         <button
                           type="button"
-                          aria-label={`Remove ${r.label}`}
+                          aria-label={t("removeAria", { label: r.label })}
                           onClick={() => {
                             setRows((list) => list.filter((x) => x.key !== r.key));
                             setDirty(true);
@@ -257,7 +260,7 @@ export function CostSheetEditor({
             <tfoot>
               <tr className="border-t border-[var(--line)] bg-[var(--surface-2)]">
                 <td className="px-5 py-3 text-[13px] font-bold" colSpan={5}>
-                  Material total
+                  {t("materialTotal")}
                 </td>
                 <td className="num px-3 py-3 text-right text-[15px] font-extrabold">{inr(materialTotal)}</td>
                 {canWrite ? <td /> : null}
@@ -289,7 +292,7 @@ export function CostSheetEditor({
               className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
             >
               <Plus size={14} aria-hidden />
-              Add a line
+              {t("addLine")}
             </button>
             <span className="flex-1" />
             {error ? <span role="alert" className="text-[12.5px] font-medium text-[var(--red-text)]">{error}</span> : null}
@@ -300,9 +303,9 @@ export function CostSheetEditor({
                 disabled={pending}
                 onClick={async () => {
                   const answer = await ask({
-                    title: "Discard the saved sheet?",
-                    body: "The calculator goes back to proposing lines from installation and the rate card.",
-                    confirmLabel: "Discard",
+                    title: t("discardTitle"),
+                    body: t("discardBody"),
+                    confirmLabel: t("discard"),
                   });
                   if (!answer.confirmed) return;
                   setPending(true);
@@ -314,7 +317,7 @@ export function CostSheetEditor({
                 }}
                 className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-semibold text-[var(--muted)] hover:text-[var(--ink)]"
               >
-                Discard saved
+                {t("discardSaved")}
               </button>
             ) : null}
             <button
@@ -323,7 +326,7 @@ export function CostSheetEditor({
               onClick={save}
               className="h-10 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-[13.5px] font-bold text-[var(--orange-ink)] disabled:opacity-50"
             >
-              {pending ? "Saving…" : dirty ? "Save cost sheet" : "Saved"}
+              {pending ? t("saving") : dirty ? t("saveSheet") : t("savedShort")}
             </button>
           </div>
         ) : null}
@@ -331,10 +334,10 @@ export function CostSheetEditor({
 
       <aside className="min-w-72 flex-[1_1_300px]">
         <section className="sticky top-4 rounded-[var(--radius)] bg-[var(--navy)] px-6 py-5 text-[var(--navy-ink)]">
-          <h2 className="mb-4 text-[15px] font-bold opacity-80">Cost of this site</h2>
+          <h2 className="mb-4 text-[15px] font-bold opacity-80">{t("siteCost")}</h2>
           {[
-            ["Material from dealers", inr(materialTotal)],
-            ["Site expenses", inr(expensesTotal)],
+            [t("title"), inr(materialTotal)],
+            [t("siteExpenses"), inr(expensesTotal)],
           ].map(([k, v]) => (
             <div key={k} className="flex items-baseline justify-between py-1.5">
               <span className="text-[13px] opacity-75">{k}</span>
@@ -342,7 +345,7 @@ export function CostSheetEditor({
             </div>
           ))}
           <div className="mt-1.5 flex items-baseline justify-between border-t border-white/15 pt-3">
-            <span className="text-sm font-semibold">Total cost</span>
+            <span className="text-sm font-semibold">{t("totalCost")}</span>
             <span className="ref text-[20px] font-semibold">{inr(totalCost)}</span>
           </div>
           {systemKw ? (
@@ -352,12 +355,12 @@ export function CostSheetEditor({
             </div>
           ) : null}
           <div className="mt-3 flex items-baseline justify-between border-t border-white/15 pt-3">
-            <span className="text-[13px] opacity-75">Agreed value</span>
+            <span className="text-[13px] opacity-75">{t("agreedValue")}</span>
             <span className="ref text-[15px] font-medium">{agreedValue ? inr(agreedValue) : "not set"}</span>
           </div>
           {agreedValue ? (
             <div className="mt-1 flex items-baseline justify-between">
-              <span className="text-sm font-semibold">Margin</span>
+              <span className="text-sm font-semibold">{t("margin")}</span>
               <span className={`ref text-[22px] font-semibold ${margin < 0 ? "text-[var(--red-soft)]" : "text-[var(--green)]"}`}>
                 {margin < 0 ? "−" : ""}
                 {inr(Math.abs(margin))}
@@ -366,7 +369,7 @@ export function CostSheetEditor({
             </div>
           ) : null}
           {dirty && canWrite ? (
-            <p className="mt-3.5 rounded-lg bg-white/10 px-3 py-2 text-[12px]">Not saved yet — the dashboard uses the saved sheet.</p>
+            <p className="mt-3.5 rounded-lg bg-white/10 px-3 py-2 text-[12px]">{t("notSaved")}</p>
           ) : null}
         </section>
       </aside>

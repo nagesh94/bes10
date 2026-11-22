@@ -4,6 +4,8 @@
  * The URL comes from master data, never from code, so another DISCOM zone is
  * an admin edit rather than a deploy.
  */
+import { useTranslations } from "next-intl";
+
 export function PortalLink({
   href,
   title,
@@ -13,10 +15,11 @@ export function PortalLink({
   title: string;
   note?: string;
 }) {
+  const t = useTranslations("flags");
   if (!href) {
     return (
       <p className="mb-5 rounded-[9px] border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-4 py-3.5 text-[13px] text-[var(--muted)]">
-No portal URL set for this DISCOM.
+{t("noPortalUrl")}
       </p>
     );
   }
@@ -38,7 +41,7 @@ No portal URL set for this DISCOM.
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-bold">{title}</span>
         <span className="ref mt-0.5 block text-[11.5px] opacity-75">
-          {host} · {note ?? "opens in a new tab"}
+          {host} · {note ?? t("opensNewTab")}
         </span>
       </span>
       <svg

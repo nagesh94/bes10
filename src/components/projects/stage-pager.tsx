@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react";
-import { STAGE_TITLES } from "@/lib/workflow/labels";
+import { useTranslations } from "next-intl";
 import { STAGE_KEYS } from "@/lib/workflow/stages";
 
 const base =
   "inline-flex min-h-11 max-w-full items-center gap-2 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-semibold text-[var(--ink)] no-underline hover:bg-[var(--surface-2)]";
 
-function label(no: number) {
-  const key = STAGE_KEYS[no - 1];
-  return key ? STAGE_TITLES[key] : `Stage ${no}`;
+function useStageLabel() {
+  const t = useTranslations("labels");
+  return (no: number) => {
+    const key = STAGE_KEYS[no - 1];
+    return key ? t(`stageTitles.${key}`) : t("stageN", { no });
+  };
 }
 
 /**
@@ -30,6 +33,8 @@ export function StagePager({
   stageNo: number;
   align?: "between" | "end";
 }) {
+  const label = useStageLabel();
+  const t = useTranslations("projects.c");
   const prev = stageNo > 1 ? stageNo - 1 : null;
   const next = stageNo < STAGE_KEYS.length ? stageNo + 1 : null;
 
@@ -43,14 +48,14 @@ export function StagePager({
         <Link href={`/projects/${projectId}/stage-${prev}`} className={base}>
           <ChevronLeft size={16} strokeWidth={2.4} className="shrink-0" aria-hidden />
           <span className="truncate">
-            <span className="text-[var(--muted)]">Stage {prev} · </span>
+            <span className="text-[var(--muted)]">{t("stagePrefix", { no: prev })} </span>
             {label(prev)}
           </span>
         </Link>
       ) : (
         <Link href={`/projects/${projectId}`} className={base}>
           <LayoutGrid size={15} strokeWidth={2.2} className="shrink-0" aria-hidden />
-          Project overview
+          {t("overview")}
         </Link>
       )}
 
@@ -60,14 +65,14 @@ export function StagePager({
           className={`${base} border-[var(--orange-border)] bg-[var(--orange-soft)] text-[var(--orange-text)] hover:bg-[var(--orange-ring)]`}
         >
           <span className="truncate">
-            <span className="opacity-75">Stage {next} · </span>
+            <span className="opacity-75">{t("stagePrefix", { no: next })} </span>
             {label(next)}
           </span>
           <ChevronRight size={16} strokeWidth={2.4} className="shrink-0" aria-hidden />
         </Link>
       ) : (
         <Link href={`/projects/${projectId}`} className={base}>
-          <span className="truncate">Back to the overview</span>
+          <span className="truncate">{t("backToOverview")}</span>
           <ChevronRight size={16} strokeWidth={2.4} className="shrink-0" aria-hidden />
         </Link>
       )}
@@ -83,6 +88,8 @@ const arrow =
  * pair of full-width buttons would push the work itself below the fold.
  */
 export function StageArrows({ projectId, stageNo }: { projectId: string; stageNo: number }) {
+  const label = useStageLabel();
+  const t = useTranslations("projects.c");
   const prev = stageNo > 1 ? stageNo - 1 : null;
   const next = stageNo < STAGE_KEYS.length ? stageNo + 1 : null;
 
@@ -93,16 +100,16 @@ export function StageArrows({ projectId, stageNo }: { projectId: string; stageNo
       <Link
         href={prev ? `/projects/${projectId}/stage-${prev}` : `/projects/${projectId}`}
         className={arrow}
-        aria-label={prev ? `Stage ${prev} · ${label(prev)}` : "Project overview"}
-        title={prev ? `Stage ${prev} · ${label(prev)}` : "Project overview"}
+        aria-label={prev ? `${t("stagePrefix", { no: prev })} ${label(prev)}` : t("overview")}
+        title={prev ? `${t("stagePrefix", { no: prev })} ${label(prev)}` : t("overview")}
       >
         <ChevronLeft size={17} strokeWidth={2.4} aria-hidden />
       </Link>
       <Link
         href={next ? `/projects/${projectId}/stage-${next}` : `/projects/${projectId}`}
         className={arrow}
-        aria-label={next ? `Stage ${next} · ${label(next)}` : "Project overview"}
-        title={next ? `Stage ${next} · ${label(next)}` : "Project overview"}
+        aria-label={next ? `${t("stagePrefix", { no: next })} ${label(next)}` : t("overview")}
+        title={next ? `${t("stagePrefix", { no: next })} ${label(next)}` : t("overview")}
       >
         <ChevronRight size={17} strokeWidth={2.4} aria-hidden />
       </Link>

@@ -1,0 +1,161 @@
+{
+  "sections": {
+    "user": {
+      "title": "उपयोगकर्ता विवरण",
+      "blurb": "जैसा पीएम सूर्य घर आवेदन में दर्ज है।",
+      "fields": {
+        "firstName": { "label": "पहला नाम" },
+        "lastName": { "label": "उपनाम" },
+        "gender": { "label": "लिंग" },
+        "phone": { "label": "संपर्क नंबर", "hint": "10 अंक" },
+        "email": { "label": "ईमेल पता" },
+        "nationalPortalId": { "label": "नेशनल पोर्टल आईडी" },
+        "address": { "label": "पता" },
+        "pinCode": { "label": "पिन कोड", "hint": "6 अंक" },
+        "applicationDate": { "label": "आवेदन तिथि" },
+        "regionName": { "label": "क्षेत्र", "placeholder": "भोपाल" },
+        "circleName": { "label": "सर्कल", "placeholder": "बैतूल सर्कल" },
+        "divisionName": { "label": "डिवीज़न", "placeholder": "बैतूल दक्षिण" },
+        "zoneName": { "label": "ज़ोन / डीसी", "placeholder": "बैतूल टाउन-II" },
+        "isDcr": { "label": "डीसीआर के साथ?", "hint": "घरेलू सामग्री वाले मॉड्यूल। चरण 5 का प्रमाणपत्र चरण चालू करता है।" },
+        "wantsSubsidy": { "label": "सब्सिडी के लिए आवेदन?", "hint": "चरण 9 का निपटान और सब्सिडी के बाद का भुगतान पड़ाव खोलता है।" }
+      }
+    },
+    "rooftop": {
+      "title": "छत का विवरण",
+      "blurb": "प्लांट क्षमता से लोड जाँच होती है, इसलिए बिल वाले सेक्शन से पहले इसे सही भरें।",
+      "fields": {
+        "plantKw": { "label": "प्लांट क्षमता" },
+        "latitude": { "label": "अक्षांश" },
+        "longitude": { "label": "देशांतर" }
+      }
+    },
+    "aadhaar": {
+      "title": "आधार विवरण",
+      "blurb": "केवल कार्ड पर छपा नाम और पता — आधार नंबर नहीं लिया जाता।",
+      "fields": {
+        "nameOnAadhaar": { "label": "आधार पर नाम" },
+        "addressOnAadhaar": { "label": "आधार पर पता" }
+      },
+      "uploads": {
+        "AADHAAR": { "label": "आधार कार्ड", "hint": "दोनों तरफ़ · सुरक्षित जगह रखा जाता है, हर बार देखना दर्ज होता है" }
+      }
+    },
+    "pan": {
+      "title": "पैन विवरण",
+      "blurb": "उन चार नामों में से एक जिन्हें फ़्लैग इंजन मिलाता है।",
+      "fields": {
+        "nameOnPan": { "label": "पैन पर नाम" },
+        "panNumber": { "label": "पैन नंबर" }
+      },
+      "uploads": {
+        "PAN": { "label": "पैन कार्ड", "hint": "स्कैन या साफ़ फ़ोटो" }
+      }
+    },
+    "bank": {
+      "title": "बैंक विवरण",
+      "blurb": "सब्सिडी कहाँ आती है — यह ग्राहक के खाते में आती है, भीम के नहीं।",
+      "fields": {
+        "bankName": { "label": "बैंक का नाम" },
+        "accountHolderName": { "label": "खाताधारक का नाम" },
+        "accountNumber": { "label": "खाता संख्या" },
+        "confirmAccountNumber": { "label": "खाता संख्या की पुष्टि करें", "hint": "दोबारा टाइप करें — इससे बैंक फ़ाइल में जाने से पहले गलत अंक पकड़ में आता है।" },
+        "ifscCode": { "label": "IFSC कोड" },
+        "occupation": { "label": "व्यवसाय", "hint": "ऋणदाता को यह ऋण फ़ाइल में चाहिए।", "placeholder": "किसान, दुकानदार, नौकरीपेशा…" },
+        "hasCoApplicant": { "label": "ऋण पर सह-आवेदक?", "hint": "वैकल्पिक। हाँ कहने पर उनके विवरण और दस्तावेज़ों के लिए सेक्शन जुड़ता है।" }
+      },
+      "uploads": {
+        "CANCELLED_CHEQUE": { "label": "रद्द चेक", "hint": "बैंक ऋण पैक में जाता है" },
+        "BANK_STATEMENT": { "label": "बैंक स्टेटमेंट", "hint": "पिछले छह महीने · ऋण फ़ाइल के लिए" },
+        "PASSBOOK": { "label": "पासबुक फ़ोटो", "hint": "चेक बुक न हो तो विकल्प" }
+      },
+      "uploadsNote": "रद्द चेक और स्टेटमेंट दोनों बैंक ऋण पैक में जाते हैं। जहाँ ग्राहक के पास चेक बुक नहीं है, वहाँ पासबुक फ़ोटो काम आती है।"
+    },
+    "electricity": {
+      "title": "बिजली बिल विवरण",
+      "blurb": "इस कनेक्शन के नवीनतम बिल से लिया गया।",
+      "fields": {
+        "consumerNumber": { "label": "उपभोक्ता नंबर" },
+        "nameOnBill": { "label": "बिल पर नाम", "hint": "आधार, पैन और बैंक से मिलाया जाता है।" },
+        "sanctionedLoadKw": { "label": "बिल पर स्वीकृत लोड", "hint": "प्लांट क्षमता से अधिक होना चाहिए, वरना लोड वृद्धि का फ़्लैग बनता है।" },
+        "currentBillAmount": { "label": "वर्तमान बिल राशि" }
+      },
+      "uploads": {
+        "ELECTRICITY_BILL": { "label": "बिजली बिल", "hint": "इस कनेक्शन का नवीनतम बिल" }
+      }
+    },
+    "other": {
+      "title": "अन्य विवरण",
+      "blurb": "उपकरण के चुनाव जो दस्तावेज़ों तक जाते हैं।",
+      "fields": {
+        "panelType": { "label": "पैनल प्रकार" },
+        "panelCompany": { "label": "पैनल कंपनी" },
+        "meterType": { "label": "मीटर प्रकार" }
+      }
+    },
+    "survey": {
+      "title": "साइट सर्वे",
+      "blurb": "अनुमानित लंबाइयाँ। असली लंबाई चरण 4 में दर्ज होती है।",
+      "fields": {
+        "acCableLengthM": { "label": "AC केबल लंबाई" },
+        "dcCableLengthM": { "label": "DC केबल लंबाई" },
+        "earthingLengthM": { "label": "अर्थिंग लंबाई" },
+        "laLengthM": { "label": "LA लंबाई" },
+        "pipesRequired": { "label": "ज़रूरी पाइप" }
+      }
+    },
+    "coApplicant": {
+      "title": "सह-आवेदक",
+      "blurb": "बैंक को उनसे भी वही पहचान दस्तावेज़ चाहिए जो उपभोक्ता से।",
+      "fields": {
+        "name": { "label": "पूरा नाम" },
+        "relationship": { "label": "उपभोक्ता से संबंध", "placeholder": "पति/पत्नी, बेटा, बेटी…" },
+        "phone": { "label": "फ़ोन नंबर" },
+        "email": { "label": "ईमेल पता" },
+        "occupation": { "label": "व्यवसाय" },
+        "panNumber": { "label": "पैन नंबर" }
+      },
+      "uploads": {
+        "COAPP_AADHAAR": { "label": "सह-आवेदक का आधार कार्ड" },
+        "COAPP_PAN": { "label": "सह-आवेदक का पैन कार्ड" },
+        "COAPP_PASSBOOK": { "label": "सह-आवेदक की बैंक पासबुक" },
+        "COAPP_PHOTO": { "label": "सह-आवेदक की फ़ोटो", "hint": "स्कैन दर्ज है; बैंक को हाथ से लगी दो प्रतियाँ चाहिए" }
+      },
+      "uploadsNote": "वही सेट जो बैंक मुख्य आवेदक से माँगता है। ये अपने आप बैंक फ़ाइल में जुड़ जाते हैं।"
+    }
+  },
+  "options": {
+    "Male": "पुरुष",
+    "Female": "महिला",
+    "Other": "अन्य",
+    "Smart_meter": "स्मार्ट मीटर",
+    "Normal_meter": "सामान्य मीटर"
+  },
+  "form": {
+    "yes": "हाँ",
+    "no": "नहीं",
+    "saved": "सहेजा गया।",
+    "back": "वापस",
+    "saving": "सहेजा जा रहा है…",
+    "save": "सहेजें",
+    "saveContinue": "सहेजें और आगे बढ़ें"
+  },
+  "stage1": {
+    "note": "हर सेक्शन अलग से सहेजा जाता है",
+    "sectionsDone": "{total} में से {done} सेक्शन",
+    "flagsOpen": "{count} फ़्लैग खुले।",
+    "cannotClose": "जब तक {what} हल नहीं होता, चरण 1 बंद नहीं हो सकता।",
+    "aNameChange": "नाम परिवर्तन",
+    "aLoadEnhancement": "लोड वृद्धि",
+    "and": " और ",
+    "resolveFlags": "फ़्लैग हल करें",
+    "prospectForm": "प्रॉस्पेक्ट फ़ॉर्म",
+    "aadhaarOnFile": "आधार दर्ज है, अंत में <ref>{masked}</ref>। अब नहीं लिया जाता।",
+    "uploadCoAppFirst": "आगे बढ़ने से पहले नीचे सह-आवेदक के दस्तावेज़ अपलोड करें।",
+    "docsForSection": "इस सेक्शन के दस्तावेज़",
+    "uploadsDefaultNote": "छपाई के लिए पूरी क्वालिटी में अपलोड, साथ में पोर्टल के आकार की प्रति अपने आप बनती है।",
+    "coAppDocs": "सह-आवेदक के दस्तावेज़",
+    "sitePhotos": "साइट फ़ोटो",
+    "sitePhotosHint": "जियोटैग, साइट पर लिए गए"
+  }
+}

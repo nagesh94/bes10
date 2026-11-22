@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   deleteAgreement,
   getAgreementUrl,
@@ -38,6 +39,7 @@ export function AgreementRowActions({
    */
   canDelete?: boolean;
 }) {
+  const t = useTranslations("agreements.c");
   const router = useRouter();
   const ask = useConfirm();
   const [busy, setBusy] = useState<"download" | "delete" | null>(null);
@@ -55,9 +57,9 @@ export function AgreementRowActions({
 
   async function remove() {
     const answer = await ask({
-      title: "Delete this agreement?",
-      body: "The .docx goes for good. Who the parties were and what was agreed stays on record.",
-      confirmLabel: "Delete it",
+      title: t("deleteTitle"),
+      body: t("deleteBody"),
+      confirmLabel: t("deleteIt"),
       reason: {},
     });
     if (!answer.confirmed) return;
@@ -83,10 +85,10 @@ export function AgreementRowActions({
               : "border-[var(--line)] text-[var(--link)]"
           }`}
         >
-          {busy === "download" ? "Preparing…" : failed ? "Failed" : "Download"}
+          {busy === "download" ? t("preparing") : failed ? t("failed") : t("download")}
         </button>
       ) : (
-        <span className="text-[12px] text-[var(--muted)]">No file</span>
+        <span className="text-[12px] text-[var(--muted)]">{t("noFile")}</span>
       )}
       {canDelete ? (
         <button
@@ -95,7 +97,7 @@ export function AgreementRowActions({
           onClick={() => void remove()}
           className={`${rowBtn} border-[var(--red-border)] text-[var(--red-text)]`}
         >
-          {busy === "delete" ? "Deleting…" : "Delete"}
+          {busy === "delete" ? t("deleting") : t("delete")}
         </button>
       ) : null}
       {error ? (
@@ -126,6 +128,7 @@ export function AgreementControls({
   /** Already resolved against this agreement — see `AgreementRowActions`. */
   canDelete?: boolean;
 }) {
+  const t = useTranslations("agreements.c");
   const router = useRouter();
   const ask = useConfirm();
   const [pending, setPending] = useState<string | null>(null);
@@ -162,9 +165,9 @@ export function AgreementControls({
 
   async function remove() {
     const answer = await ask({
-      title: "Delete this agreement?",
-      body: "The .docx goes for good, and the agreement leaves every list. Who signed what stays on record, in the audit log.",
-      confirmLabel: "Delete it",
+      title: t("deleteTitle"),
+      body: t("deleteBodyFull"),
+      confirmLabel: t("deleteIt"),
       reason: {},
     });
     if (!answer.confirmed) return;
@@ -188,7 +191,7 @@ export function AgreementControls({
           onClick={download}
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending === "open" ? "Preparing…" : "Download the .docx"}
+          {pending === "open" ? t("preparing") : t("downloadDocx")}
         </button>
 
         {canWrite ? (
@@ -197,14 +200,14 @@ export function AgreementControls({
               type="button"
               disabled={pending !== null}
               onClick={rebuild}
-              title="Rebuild from the saved details — use after the clause text is corrected"
+              title={t("rebuildTitle")}
               className="h-11 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--ink)] disabled:opacity-60"
             >
-              {pending === "rebuild" ? "Rebuilding…" : "Rebuild the file"}
+              {pending === "rebuild" ? t("rebuilding") : t("rebuild")}
             </button>
 
             <label className="ml-1 flex items-center gap-2 text-[12.5px] font-semibold text-[var(--muted)]">
-              Status
+              {t("status")}
               <select
                 value={status}
                 disabled={pending !== null}
@@ -213,7 +216,7 @@ export function AgreementControls({
               >
                 {STATUSES.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {t(`statuses.${option.value}`)}
                   </option>
                 ))}
               </select>
@@ -226,10 +229,10 @@ export function AgreementControls({
             type="button"
             disabled={pending !== null}
             onClick={remove}
-            title="Remove this agreement — the audit log keeps what it was"
+            title={t("removeTitle")}
             className="ml-auto h-11 cursor-pointer rounded-lg border border-[var(--red-border)] bg-[var(--surface)] px-4 text-sm font-bold text-[var(--red-text)] disabled:opacity-60"
           >
-            {pending === "delete" ? "Deleting…" : "Delete"}
+            {pending === "delete" ? t("deleting") : t("delete")}
           </button>
         ) : null}
       </div>

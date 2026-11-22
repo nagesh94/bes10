@@ -281,6 +281,52 @@ export const CO_APPLICANT_SECTION = {
     "The same set the bank asks for from the main applicant. These join the bank file automatically.",
 } satisfies FormSection;
 
+/** A next-intl translator scoped to the "prospect" namespace. */
+export interface ProspectTranslator {
+  (key: string): string;
+  has(key: string): boolean;
+}
+
+/**
+ * The same section with its copy swapped for the reader's language. Keys
+ * follow the definitions above (`sections.<key>.fields.<name>.label`), and
+ * anything without a translation keeps the English it was defined with.
+ */
+export function localizeSection<S extends FormSection>(s: S, t: ProspectTranslator): S {
+  const p = `sections.${s.key}`;
+  const get = (k: string, fallback: string) => (t.has(`${p}.${k}`) ? t(`${p}.${k}`) : fallback);
+  const opt = (k: string, fallback: string | undefined) =>
+    fallback === undefined ? undefined : get(k, fallback);
+  return {
+    ...s,
+    title: get("title", s.title),
+    blurb: get("blurb", s.blurb),
+    ...(s.uploadsNote === undefined ? {} : { uploadsNote: get("uploadsNote", s.uploadsNote) }),
+    fields: s.fields.map((f) => {
+      const hint = opt(`fields.${f.name}.hint`, f.hint);
+      const placeholder = opt(`fields.${f.name}.placeholder`, f.placeholder);
+      return {
+        ...f,
+        label: get(`fields.${f.name}.label`, f.label),
+        ...(hint === undefined ? {} : { hint }),
+        ...(placeholder === undefined ? {} : { placeholder }),
+      };
+    }),
+    ...(s.uploads === undefined
+      ? {}
+      : {
+          uploads: s.uploads.map((u) => {
+            const hint = opt(`uploads.${u.docType}.hint`, u.hint);
+            return {
+              ...u,
+              label: get(`uploads.${u.docType}.label`, u.label),
+              ...(hint === undefined ? {} : { hint }),
+            };
+          }),
+        }),
+  };
+}
+
 export function sectionByKey(key: string): SectionDef | undefined {
   return SECTIONS.find((s) => s.key === key);
 }

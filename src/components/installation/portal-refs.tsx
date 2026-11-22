@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { saveExternalRefs } from "@/app/actions/installation";
 
 const cell =
@@ -16,24 +17,25 @@ const button =
  * copying one at a time off the stage 3 list.
  */
 export function PanelSerialsCopyBox({ serials }: { serials: string[] }) {
+  const t = useTranslations("installation");
   const [copied, setCopied] = useState(false);
   const text = serials.join("\n");
 
   return (
     <div className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
       <div className="mb-0.5 flex flex-wrap items-baseline gap-2">
-        <h2 className="flex-1 text-base font-bold">Panel serial numbers</h2>
+        <h2 className="flex-1 text-base font-bold">{t("refs.serialsTitle")}</h2>
         <span className="ref text-[12.5px] font-semibold text-[var(--muted)]">
           {serials.length}
         </span>
       </div>
-      <p className="mb-3 text-[13px] text-[var(--muted)]">One per line.</p>
+      <p className="mb-3 text-[13px] text-[var(--muted)]">{t("refs.onePerLine")}</p>
       <textarea
         readOnly
         rows={Math.min(Math.max(serials.length, 3), 10)}
         value={text}
         onFocus={(e) => e.currentTarget.select()}
-        aria-label="Panel serial numbers"
+        aria-label={t("refs.serialsTitle")}
         className="ref mb-3 w-full resize-y rounded-[7px] border border-[var(--line)] bg-[var(--surface-2)] p-3 text-[13.5px] outline-none focus:border-[var(--orange)]"
       />
       <button
@@ -46,7 +48,7 @@ export function PanelSerialsCopyBox({ serials }: { serials: string[] }) {
         disabled={!text}
         className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-bold text-[var(--navy-text)] disabled:opacity-60"
       >
-        {copied ? "Copied" : "Copy all"}
+        {copied ? t("refs.copied") : t("refs.copyAll")}
       </button>
     </div>
   );
@@ -60,6 +62,7 @@ export function DcrDetails({
   projectId: string;
   initial: { dcrNumber: string; dcrIssuedOn: string };
 }) {
+  const t = useTranslations("installation");
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -67,12 +70,12 @@ export function DcrDetails({
 
   return (
     <div>
-      <h2 className="mb-0.5 text-base font-bold">Certificate details</h2>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">Copy from the certificate.</p>
+      <h2 className="mb-0.5 text-base font-bold">{t("refs.certTitle")}</h2>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">{t("refs.copyFromCert")}</p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         <div>
-          <label className={labelCls} htmlFor="dcrNumber">DCR certificate number</label>
+          <label className={labelCls} htmlFor="dcrNumber">{t("refs.dcrNumber")}</label>
           <input
             id="dcrNumber"
             value={v.dcrNumber}
@@ -85,7 +88,7 @@ export function DcrDetails({
           />
         </div>
         <div>
-          <label className={labelCls} htmlFor="dcrIssuedOn">Issued on</label>
+          <label className={labelCls} htmlFor="dcrIssuedOn">{t("refs.issuedOn")}</label>
           <input
             id="dcrIssuedOn"
             type="date"
@@ -111,7 +114,7 @@ export function DcrDetails({
         }}
         className={button}
       >
-        {pending ? "Saving…" : saved ? "Saved" : "Save certificate details"}
+        {pending ? t("common.saving") : saved ? t("common.saved") : t("refs.saveCert")}
       </button>
     </div>
   );
@@ -131,20 +134,21 @@ export function MeterPayment({
   projectId: string;
   initial: { meterPaymentRef: string; meterPaidOn: string; meterAmount: string };
 }) {
+  const t = useTranslations("installation");
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const fields: Array<[keyof typeof initial, string, string, boolean]> = [
-    ["meterPaymentRef", "Payment reference", "SSJ2026041700731", true],
-    ["meterAmount", "Amount paid (₹)", "4720", true],
+    ["meterPaymentRef", t("refs.paymentRef"), "SSJ2026041700731", true],
+    ["meterAmount", t("refs.amountPaid"), "4720", true],
   ];
 
   return (
     <div>
-      <h2 className="mb-0.5 text-base font-bold">Payment details</h2>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">From the portal receipt.</p>
+      <h2 className="mb-0.5 text-base font-bold">{t("refs.paymentTitle")}</h2>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">{t("refs.fromReceipt")}</p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
         {fields.map(([key, label, placeholder, mono]) => (
@@ -164,7 +168,7 @@ export function MeterPayment({
           </div>
         ))}
         <div>
-          <label className={labelCls} htmlFor="meterPaidOn">Paid on</label>
+          <label className={labelCls} htmlFor="meterPaidOn">{t("refs.paidOn")}</label>
           <input
             id="meterPaidOn"
             type="date"
@@ -190,7 +194,7 @@ export function MeterPayment({
         }}
         className={button}
       >
-        {pending ? "Saving…" : saved ? "Saved" : "Save payment details"}
+        {pending ? t("common.saving") : saved ? t("common.saved") : t("refs.savePayment")}
       </button>
     </div>
   );

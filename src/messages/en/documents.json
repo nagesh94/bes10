@@ -1,0 +1,229 @@
+{
+  "gen": {
+    "nGenerated": "{count, plural, one {# document} other {# documents}} generated.",
+    "deleteTitle": "Delete “{label}”?",
+    "deleteBody": "The file is removed from storage. It can be generated again from the project's current data.",
+    "deleteIt": "Delete it",
+    "title": "Generated documents",
+    "printReady": "Print-ready PDF",
+    "xOfY": "{x} of {y}",
+    "locked": "Nothing here can be generated yet",
+    "stillMissing": "Still missing: {fields}.",
+    "missing": {
+      "date_of_commissioning": "date of commissioning",
+      "purchase_order_number": "purchase order number",
+      "purchase_order_date": "purchase order date",
+      "cell_manufacturer": "cell manufacturer"
+    },
+    "download": "Download",
+    "generating": "Generating…",
+    "regenerate": "Regenerate",
+    "generate": "Generate",
+    "delete": "Delete",
+    "generateIt": "Generate it",
+    "generateAll": "Generate the whole set",
+    "portalTitle": "Uploaded to PM Surya Ghar",
+    "tickManually": "Tick each one off manually.",
+    "openPortal": "Open the national portal",
+    "opensNewTab": "pmsuryaghar.gov.in · opens in a new tab",
+    "notOnFile": "Not on file yet — nothing to upload",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "procFields": {
+      "purchaseOrderNo": "Purchase order number",
+      "purchaseOrderDate": "Purchase order date",
+      "cellManufacturer": "Cell manufacturer",
+      "cellGstInvoiceNo": "Cell GST invoice number"
+    },
+    "procTitle": "Module procurement",
+    "procIntro": "All four are needed for the DCR undertaking.",
+    "procSave": "Save procurement details",
+    "dateFields": {
+      "performanceCheckDate": {
+        "label": "Date of performance check",
+        "hint": "Asked for — the others may stay blank"
+      },
+      "commissioningDate": {
+        "label": "Date of commissioning",
+        "hint": "After the net meter is fitted — this one may be booked ahead"
+      },
+      "jointInspectionDate": {
+        "label": "Date of joint inspection",
+        "hint": "When the DISCOM attends"
+      }
+    },
+    "datesTitle": "Inspection dates",
+    "datesIntro": "Empty ones print as a blank line.",
+    "datesSave": "Save dates"
+  },
+  "slot": {
+    "preparing": "Preparing…",
+    "uploading": "Uploading…",
+    "processing": "Processing…",
+    "pages": "{count, plural, one {# page} other {# pages}}",
+    "overCap": "Saved ({size} KB), but that is over the portal's cap. A PDF cannot be shrunk much — rescan at a lower DPI, or upload photos of the pages instead.",
+    "overCapPages": "Saved ({pages}, {size} KB), but that is over the portal's cap. A PDF cannot be shrunk much — rescan at a lower DPI, or upload photos of the pages instead.",
+    "savedPortal": "Saved · portal copy {size} KB",
+    "savedPagesPortal": "Saved · {pages} · portal copy {size} KB",
+    "savedPages": "Saved · {pages}",
+    "saved": "Saved",
+    "failed": "Something went wrong during the upload.",
+    "deleteTitle": "Delete “{label}”?",
+    "deleteBody": "The file is removed from storage and cannot be recovered here. A replacement can be uploaded in its place.",
+    "deleteIt": "Delete it",
+    "file": "file",
+    "pdfOrPhoto": "PDF or photo",
+    "view": "View",
+    "saveToComputer": "Save this file to this computer",
+    "download": "Download",
+    "delete": "Delete",
+    "replace": "Replace",
+    "upload": "Upload"
+  },
+  "photos": {
+    "gettingLocation": "Getting location…",
+    "uploadingNofM": "Uploading {n} of {total}…",
+    "failedOn": "Something went wrong on {name}.",
+    "stamped": "{stamped} of {uploaded} geotagged and stamped.",
+    "noLocation": "{uploaded} uploaded. Location was unavailable, so nothing was stamped.",
+    "removeTitle": "Remove this photo?",
+    "removeBody": "It is deleted from the project and cannot be recovered. The photo can be taken again.",
+    "removeIt": "Remove it",
+    "count": "{count, plural, one {# photo} other {# photos}}",
+    "openFull": "Open the full-size photo",
+    "noPreview": "No preview",
+    "downloadFull": "Download the full-size photo",
+    "saveToComputer": "Save this photo to this computer",
+    "remove": "Remove this photo",
+    "take": "Take photo",
+    "gallery": "Upload from gallery"
+  },
+  "bank": {
+    "title": "Bank file",
+    "xOfY": "{x} of {y}",
+    "onFile": "on file",
+    "view": "View",
+    "addIt": "Add it",
+    "attachByHand": "Attach by hand",
+    "notPrintable": "Not printable.",
+    "aboutPages": "About <ref>{count} pages</ref> once printed.",
+    "items": {
+      "AADHAAR": {
+        "label": "Aadhaar card",
+        "hint": "Collected in the prospect form"
+      },
+      "PAN": {
+        "label": "PAN card",
+        "hint": "Collected in the prospect form"
+      },
+      "ELECTRICITY_BILL": {
+        "label": "Electricity bill",
+        "hint": "Collected in the prospect form"
+      },
+      "CANCELLED_CHEQUE": {
+        "label": "Cancelled cheque",
+        "hint": "Collected in the prospect form"
+      },
+      "BANK_STATEMENT": {
+        "label": "Bank statement",
+        "hint": "Last six months"
+      },
+      "QUOTATION": {
+        "label": "Quotation",
+        "hint": "Priced outside the app"
+      },
+      "AGREEMENT_SIGNED": {
+        "label": "Vendor agreement — signed",
+        "hint": "The notarised scan, not the generated draft"
+      },
+      "ACKNOWLEDGEMENT": {
+        "label": "Acknowledgement",
+        "hint": "Issued on PM Surya Ghar when the application goes in"
+      },
+      "FEASIBILITY_REPORT": {
+        "label": "Feasibility report",
+        "hint": "The DISCOM's own report — not the site feasibility report below"
+      },
+      "SITE_FEASIBILITY": {
+        "label": "Site feasibility report",
+        "hint": "Auto-generated on PM Surya Ghar — download and upload it here"
+      },
+      "E_TOKEN": {
+        "label": "E-token",
+        "hint": "Auto-generated on PM Surya Ghar — download and upload it here"
+      },
+      "DIGITAL_APPROVAL_LETTER": {
+        "label": "Digital approval letter",
+        "hint": "Downloaded from Jan Samarth once the loan clears"
+      },
+      "COAPP_AADHAAR": {
+        "label": "Co-applicant Aadhaar card",
+        "hint": "Collected with the bank details"
+      },
+      "COAPP_PAN": {
+        "label": "Co-applicant PAN card",
+        "hint": "Collected with the bank details"
+      },
+      "COAPP_PASSBOOK": {
+        "label": "Co-applicant bank passbook",
+        "hint": "Collected with the bank details"
+      },
+      "COAPP_PHOTO": {
+        "label": "Co-applicant photographs",
+        "hint": "Scan on file; two prints attached by hand"
+      }
+    },
+    "physical": {
+      "Passport_photographs": {
+        "label": "Passport photographs",
+        "note": "A scan can be kept on file, but the bank wants prints",
+        "noteCoApp": "Two for the applicant, two for the co-applicant"
+      },
+      "Cheques": {
+        "label": "Cheques",
+        "note": "Security cheques, signed"
+      },
+      "Stamp_paper": {
+        "label": "Stamp paper",
+        "note": "Non-judicial"
+      }
+    }
+  },
+  "row": {
+    "deleteTitle": "Delete this document?",
+    "deleteBody": "The file is removed from storage and cannot be recovered here. The record of the deletion stays in the audit log.",
+    "deleteIt": "Delete it",
+    "opening": "Opening…",
+    "open": "Open",
+    "downloading": "Downloading…",
+    "download": "Download",
+    "rebuildTitle": "Rebuild this file from the project's current data",
+    "regenerating": "Regenerating…",
+    "regenerate": "Regenerate",
+    "deleting": "Deleting…",
+    "delete": "Delete"
+  },
+  "page": {
+    "title": "Documents",
+    "projectNote": "Everything filed against this project, by category — {docs, plural, one {# document} other {# documents}} and {photos, plural, one {# photo} other {# photos}}.",
+    "noFileName": "no file name",
+    "onPortal": "on the portal",
+    "other": "Other",
+    "prePhotos": "Pre-installation photos",
+    "postPhotos": "Post-installation photos",
+    "noPreview": "No preview",
+    "nothingYet": "Nothing here yet",
+    "nothingUploaded": "Nothing uploaded or generated.",
+    "inAll": "{count} in all",
+    "everything": "Everything",
+    "searchPlaceholder": "Search by consumer, project code, document or file name",
+    "searchAria": "Search documents",
+    "search": "Search",
+    "clear": "Clear",
+    "nothingHere": "Nothing here",
+    "noMatch": "No document matches \"{q}\".",
+    "noneUploaded": "Nothing uploaded yet.",
+    "noneInCategory": "Nothing in this category yet.",
+    "showing500": "Showing the 500 most recent."
+  }
+}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Calculator, ClipboardList, FileStack, IndianRupee } from "lucide-react";
 import type { ProjectHeaderData } from "@/lib/projects/header";
 import { FlagsChip } from "@/components/projects/flags-chip";
+import { useTranslations } from "next-intl";
 
 /* PROSPECT reads with --link rather than --navy: on a dark ground the navy
    ink and the navy chip behind it are within a hair of each other, and the
@@ -34,12 +35,14 @@ export function ProjectHeader({
   canSeeMoney: boolean;
   canSeeDocuments: boolean;
 }) {
+  const t = useTranslations("projects.c");
+  const te = useTranslations("enums");
   const meta: Array<{ k: string; v: string; mono?: boolean }> = [
-    { k: "Plant size", v: data.plantKw },
-    { k: "Portal ID", v: data.portalId ?? "—", mono: true },
-    { k: "Consumer no.", v: data.consumerNumber ?? "—", mono: true },
-    { k: "Phone", v: data.phone, mono: true },
-    { k: "Division", v: data.divisionName ?? "—" },
+    { k: t("plantSize"), v: data.plantKw },
+    { k: t("portalId"), v: data.portalId ?? "—", mono: true },
+    { k: t("consumerNo"), v: data.consumerNumber ?? "—", mono: true },
+    { k: t("phone"), v: data.phone, mono: true },
+    { k: t("division"), v: data.divisionName ?? "—" },
   ];
 
   const chip =
@@ -57,7 +60,7 @@ export function ProjectHeader({
                 LIFECYCLE_CHIP[data.lifecycleStage] ?? ""
               }`}
             >
-              {data.lifecycleStage}
+              {te(`lifecycle.${data.lifecycleStage}`)}
             </span>
             {data.isDcr ? (
               <span className="rounded bg-[var(--green-soft)] px-1.5 py-0.5 text-[10px] font-bold tracking-[0.08em] text-[var(--green-text)] uppercase">
@@ -75,20 +78,20 @@ export function ProjectHeader({
           {canSeeDocuments ? (
             <Link href={`/projects/${data.id}/documents`} className={chip}>
               <FileStack size={15} strokeWidth={2} aria-hidden />
-              Documents
+              {t("documents")}
             </Link>
           ) : null}
           <FlagsChip projectId={data.id} openFlags={data.openFlags} />
           {canSeeMoney ? (
             <Link href={`/projects/${data.id}/payments`} className={chip}>
               <IndianRupee size={15} strokeWidth={2} aria-hidden />
-              Payment plan
+              {t("paymentPlan")}
             </Link>
           ) : null}
           {canSeeMoney ? (
             <Link href={`/projects/${data.id}/costs`} className={chip}>
               <Calculator size={15} strokeWidth={2} aria-hidden />
-              Cost calculator
+              {t("costCalculator")}
             </Link>
           ) : null}
           {/* Next to the payment plan on purpose: the two questions asked
@@ -96,7 +99,7 @@ export function ProjectHeader({
               and the second one was spread over nine stages until now. */}
           <Link href={`/projects/${data.id}/summary`} className={chip}>
             <ClipboardList size={15} strokeWidth={2} aria-hidden />
-            Summary
+            {t("summary")}
           </Link>
         </div>
       </div>

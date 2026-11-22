@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { recordPayment, saveSubsidy } from "@/app/actions/payments";
 import {
   RECEIVED_MODES,
@@ -41,6 +42,8 @@ export function SubsidyForm({
     receivedOn: string;
   };
 }) {
+  const t = useTranslations("payments.settle");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -53,11 +56,11 @@ export function SubsidyForm({
 
   return (
     <div>
-      <h2 className="mb-0.5 text-base font-bold">Subsidy</h2>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">Paid to the consumer&apos;s account.</p>
+      <h2 className="mb-0.5 text-base font-bold">{t("subsidy")}</h2>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">{t("paidToConsumer")}</p>
 
       <div className="mb-4">
-        <div className={labelCls}>Status</div>
+        <div className={labelCls}>{t("status")}</div>
         <div className="flex flex-wrap gap-2">
           {STATUSES.map((s) => (
             <button
@@ -74,7 +77,7 @@ export function SubsidyForm({
                   : "border border-[var(--line)] bg-[var(--surface)] font-semibold text-[var(--muted)]"
               }`}
             >
-              {s.label}
+              {te(`subsidyStatus.${s.value}`)}
             </button>
           ))}
         </div>
@@ -82,7 +85,7 @@ export function SubsidyForm({
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
         <div>
-          <label className={labelCls} htmlFor="s-expected">Expected (₹)</label>
+          <label className={labelCls} htmlFor="s-expected">{t("expected")}</label>
           <input
             id="s-expected"
             value={v.expectedAmount}
@@ -96,7 +99,7 @@ export function SubsidyForm({
           />
         </div>
         <div>
-          <label className={labelCls} htmlFor="s-received">Received (₹)</label>
+          <label className={labelCls} htmlFor="s-received">{t("received")}</label>
           <input
             id="s-received"
             value={v.receivedAmount}
@@ -109,7 +112,7 @@ export function SubsidyForm({
           />
         </div>
         <div>
-          <label className={labelCls} htmlFor="s-on">Received on</label>
+          <label className={labelCls} htmlFor="s-on">{t("receivedOn")}</label>
           <input
             id="s-on"
             type="date"
@@ -147,7 +150,7 @@ export function SubsidyForm({
         }}
         className={primary}
       >
-        {pending ? "Saving…" : saved ? "Saved" : "Save subsidy"}
+        {pending ? t("saving") : saved ? t("saved") : t("saveSubsidy")}
       </button>
     </div>
   );
@@ -161,6 +164,8 @@ export function FinalPayment({
   projectId: string;
   outstanding: number;
 }) {
+  const t = useTranslations("payments.settle");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [v, setV] = useState({
     amount: "",
@@ -173,16 +178,16 @@ export function FinalPayment({
 
   return (
     <div>
-      <h2 className="mb-0.5 text-base font-bold">Final payment</h2>
+      <h2 className="mb-0.5 text-base font-bold">{t("finalPayment")}</h2>
       <p className="mb-4 text-[13px] text-[var(--muted)]">
         {outstanding > 0
-          ? `₹${outstanding.toLocaleString("en-IN")} still to come in.`
-          : "Nothing outstanding."}
+          ? t("stillToCome", { amount: `₹${outstanding.toLocaleString("en-IN")}` })
+          : t("nothingOutstanding")}
       </p>
 
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">
         <div>
-          <label className={labelCls} htmlFor="f-amount">Amount (₹)</label>
+          <label className={labelCls} htmlFor="f-amount">{t("amount")}</label>
           <input
             id="f-amount"
             value={v.amount}
@@ -193,7 +198,7 @@ export function FinalPayment({
           />
         </div>
         <div>
-          <label className={labelCls} htmlFor="f-method">Mode</label>
+          <label className={labelCls} htmlFor="f-method">{t("mode")}</label>
           <select
             id="f-method"
             value={v.mode}
@@ -203,22 +208,22 @@ export function FinalPayment({
             className={cell}
           >
             {RECEIVED_MODES.map((m) => (
-              <option key={m} value={m}>{RECEIVED_MODE_LABELS[m]}</option>
+              <option key={m} value={m}>{te.has(`receivedMode.${m}`) ? te(`receivedMode.${m}`) : RECEIVED_MODE_LABELS[m]}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className={labelCls} htmlFor="f-ref">Reference</label>
+          <label className={labelCls} htmlFor="f-ref">{t("reference")}</label>
           <input
             id="f-ref"
             value={v.referenceNo}
             onChange={(e) => setV((o) => ({ ...o, referenceNo: e.target.value }))}
-            placeholder="UTR or cheque no."
+            placeholder={t("refPlaceholder")}
             className={`${cell} ref`}
           />
         </div>
         <div>
-          <label className={labelCls} htmlFor="f-on">Paid on</label>
+          <label className={labelCls} htmlFor="f-on">{t("paidOn")}</label>
           <input
             id="f-on"
             type="date"
@@ -247,7 +252,7 @@ export function FinalPayment({
         }}
         className={primary}
       >
-        {pending ? "Recording…" : "Record payment"}
+        {pending ? t("recording") : t("recordPayment")}
       </button>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   deleteQuotation,
   getQuotationUrl,
@@ -38,6 +39,8 @@ export function QuotationRowActions({
    */
   canDelete?: boolean;
 }) {
+  const t = useTranslations("quotations.c");
+  const te = useTranslations("enums");
   const router = useRouter();
   const ask = useConfirm();
   const [busy, setBusy] = useState<"open" | "download" | "delete" | null>(null);
@@ -46,9 +49,9 @@ export function QuotationRowActions({
 
   async function remove() {
     const answer = await ask({
-      title: "Delete this quotation?",
-      body: "The PDF goes for good. The number stays on record and is never given to another quotation.",
-      confirmLabel: "Delete it",
+      title: t("deleteTitle"),
+      body: t("deleteBody"),
+      confirmLabel: t("deleteIt"),
       reason: {},
     });
     if (!answer.confirmed) return;
@@ -62,7 +65,7 @@ export function QuotationRowActions({
   }
 
   if (!hasPdf && !canDelete) {
-    return <span className="text-[12px] text-[var(--muted)]">No PDF</span>;
+    return <span className="text-[12px] text-[var(--muted)]">{t("noPdf")}</span>;
   }
 
   // One request either way; only what the browser is told to do with the
@@ -91,24 +94,24 @@ export function QuotationRowActions({
             onClick={() => void go("open")}
             className={`${rowBtn} ${tone}`}
           >
-            {busy === "open" ? "Opening…" : failed ? "Failed" : "Open PDF"}
+            {busy === "open" ? t("opening") : failed ? t("failed") : t("openPdf")}
           </button>
           <button
             type="button"
             disabled={busy !== null}
             onClick={() => void go("download")}
-            title="Save the PDF to this computer"
+            title={t("saveToComputer")}
             className={`${rowBtn} ${
               failed
                 ? "border-[var(--red-text)] text-[var(--red-text)]"
                 : "border-[var(--line)] text-[var(--navy-text)]"
             }`}
           >
-            {busy === "download" ? "Saving…" : "Download"}
+            {busy === "download" ? t("saving") : t("download")}
           </button>
         </>
       ) : (
-        <span className="text-[12px] text-[var(--muted)]">No PDF</span>
+        <span className="text-[12px] text-[var(--muted)]">{t("noPdf")}</span>
       )}
       {canDelete ? (
         <button
@@ -117,7 +120,7 @@ export function QuotationRowActions({
           onClick={() => void remove()}
           className={`${rowBtn} border-[var(--red-border)] text-[var(--red-text)]`}
         >
-          {busy === "delete" ? "Deleting…" : "Delete"}
+          {busy === "delete" ? t("deleting") : t("delete")}
         </button>
       ) : null}
       {error ? (
@@ -149,6 +152,8 @@ export function QuotationControls({
   /** Already resolved against this quotation — see `QuotationRowActions`. */
   canDelete?: boolean;
 }) {
+  const t = useTranslations("quotations.c");
+  const te = useTranslations("enums");
   const router = useRouter();
   const ask = useConfirm();
   const [pending, setPending] = useState<string | null>(null);
@@ -192,9 +197,9 @@ export function QuotationControls({
 
   async function remove() {
     const answer = await ask({
-      title: "Delete this quotation?",
-      body: "The PDF goes for good, and the quotation leaves every list. The number stays on record and is never given to another quotation.",
-      confirmLabel: "Delete it",
+      title: t("deleteTitle"),
+      body: t("deleteBodyFull"),
+      confirmLabel: t("deleteIt"),
       reason: {},
     });
     if (!answer.confirmed) return;
@@ -218,17 +223,17 @@ export function QuotationControls({
           onClick={open}
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending === "open" ? "Opening…" : "Open the PDF"}
+          {pending === "open" ? t("opening") : t("openThePdf")}
         </button>
 
         <button
           type="button"
           disabled={pending !== null || !hasPdf}
           onClick={download}
-          title="Save the PDF to this computer"
+          title={t("saveToComputer")}
           className="h-11 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending === "download" ? "Saving…" : "Download"}
+          {pending === "download" ? t("saving") : t("download")}
         </button>
 
         {canWrite ? (
@@ -237,14 +242,14 @@ export function QuotationControls({
               type="button"
               disabled={pending !== null}
               onClick={rebuild}
-              title="Rebuild from the saved details — use after the branch address or bank details change"
+              title={t("rebuildTitle")}
               className="h-11 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--ink)] disabled:opacity-60"
             >
-              {pending === "rebuild" ? "Rebuilding…" : "Rebuild PDF"}
+              {pending === "rebuild" ? t("rebuilding") : t("rebuild")}
             </button>
 
             <label className="ml-1 flex items-center gap-2 text-[12.5px] font-semibold text-[var(--muted)]">
-              Status
+              {t("status")}
               <select
                 value={status}
                 disabled={pending !== null}
@@ -253,7 +258,7 @@ export function QuotationControls({
               >
                 {STATUSES.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {option.value === "ISSUED" ? t("issuedToCustomer") : te(`quotationStatus.${option.value}`)}
                   </option>
                 ))}
               </select>
@@ -266,10 +271,10 @@ export function QuotationControls({
             type="button"
             disabled={pending !== null}
             onClick={remove}
-            title="Remove this quotation from the list — the number stays on record"
+            title={t("removeTitle")}
             className="ml-auto h-11 cursor-pointer rounded-lg border border-[var(--red-border)] bg-[var(--surface)] px-4 text-sm font-bold text-[var(--red-text)] disabled:opacity-60"
           >
-            {pending === "delete" ? "Deleting…" : "Delete"}
+            {pending === "delete" ? t("deleting") : t("delete")}
           </button>
         ) : null}
       </div>

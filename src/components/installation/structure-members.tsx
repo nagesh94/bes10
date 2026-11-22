@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { saveStructureMembers, type MemberInput } from "@/app/actions/installation";
 
 type MemberType = "COLUMN" | "RAFTER" | "PURLIN";
@@ -32,6 +33,7 @@ export function StructureMembers({
   initialCompany: string;
   initialLegCount: string;
 }) {
+  const t = useTranslations("installation.structure");
   const router = useRouter();
   const [rows, setRows] = useState<MemberInput[]>(initial);
   const [company, setCompany] = useState(initialCompany);
@@ -63,21 +65,20 @@ export function StructureMembers({
   return (
     <div>
       <div className="mb-1 flex flex-wrap items-baseline gap-2">
-        <h3 className="flex-1 text-base font-bold">Structure</h3>
+        <h3 className="flex-1 text-base font-bold">{t("title")}</h3>
         <span className="ref text-[12.5px] text-[var(--muted)]">
-          {rows.reduce((s, r) => s + (num(r.quantity) || 1), 0)} pieces ·{" "}
-          {rows
-            .reduce((s, r) => s + num(r.lengthM) * (num(r.quantity) || 1), 0)
-            .toFixed(1)}{" "}
-          ft
+          {t("totals", {
+            pieces: rows.reduce((s, r) => s + (num(r.quantity) || 1), 0),
+            length: rows.reduce((s, r) => s + num(r.lengthM) * (num(r.quantity) || 1), 0).toFixed(1),
+          })}
         </span>
       </div>
-      <p className="mb-4 text-[13px] text-[var(--muted)]">Size and length for each member.</p>
+      <p className="mb-4 text-[13px] text-[var(--muted)]">{t("intro")}</p>
 
       <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]" htmlFor="structureCompany">
-            Structure company
+            {t("company")}
           </label>
           <input
             id="structureCompany"
@@ -92,7 +93,7 @@ export function StructureMembers({
         </div>
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]" htmlFor="legCount">
-            Number of legs
+            {t("legs")}
           </label>
           <input
             id="legCount"
@@ -108,6 +109,8 @@ export function StructureMembers({
       </div>
 
       {GROUPS.map((group) => {
+        const label = t(`groups.${group.type}.label`);
+        const lower = label.toLowerCase();
         const indexed = rows
           .map((r, i) => ({ row: r, i }))
           .filter(({ row }) => row.memberType === group.type);
@@ -124,17 +127,17 @@ export function StructureMembers({
                 className="block h-2.5 w-2.5 shrink-0 rounded-[3px]"
                 style={{ background: group.colour }}
               />
-              <h4 className="text-[14.5px] font-bold">{group.label}</h4>
+              <h4 className="text-[14.5px] font-bold">{label}</h4>
               <span className="flex-1" />
               <span className="ref text-[12px] text-[var(--muted)]">
-                {pieces} {pieces === 1 ? "piece" : "pieces"} · {metres.toFixed(1)} ft
+                {t("groupTotals", { pieces, length: metres.toFixed(1) })}
               </span>
             </div>
 
             <div className="overflow-x-auto rounded-[9px] border border-[var(--line)]">
               <div className="grid min-w-[330px] grid-cols-[34px_1.4fr_1fr_84px_44px] items-center gap-2.5 border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
                 <span />
-                {["Size", "Length (ft)", "Qty"].map((h) => (
+                {[t("size"), t("length"), t("qty")].map((h) => (
                   <span
                     key={h}
                     className="text-[12px] font-semibold text-[var(--muted)]"
@@ -147,7 +150,7 @@ export function StructureMembers({
 
               {indexed.length === 0 ? (
                 <p className="px-3 py-4 text-center text-[12.5px] text-[var(--muted)]">
-                  No {group.label.toLowerCase()} runs yet.
+                  {t("noRuns", { label: lower })}
                 </p>
               ) : (
                 indexed.map(({ row, i }, n) => (
@@ -159,14 +162,14 @@ export function StructureMembers({
                       {n + 1}
                     </span>
                     <input
-                      aria-label={`${group.label} ${n + 1} size`}
+                      aria-label={t("sizeAria", { label, n: n + 1 })}
                       value={row.size}
                       onChange={(e) => update(i, { size: e.target.value })}
                       placeholder={group.defaultSize}
                       className={`${cell} ref`}
                     />
                     <input
-                      aria-label={`${group.label} ${n + 1} length in feet`}
+                      aria-label={t("lengthAria", { label, n: n + 1 })}
                       value={row.lengthM}
                       onChange={(e) => update(i, { lengthM: e.target.value.replace(/[^0-9.]/g, "") })}
                       placeholder="8"
@@ -174,7 +177,7 @@ export function StructureMembers({
                       className={`${cell} ref`}
                     />
                     <input
-                      aria-label={`${group.label} ${n + 1} quantity`}
+                      aria-label={t("qtyAria", { label, n: n + 1 })}
                       value={row.quantity}
                       onChange={(e) => update(i, { quantity: e.target.value.replace(/[^0-9]/g, "") })}
                       inputMode="numeric"
@@ -182,7 +185,7 @@ export function StructureMembers({
                     />
                     <button
                       type="button"
-                      aria-label={`Remove ${group.label.toLowerCase()} ${n + 1}`}
+                      aria-label={t("removeAria", { label: lower, n: n + 1 })}
                       onClick={() => {
                         setRows((list) => list.filter((_, j) => j !== i));
                         setSaved(false);
@@ -207,7 +210,7 @@ export function StructureMembers({
               }}
               className="mt-2 h-10 cursor-pointer rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
             >
-              + {group.add}
+              + {t(`groups.${group.type}.add`)}
             </button>
           </div>
         );
@@ -223,7 +226,7 @@ export function StructureMembers({
         onClick={save}
         className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
       >
-        {pending ? "Saving…" : saved ? "Saved" : "Save structure"}
+        {pending ? t("saving") : saved ? t("saved") : t("save")}
       </button>
     </div>
   );

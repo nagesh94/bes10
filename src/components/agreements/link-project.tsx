@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { linkAgreementToProject } from "@/app/actions/agreements";
 
 /**
@@ -25,6 +26,7 @@ export function LinkProject({
   projectId: string | null;
   projects: Array<{ id: string; code: string; name: string }>;
 }) {
+  const t = useTranslations("agreements.c");
   const router = useRouter();
   const [choice, setChoice] = useState(projectId ?? "");
   const [pending, setPending] = useState(false);
@@ -51,7 +53,7 @@ export function LinkProject({
             htmlFor="attach-project"
             className="mb-1.5 block text-xs font-semibold text-[var(--muted)]"
           >
-            Attached to project
+            {t("attachedTo")}
           </label>
           <select
             id="attach-project"
@@ -60,7 +62,7 @@ export function LinkProject({
             onChange={(event) => setChoice(event.target.value)}
             className="h-11 w-full cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 text-[14.5px] text-[var(--ink)] outline-none focus:border-[var(--orange)]"
           >
-            <option value="">Not attached — standalone</option>
+            <option value="">{t("notAttached")}</option>
             {projects.map((project) => (
               <option key={project.id} value={project.id}>
                 {project.code} · {project.name}
@@ -82,23 +84,23 @@ export function LinkProject({
           }`}
         >
           {pending
-            ? "Saving…"
+            ? t("saving")
             : !changed
               ? current
-                ? "Attached"
-                : "Attach"
+                ? t("attached")
+                : t("attach")
               : detaching
-                ? "Detach"
+                ? t("detach")
                 : current
-                  ? "Move to this project"
-                  : "Attach"}
+                  ? t("move")
+                  : t("attach")}
         </button>
       </div>
 
       <p className="mt-2 text-[12px] leading-relaxed text-[var(--muted)]">
         {detaching
-          ? "Detaching takes the file out of that project’s documents and out of the bank loan pack. The agreement itself is unchanged."
-          : "Attaching files this .docx as the project’s agreement, so stage 2 and the bank loan pack pick it up without a separate upload. Nothing the parties agreed changes."}
+          ? t("detachNote")
+          : t("attachNote")}
       </p>
 
       {error ? (

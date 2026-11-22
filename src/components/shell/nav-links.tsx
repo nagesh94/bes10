@@ -10,6 +10,7 @@ const PREFIX: Record<string, string> = {
   agreements: "/agreements",
   partners: "/partners",
   documents: "/documents",
+  dcr: "/dcr",
   admin: "/admin",
   myJobs: "/installer",
   myReferrals: "/my-referrals",

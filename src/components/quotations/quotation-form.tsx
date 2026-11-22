@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { createQuotation, updateQuotation } from "@/app/actions/quotations";
 import {
   arrayKw,
@@ -62,6 +63,8 @@ export function QuotationForm({
   master: MasterOptions;
   projectCode?: string | null;
 }) {
+  const t = useTranslations("quotations.form");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [values, setValues] = useState<QuotationFormValues>(initial);
   const [pending, setPending] = useState(false);
@@ -179,13 +182,13 @@ export function QuotationForm({
       {/* ── Consumer ── */}
       <section className={sectionBox}>
         <div className="mb-4 flex flex-wrap items-baseline gap-2">
-          <h2 className="flex-1 text-base font-bold">Consumer</h2>
+          <h2 className="flex-1 text-base font-bold">{t("consumer")}</h2>
           {projectCode ? (
             <span className="ref rounded-full bg-[var(--navy-soft)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--navy-text)]">
               {projectCode}
             </span>
           ) : (
-            <span className="text-[12px] text-[var(--muted)]">Not linked to a project</span>
+            <span className="text-[12px] text-[var(--muted)]">{t("notLinked")}</span>
           )}
           {number ? (
             <span className="ref rounded-full bg-[var(--orange-soft)] px-2.5 py-1 text-[11.5px] font-bold text-[var(--orange-text)]">
@@ -197,7 +200,7 @@ export function QuotationForm({
         <div className="grid gap-4 sm:grid-cols-[110px_1fr_1fr]">
           <div>
             <label className={label} htmlFor="consumerTitle">
-              Title
+              {t("title")}
             </label>
             <select
               id="consumerTitle"
@@ -215,7 +218,7 @@ export function QuotationForm({
           </div>
           <div>
             <label className={label} htmlFor="consumerName">
-              Consumer name
+              {t("consumerName")}
             </label>
             <input
               id="consumerName"
@@ -227,7 +230,7 @@ export function QuotationForm({
           </div>
           <div>
             <label className={label} htmlFor="consumerPhone">
-              Phone
+              {t("phone")}
             </label>
             <input
               id="consumerPhone"
@@ -240,7 +243,7 @@ export function QuotationForm({
 
         <div className="mt-4">
           <label className={label} htmlFor="consumerAddress">
-            Address
+            {t("address")}
           </label>
           <input
             id="consumerAddress"
@@ -253,12 +256,12 @@ export function QuotationForm({
 
       {/* ── The offer ── */}
       <section className={sectionBox}>
-        <h2 className="mb-4 text-base font-bold">The offer</h2>
+        <h2 className="mb-4 text-base font-bold">{t("offer")}</h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className={label} htmlFor="quotationDate">
-              Date
+              {t("date")}
             </label>
             <input
               id="quotationDate"
@@ -294,7 +297,7 @@ export function QuotationForm({
 
           <div>
             <label className={label} htmlFor="systemType">
-              System
+              {t("system")}
             </label>
             <select
               id="systemType"
@@ -304,7 +307,7 @@ export function QuotationForm({
             >
               {SYSTEM_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
-                  {type.label}
+                  {te.has(`systemType.${type.value}`) ? te(`systemType.${type.value}`) : type.label}
                 </option>
               ))}
             </select>
@@ -327,7 +330,7 @@ export function QuotationForm({
 
         <div className="mt-4">
           <label className={label} htmlFor="meteringPolicy">
-            Metering policy
+            {t("metering")}
           </label>
           <input
             id="meteringPolicy"
@@ -339,31 +342,31 @@ export function QuotationForm({
         </div>
 
         <p className="mt-4 rounded-lg bg-[var(--surface-2)] px-3.5 py-3 text-[12.5px] leading-relaxed text-[var(--muted)]">
-          <span className="font-semibold text-[var(--ink)]">Subject line: </span>
+          <span className="font-semibold text-[var(--ink)]">{t("subjectLine")}</span>
           {capacity > 0
             ? subjectLine(capacity, values.systemType, values.meteringPolicy)
-            : "Enter a capacity to see the subject line the customer will read."}
+            : t("subjectHint")}
         </p>
       </section>
 
       {/* ── Equipment ── */}
       <section className={sectionBox}>
         <div className="mb-1 flex flex-wrap items-baseline gap-2">
-          <h2 className="flex-1 text-base font-bold">Equipment</h2>
+          <h2 className="flex-1 text-base font-bold">{t("equipment")}</h2>
           <button
             type="button"
             onClick={reseedItems}
             className="h-9 cursor-pointer rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] font-bold text-[var(--navy-text)]"
           >
-            Rebuild material rows
+            {t("rebuildRows")}
           </button>
         </div>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">Rebuilding replaces every material row.</p>
+        <p className="mb-4 text-[13px] text-[var(--muted)]">{t("rebuildNote")}</p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className={label} htmlFor="structureMake">
-              Structure
+              {t("structure")}
             </label>
             <select
               id="structureMake"
@@ -382,7 +385,7 @@ export function QuotationForm({
 
           <div>
             <label className={label} htmlFor="panelCompany">
-              Panel make
+              {t("panelMake")}
             </label>
             <select
               id="panelCompany"
@@ -405,7 +408,7 @@ export function QuotationForm({
 
           <div>
             <label className={label} htmlFor="panelModel">
-              Panel model
+              {t("panelModel")}
             </label>
             <select
               id="panelModel"
@@ -429,7 +432,7 @@ export function QuotationForm({
 
           <div>
             <label className={label} htmlFor="panelCount">
-              Number of panels
+              {t("panelCount")}
             </label>
             <input
               id="panelCount"
@@ -447,7 +450,7 @@ export function QuotationForm({
 
           <div className="lg:col-span-2">
             <label className={label} htmlFor="inverterMake">
-              Inverter
+              {t("inverter")}
             </label>
             <select
               id="inverterMake"
@@ -473,7 +476,7 @@ export function QuotationForm({
       {/* ── Material description ── */}
       <section className={sectionBox}>
         <div className="mb-1 flex flex-wrap items-baseline gap-2">
-          <h2 className="flex-1 text-base font-bold">Material description</h2>
+          <h2 className="flex-1 text-base font-bold">{t("material")}</h2>
           <span className="ref text-[12px] text-[var(--muted)]">
             {values.items.length} {values.items.length === 1 ? "row" : "rows"}
           </span>
@@ -482,7 +485,7 @@ export function QuotationForm({
         <div className="overflow-x-auto rounded-[9px] border border-[var(--line)]">
           <div className="grid min-w-[760px] grid-cols-[32px_1.5fr_0.7fr_1fr_1.8fr_40px] items-center gap-2 border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
             <span />
-            {["Item description", "Qty", "Make", "Remark"].map((h) => (
+            {[t("cols.item"), t("cols.qty"), t("cols.make"), t("cols.remark")].map((h) => (
               <span
                 key={h}
                 className="text-[12px] font-semibold text-[var(--muted)]"
@@ -527,7 +530,7 @@ export function QuotationForm({
               />
               <button
                 type="button"
-                aria-label={`Remove item ${index + 1}`}
+                aria-label={t("removeItem", { n: index + 1 })}
                 onClick={() =>
                   set(
                     "items",
@@ -549,20 +552,20 @@ export function QuotationForm({
           }
           className="mt-3 h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
         >
-          Add a material row
+          {t("addRow")}
         </button>
         <Err name="items" errors={errors} />
       </section>
 
       {/* ── Payment schedule ── */}
       <section className={sectionBox}>
-        <h2 className="mb-1 text-base font-bold">Payment schedule</h2>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">Prints as typed.</p>
+        <h2 className="mb-1 text-base font-bold">{t("schedule")}</h2>
+        <p className="mb-4 text-[13px] text-[var(--muted)]">{t("printsAsTyped")}</p>
 
         <div className="overflow-x-auto rounded-[9px] border border-[var(--line)]">
           <div className="grid min-w-[520px] grid-cols-[32px_2.4fr_1fr_40px] items-center gap-2 border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
             <span />
-            {["Details", "Price schedule"].map((h) => (
+            {[t("scheduleCols.details"), t("scheduleCols.price")].map((h) => (
               <span
                 key={h}
                 className="text-[12px] font-semibold text-[var(--muted)]"
@@ -595,7 +598,7 @@ export function QuotationForm({
               />
               <button
                 type="button"
-                aria-label={`Remove payment row ${index + 1}`}
+                aria-label={t("removePayment", { n: index + 1 })}
                 onClick={() =>
                   set(
                     "milestones",
@@ -615,7 +618,7 @@ export function QuotationForm({
           onClick={() => set("milestones", [...values.milestones, { label: "", schedule: "" }])}
           className="mt-3 h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[13px] font-bold text-[var(--navy-text)]"
         >
-          Add a payment row
+          {t("addPayment")}
         </button>
         <Err name="milestones" errors={errors} />
       </section>
@@ -628,16 +631,16 @@ export function QuotationForm({
           onClick={() => setScopeOpen((open) => !open)}
           className="flex w-full cursor-pointer items-baseline gap-2 border-0 bg-transparent p-0 text-left"
         >
-          <h2 className="flex-1 text-base font-bold">Project scope</h2>
+          <h2 className="flex-1 text-base font-bold">{t("scope")}</h2>
           <span className="text-[12.5px] font-semibold text-[var(--link)]">
-            {scopeOpen ? "Hide" : "Standard — change the ticks"}
+            {scopeOpen ? t("hide") : t("standard")}
           </span>
         </button>
 
         {scopeOpen ? (
           <div className="mt-4 overflow-x-auto rounded-[9px] border border-[var(--line)]">
             <div className="grid min-w-[520px] grid-cols-[1.2fr_2fr_72px_90px] items-center gap-2 border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
-              {["Section", "Details", "BHIM", "Customer"].map((h) => (
+              {[t("scopeCols.section"), t("scopeCols.details"), t("scopeCols.bhim"), t("scopeCols.customer")].map((h) => (
                 <span
                   key={h}
                   className="text-[12px] font-semibold text-[var(--muted)]"
@@ -668,14 +671,14 @@ export function QuotationForm({
                   <span className="text-[12.5px] text-[var(--muted)]">{row.details}</span>
                   <input
                     type="checkbox"
-                    aria-label={`${row.section} by BHIM`}
+                    aria-label={t("byBhim", { section: row.section })}
                     checked={state.byBhim}
                     onChange={(e) => toggle({ byBhim: e.target.checked })}
                     className="h-4 w-4 cursor-pointer accent-[var(--orange)]"
                   />
                   <input
                     type="checkbox"
-                    aria-label={`${row.section} by customer`}
+                    aria-label={t("byCustomer", { section: row.section })}
                     checked={state.byCustomer}
                     onChange={(e) => toggle({ byCustomer: e.target.checked })}
                     className="h-4 w-4 cursor-pointer accent-[var(--orange)]"
@@ -689,10 +692,10 @@ export function QuotationForm({
 
       {/* ── Notes ── */}
       <section className={sectionBox}>
-        <h2 className="mb-1 text-base font-bold">Extra summary line</h2>
-        <p className="mb-3 text-[13px] text-[var(--muted)]">Optional.</p>
+        <h2 className="mb-1 text-base font-bold">{t("extra")}</h2>
+        <p className="mb-3 text-[13px] text-[var(--muted)]">{t("optional")}</p>
         <input
-          aria-label="Extra summary line"
+          aria-label={t("extra")}
           className={field}
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
@@ -715,13 +718,13 @@ export function QuotationForm({
           className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
           {pending
-            ? "Generating…"
+            ? t("generating")
             : mode === "edit"
-              ? "Save and rebuild the PDF"
-              : "Generate quotation"}
+              ? t("saveRebuild")
+              : t("generate")}
         </button>
         <span className="text-[12.5px] text-[var(--muted)]">
-          {mode === "edit" ? `${number} keeps its number.` : "Numbered on save."}
+          {mode === "edit" ? t("keepsNumber", { number: number ?? "" }) : t("numberedOnSave")}
         </span>
       </div>
     </form>

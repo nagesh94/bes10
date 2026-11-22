@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Check } from "lucide-react";
-import { STAGE_TITLES } from "@/lib/workflow/labels";
+import { useTranslations } from "next-intl";
 import { STAGE_KEYS } from "@/lib/workflow/stages";
 
 /**
@@ -34,6 +34,7 @@ export function StageStepper({
   /** The stage whose page this is, if any. */
   activeStage?: number | null;
 }) {
+  const tl = useTranslations("labels");
   const rail = useRef<HTMLOListElement>(null);
   const active = useRef<HTMLLIElement>(null);
 
@@ -72,7 +73,7 @@ export function StageStepper({
             <Link
               href={`/projects/${projectId}/stage-${no}`}
               aria-current={isHere ? "step" : undefined}
-              title={`Stage ${no} · ${STAGE_TITLES[key]}`}
+              title={tl("stageNTitle", { no, title: tl(`stageTitles.${key}`) })}
               className="group block rounded-[var(--radius-control)] px-1 pt-2 pb-2 no-underline"
             >
               {/* The track. Drawn behind the circle, cut at both ends of the
@@ -116,7 +117,7 @@ export function StageStepper({
                       : "font-medium text-[var(--muted-soft)]"
                 }`}
               >
-                {STAGE_TITLES[key]}
+                {tl(`stageTitles.${key}`)}
               </span>
 
               {isHere ? (

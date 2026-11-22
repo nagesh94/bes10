@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { eq } from "drizzle-orm";
 import { getMoneyView } from "@/app/actions/payments";
 import { FinalPayment, SubsidyForm } from "@/components/money/settlement";
@@ -24,7 +25,7 @@ const day = (v: string | Date | null | undefined) => {
  */
 export default async function Stage9Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t, te] = await Promise.all([getActor(), getTranslations("stage"), getTranslations("enums")]);
   if (!actor || !canSeeMoney(actor.roles)) notFound();
 
   const [row] = await db
@@ -48,15 +49,15 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
   const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
   const tiles: Array<[string, string, string]> = [
-    ["Project value", inr(Number(money.plan?.totalValue ?? 0)), "var(--ink)"],
-    ["Received", inr(money.totalReceived), "var(--green-text)"],
+    [t("s9.projectValue"), inr(Number(money.plan?.totalValue ?? 0)), "var(--ink)"],
+    [t("s9.received"), inr(money.totalReceived), "var(--green-text)"],
     [
-      "Outstanding",
+      t("s9.outstanding"),
       inr(money.outstanding),
       money.outstanding > 0 ? "var(--red-text)" : "var(--green-text)",
     ],
     [
-      "Subsidy",
+      t("s9.subsidy"),
       inr(Number(money.subsidy?.receivedAmount ?? money.subsidy?.expectedAmount ?? 0)),
       subsidyReceived ? "var(--green-text)" : "var(--amber-text)",
     ],
@@ -67,10 +68,10 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
       projectId={id}
       stageNo={9}
       width="narrow"
-      note="The last of the money, then the project closes."
+      note={t("s9.note")}
       badge={
         <span className="shrink-0 rounded-full bg-[var(--orange-soft)] px-3 py-1.5 text-[11.5px] font-bold text-[var(--orange-text)]">
-          Admin only
+          {t("s9.adminOnly")}
         </span>
       }
     >
@@ -111,8 +112,8 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
 
       {commissionRows.length > 0 ? (
         <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-          <h2 className="mb-0.5 text-base font-bold">Referral commission</h2>
-          <p className="mb-3.5 text-[13px] text-[var(--muted)]">Paid from Channel partners.</p>
+          <h2 className="mb-0.5 text-base font-bold">{t("s9.referralCommission")}</h2>
+          <p className="mb-3.5 text-[13px] text-[var(--muted)]">{t("s9.paidFromPartners")}</p>
           {commissionRows.map((c) => (
             <div
               key={c.commission.id}
@@ -129,13 +130,13 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
                     : "bg-[var(--amber-soft)] text-[var(--amber-text)]"
                 }`}
               >
-                {c.commission.status}
+                {te.has(`commissionStatus.${c.commission.status}`) ? te(`commissionStatus.${c.commission.status}`) : c.commission.status}
               </span>
               <Link
                 href="/partners"
                 className="h-9 shrink-0 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] leading-[2.1] font-bold text-[var(--navy-text)] no-underline"
               >
-                Open ledger
+                {t("s9.openLedger")}
               </Link>
             </div>
           ))}
@@ -149,15 +150,21 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
             : "border-[var(--line)] bg-[var(--surface)]"
         }`}
       >
-        <h2 className="mb-2 text-base font-bold">Ready to close?</h2>
+        <h2 className="mb-2 text-base font-bold">{t("s9.readyToClose")}</h2>
         <ul className="mb-3 space-y-1.5">
           {[
             [
-              "Subsidy received",
+              t("s9.subsidyReceived"),
               subsidyReceived,
-              money.subsidy?.status ? `currently ${money.subsidy.status.toLowerCase()}` : "not applied",
+              money.subsidy?.status
+                ? t("s9.currently", { status: te(`subsidyStatus.${money.subsidy.status}`).toLowerCase() })
+                : t("s9.notApplied"),
             ],
-            ["Balance cleared", cleared, cleared ? "nothing outstanding" : `${inr(money.outstanding)} to come`],
+            [
+              t("s9.balanceCleared"),
+              cleared,
+              cleared ? t("s9.nothingOutstanding") : t("s9.toCome", { amount: inr(money.outstanding) }),
+            ],
           ].map(([label, done, detail]) => (
             <li key={String(label)} className="flex items-center gap-2.5 text-[13.5px]">
               <span
@@ -174,12 +181,12 @@ export default async function Stage9Page({ params }: { params: Promise<{ id: str
             </li>
           ))}
         </ul>
-        <p className="mb-3.5 text-[13px] text-[var(--muted)]">Closed from the stage gate.</p>
+        <p className="mb-3.5 text-[13px] text-[var(--muted)]">{t("s9.closedFromGate")}</p>
         <Link
           href={`/projects/${id}`}
           className="inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
         >
-          Back to the stage gate
+          {t("s2.backToGate")}
         </Link>
       </section>
     </StageShell>

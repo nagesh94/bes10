@@ -1,4 +1,5 @@
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
 import { db } from "@/lib/db";
 import {
   applicationDetails,
@@ -80,50 +81,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
  * finance desk — and this page shows all of them at once, so it carries its
  * own copy rather than importing three pages.
  */
-const LIFECYCLE: Record<string, string> = {
-  LEAD: "Lead",
-  PROSPECT: "Prospect",
-  CUSTOMER: "Customer",
-};
-
-const LEAD_STATUS: Record<string, string> = {
-  NEW: "New",
-  CONTACTED: "Contacted",
-  SURVEY_DONE: "Survey done",
-  READY_TO_CONVERT: "Ready to convert",
-  LOST: "Lost",
-};
-
-const LEAD_SOURCE: Record<string, string> = {
-  WALK_IN: "Walk-in",
-  REFERRAL: "Referral",
-  WEBSITE: "Website",
-  CAMPAIGN: "Campaign",
-  OTHER: "Other",
-};
-
-const SEGMENT: Record<string, string> = { RESIDENTIAL: "Residential" };
-
-const PAYMENT_MODE: Record<string, string> = {
-  CASH: "Cash",
-  FINANCE: "Finance",
-  SPLIT: "Cash + finance",
-};
-
-const FINANCE_STATUS: Record<string, string> = {
-  NOT_APPLIED: "Not applied",
-  APPLIED: "Applied on Jan Samarth",
-  SANCTIONED: "Sanctioned, awaiting disbursal",
-  DISBURSED: "Disbursed",
-  REJECTED: "Rejected",
-};
-
-const SUBSIDY_STATUS: Record<string, string> = {
-  NOT_APPLIED: "Not applied",
-  APPLIED: "Applied",
-  APPROVED: "Approved",
-  RECEIVED: "Received",
-};
+type T = Awaited<ReturnType<typeof getTranslations<"summary">>>;
 
 const txt = (v: unknown): string => {
   if (v === null || v === undefined) return DASH;
@@ -131,8 +89,6 @@ const txt = (v: unknown): string => {
   return s === "" ? DASH : s;
 };
 
-const yesNo = (v: boolean | null | undefined): string =>
-  v === null || v === undefined ? DASH : v ? "Yes" : "No";
 
 const withUnit = (v: unknown, unit: string): string => {
   const s = txt(v);
@@ -165,21 +121,18 @@ const inr = (v: unknown): string => {
 };
 
 /** An enum token said the way the office says it, never the raw token. */
-const label = (map: Record<string, string>, v: string | null | undefined): string =>
-  v ? (map[v] ?? v) : DASH;
 
 const join = (parts: Array<string | null | undefined>, sep: string): string =>
   parts.filter((p) => p !== null && p !== undefined && String(p).trim() !== "").join(sep) || DASH;
 
 const section = (
+  t: T,
   key: string,
-  title: string,
-  blurb: string | undefined,
   rows: SummaryRow[],
 ): SummarySection => ({
   key,
-  title,
-  blurb,
+  title: t(`sections.${key}.title`),
+  blurb: t(`sections.${key}.blurb`),
   rows,
   blank: rows.every((r) => r.value === DASH),
 });
@@ -209,6 +162,12 @@ export async function loadProjectSummary(
     .where(eq(projects.id, projectId))
     .limit(1);
   if (!row) return null;
+
+  const [t, te] = await Promise.all([getTranslations("summary"), getTranslations("enums")]);
+  const yesNo = (v: boolean | null | undefined): string =>
+    v === null || v === undefined ? DASH : v ? t("yes") : t("no");
+  const label = (group: string, v: string | null | undefined): string =>
+    v ? (te.has(`${group}.${v}`) ? te(`${group}.${v}`) : v) : DASH;
 
   const { project, contact } = row;
 
@@ -316,56 +275,56 @@ export async function loadProjectSummary(
   const sections: SummarySection[] = [];
 
   sections.push(
-    section("customer", "Customer", "Who the job belongs to.", [
-      { label: "Full name", value: txt(`${contact.firstName} ${contact.lastName ?? ""}`.trim()) },
-      { label: "Gender", value: txt(contact.gender) },
-      { label: "Phone", value: txt(contact.phone), mono: true },
-      { label: "Email", value: txt(contact.email) },
-      { label: "Address", value: txt(contact.address), wide: true },
-      { label: "PIN code", value: txt(contact.pinCode), mono: true },
+    section(t, "customer", [
+      { label: t("rows.fullName"), value: txt(`${contact.firstName} ${contact.lastName ?? ""}`.trim()) },
+      { label: t("rows.gender"), value: txt(contact.gender) },
+      { label: t("rows.phone"), value: txt(contact.phone), mono: true },
+      { label: t("rows.email"), value: txt(contact.email) },
+      { label: t("rows.address"), value: txt(contact.address), wide: true },
+      { label: t("rows.pinCode"), value: txt(contact.pinCode), mono: true },
     ]),
   );
 
   sections.push(
-    section("project", "Project", "Source and owner.", [
-      { label: "Project code", value: txt(project.code), mono: true },
-      { label: "Lifecycle", value: label(LIFECYCLE, project.lifecycleStage) },
-      { label: "Pipeline stage", value: `${project.pipelineStage} of 9` },
-      { label: "Segment", value: label(SEGMENT, project.segment) },
-      { label: "Lead status", value: label(LEAD_STATUS, project.leadStatus) },
-      { label: "Lead source", value: label(LEAD_SOURCE, project.leadSource) },
-      { label: "Executive", value: txt(employeeRows[0]?.name) },
+    section(t, "project", [
+      { label: t("rows.projectCode"), value: txt(project.code), mono: true },
+      { label: t("rows.lifecycle"), value: label("lifecycle", project.lifecycleStage) },
+      { label: t("rows.pipelineStage"), value: t("stageOf9", { no: project.pipelineStage }) },
+      { label: t("rows.segment"), value: label("segment", project.segment) },
+      { label: t("rows.leadStatus"), value: label("leadStatus", project.leadStatus) },
+      { label: t("rows.leadSource"), value: label("leadSource", project.leadSource) },
+      { label: t("rows.executive"), value: txt(employeeRows[0]?.name) },
       {
-        label: "Referred by",
+        label: t("rows.referredBy"),
         value: partnerRows[0] ? `${partnerRows[0].name} · ${partnerRows[0].phone}` : DASH,
       },
-      { label: "Opened on", value: day(project.createdAt) },
-      { label: "Open flags", value: openFlagCount > 0 ? String(openFlagCount) : "None" },
-      { label: "Documents on file", value: String(docCount[0]?.n ?? 0) },
+      { label: t("rows.openedOn"), value: day(project.createdAt) },
+      { label: t("rows.openFlags"), value: openFlagCount > 0 ? String(openFlagCount) : t("none") },
+      { label: t("rows.documentsOnFile"), value: String(docCount[0]?.n ?? 0) },
     ]),
   );
 
   sections.push(
-    section("application", "PM Surya Ghar application", "What the national portal holds.", [
-      { label: "National Portal ID", value: txt(application?.nationalPortalId), mono: true },
-      { label: "Application date", value: day(application?.applicationDate) },
-      { label: "Sanction date", value: day(application?.sanctionDate) },
-      { label: "DCR", value: application ? yesNo(application.isDcr) : DASH },
-      { label: "Applying for subsidy", value: application ? yesNo(application.wantsSubsidy) : DASH },
-      { label: "DISCOM", value: txt(discomRows[0]?.name) },
-      { label: "Region", value: txt(application?.regionName) },
-      { label: "Circle", value: txt(application?.circleName) },
-      { label: "Division", value: txt(application?.divisionName) },
-      { label: "Zone / DC", value: txt(application?.zoneName) },
+    section(t, "application", [
+      { label: t("rows.nationalPortalId"), value: txt(application?.nationalPortalId), mono: true },
+      { label: t("rows.applicationDate"), value: day(application?.applicationDate) },
+      { label: t("rows.sanctionDate"), value: day(application?.sanctionDate) },
+      { label: t("rows.dcr"), value: application ? yesNo(application.isDcr) : DASH },
+      { label: t("rows.applyingForSubsidy"), value: application ? yesNo(application.wantsSubsidy) : DASH },
+      { label: t("rows.discom"), value: txt(discomRows[0]?.name) },
+      { label: t("rows.region"), value: txt(application?.regionName) },
+      { label: t("rows.circle"), value: txt(application?.circleName) },
+      { label: t("rows.division"), value: txt(application?.divisionName) },
+      { label: t("rows.zoneDc"), value: txt(application?.zoneName) },
     ]),
   );
 
   sections.push(
-    section("rooftop", "Rooftop", "Size and location.", [
-      { label: "Plant size", value: withUnit(rooftop?.plantKw, "kW") },
-      { label: "Asked for as a lead", value: txt(project.interestedPlantKw) },
-      { label: "Latitude", value: txt(rooftop?.latitude), mono: true },
-      { label: "Longitude", value: txt(rooftop?.longitude), mono: true },
+    section(t, "rooftop", [
+      { label: t("rows.plantSize"), value: withUnit(rooftop?.plantKw, "kW") },
+      { label: t("rows.askedForAsALead"), value: txt(project.interestedPlantKw) },
+      { label: t("rows.latitude"), value: txt(rooftop?.latitude), mono: true },
+      { label: t("rows.longitude"), value: txt(rooftop?.longitude), mono: true },
     ]),
   );
 
@@ -373,102 +332,99 @@ export async function loadProjectSummary(
     sections.push(
       // The Aadhaar number itself is not collected — only the name and the
       // address as printed on the card — so there is no number to show.
-      section(
-        "identity",
-        "Identity",
-        "The four names the flag engine compares against each other.",
+      section(t, "identity",
         [
-          { label: "Name on Aadhaar", value: txt(aadhaar?.nameOnAadhaar) },
-          { label: "Address on Aadhaar", value: txt(aadhaar?.addressOnAadhaar), wide: true },
-          { label: "Name on PAN", value: txt(pan?.nameOnPan) },
-          { label: "PAN number", value: txt(pan?.panNumber), mono: true },
+          { label: t("rows.nameOnAadhaar"), value: txt(aadhaar?.nameOnAadhaar) },
+          { label: t("rows.addressOnAadhaar"), value: txt(aadhaar?.addressOnAadhaar), wide: true },
+          { label: t("rows.nameOnPan"), value: txt(pan?.nameOnPan) },
+          { label: t("rows.panNumber"), value: txt(pan?.panNumber), mono: true },
         ],
       ),
     );
 
     sections.push(
-      section("bank", "Bank", "Where the subsidy lands.", [
-        { label: "Bank name", value: txt(bank?.bankName) },
-        { label: "Account holder", value: txt(bank?.accountHolderName) },
-        { label: "Account number", value: txt(bank?.accountNumber), mono: true },
-        { label: "IFSC code", value: txt(bank?.ifscCode), mono: true },
-        { label: "Occupation", value: txt(bank?.occupation) },
-        { label: "Co-applicant on the loan", value: bank ? yesNo(bank.hasCoApplicant) : DASH },
+      section(t, "bank", [
+        { label: t("rows.bankName"), value: txt(bank?.bankName) },
+        { label: t("rows.accountHolder"), value: txt(bank?.accountHolderName) },
+        { label: t("rows.accountNumber"), value: txt(bank?.accountNumber), mono: true },
+        { label: t("rows.ifscCode"), value: txt(bank?.ifscCode), mono: true },
+        { label: t("rows.occupation"), value: txt(bank?.occupation) },
+        { label: t("rows.coApplicantOnTheLoan"), value: bank ? yesNo(bank.hasCoApplicant) : DASH },
       ]),
     );
 
     if (bank?.hasCoApplicant || coApplicant) {
       sections.push(
-        section("coApplicant", "Co-applicant", "Same identity set.", [
-          { label: "Full name", value: txt(coApplicant?.name) },
-          { label: "Relationship", value: txt(coApplicant?.relationship) },
-          { label: "Phone", value: txt(coApplicant?.phone), mono: true },
-          { label: "Email", value: txt(coApplicant?.email) },
-          { label: "Occupation", value: txt(coApplicant?.occupation) },
-          { label: "PAN number", value: txt(coApplicant?.panNumber), mono: true },
+        section(t, "coApplicant", [
+          { label: t("rows.fullName"), value: txt(coApplicant?.name) },
+          { label: t("rows.relationship"), value: txt(coApplicant?.relationship) },
+          { label: t("rows.phone"), value: txt(coApplicant?.phone), mono: true },
+          { label: t("rows.email"), value: txt(coApplicant?.email) },
+          { label: t("rows.occupation"), value: txt(coApplicant?.occupation) },
+          { label: t("rows.panNumber"), value: txt(coApplicant?.panNumber), mono: true },
         ]),
       );
     }
   }
 
   sections.push(
-    section("electricity", "Electricity connection", "Taken from the latest bill.", [
-      { label: "Consumer number", value: txt(bill?.consumerNumber), mono: true },
-      { label: "Name on the bill", value: txt(bill?.nameOnBill) },
-      { label: "Sanctioned load", value: withUnit(bill?.sanctionedLoadKw, "kW") },
-      { label: "Current bill amount", value: inr(bill?.currentBillAmount) },
+    section(t, "electricity", [
+      { label: t("rows.consumerNumber"), value: txt(bill?.consumerNumber), mono: true },
+      { label: t("rows.nameOnTheBill"), value: txt(bill?.nameOnBill) },
+      { label: t("rows.sanctionedLoad"), value: withUnit(bill?.sanctionedLoadKw, "kW") },
+      { label: t("rows.currentBillAmount"), value: inr(bill?.currentBillAmount) },
     ]),
   );
 
   sections.push(
-    section("equipment", "Equipment chosen", "Agreed at stage 1.", [
-      { label: "Panel type", value: txt(other?.panelType) },
-      { label: "Panel company", value: txt(other?.panelCompany) },
-      { label: "Panel model", value: txt(other?.panelModelNo) },
-      { label: "Meter type", value: txt(other?.meterType) },
+    section(t, "equipment", [
+      { label: t("rows.panelType"), value: txt(other?.panelType) },
+      { label: t("rows.panelCompany"), value: txt(other?.panelCompany) },
+      { label: t("rows.panelModel"), value: txt(other?.panelModelNo) },
+      { label: t("rows.meterType"), value: txt(other?.meterType) },
     ]),
   );
 
   sections.push(
-    section("survey", "Site survey", "Estimated runs.", [
-      { label: "AC cable", value: withUnit(survey?.acCableLengthM, "m") },
-      { label: "DC cable", value: withUnit(survey?.dcCableLengthM, "m") },
-      { label: "Earthing", value: withUnit(survey?.earthingLengthM, "m") },
-      { label: "LA", value: withUnit(survey?.laLengthM, "m") },
-      { label: "Expected wire length", value: withUnit(survey?.expectedWireLengthM, "m") },
-      { label: "Pipes required", value: txt(survey?.pipesRequired) },
-      { label: "Surveyed by", value: txt(surveyorRows[0]?.name) },
-      { label: "Surveyed on", value: day(survey?.surveyedOn) },
+    section(t, "survey", [
+      { label: t("rows.acCable"), value: withUnit(survey?.acCableLengthM, "m") },
+      { label: t("rows.dcCable"), value: withUnit(survey?.dcCableLengthM, "m") },
+      { label: t("rows.earthing"), value: withUnit(survey?.earthingLengthM, "m") },
+      { label: t("rows.la"), value: withUnit(survey?.laLengthM, "m") },
+      { label: t("rows.expectedWireLength"), value: withUnit(survey?.expectedWireLengthM, "m") },
+      { label: t("rows.pipesRequired"), value: txt(survey?.pipesRequired) },
+      { label: t("rows.surveyedBy"), value: txt(surveyorRows[0]?.name) },
+      { label: t("rows.surveyedOn"), value: day(survey?.surveyedOn) },
     ]),
   );
 
   sections.push(
-    section("installation", "Installation", "What actually went on the roof.", [
-      { label: "Installed on", value: day(install?.installationDate) },
-      { label: "Panel company", value: txt(install?.panelCompany) },
-      { label: "Panel model", value: txt(install?.panelModelNo) },
-      { label: "Panel wattage", value: withUnit(install?.panelWattPeak, "Wp") },
-      { label: "Number of panels", value: txt(install?.totalPanels) },
-      { label: "Total capacity", value: withUnit(install?.totalCapacityKw, "kW") },
-      { label: "Inverter manufacturer", value: txt(install?.inverterManufacturer) },
-      { label: "Inverter brand", value: txt(install?.inverterBrand) },
-      { label: "Inverter model", value: txt(install?.inverterModelNo) },
-      { label: "Inverter serial", value: txt(install?.inverterSerial), mono: true },
-      { label: "Inverter capacity", value: withUnit(install?.inverterCapacityKw, "kW") },
-      { label: "Inverters", value: txt(install?.inverterCount) },
+    section(t, "installation", [
+      { label: t("rows.installedOn"), value: day(install?.installationDate) },
+      { label: t("rows.panelCompany"), value: txt(install?.panelCompany) },
+      { label: t("rows.panelModel"), value: txt(install?.panelModelNo) },
+      { label: t("rows.panelWattage"), value: withUnit(install?.panelWattPeak, "Wp") },
+      { label: t("rows.numberOfPanels"), value: txt(install?.totalPanels) },
+      { label: t("rows.totalCapacity"), value: withUnit(install?.totalCapacityKw, "kW") },
+      { label: t("rows.inverterManufacturer"), value: txt(install?.inverterManufacturer) },
+      { label: t("rows.inverterBrand"), value: txt(install?.inverterBrand) },
+      { label: t("rows.inverterModel"), value: txt(install?.inverterModelNo) },
+      { label: t("rows.inverterSerial"), value: txt(install?.inverterSerial), mono: true },
+      { label: t("rows.inverterCapacity"), value: withUnit(install?.inverterCapacityKw, "kW") },
+      { label: t("rows.inverters"), value: txt(install?.inverterCount) },
       {
-        label: "Phase",
+        label: t("rows.phase"),
         value: install?.inverterPhase
           ? install.inverterPhase === "THREE"
-            ? "Three phase"
-            : "Single phase"
+            ? t("threePhase")
+            : t("singlePhase")
           : DASH,
       },
-      { label: "Hybrid system", value: install ? yesNo(install.isHybrid) : DASH },
-      { label: "Structure company", value: txt(install?.structureCompany) },
-      { label: "Legs", value: txt(install?.legCount) },
+      { label: t("rows.hybridSystem"), value: install ? yesNo(install.isHybrid) : DASH },
+      { label: t("rows.structureCompany"), value: txt(install?.structureCompany) },
+      { label: t("rows.legs"), value: txt(install?.legCount) },
       {
-        label: "Structure members",
+        label: t("rows.structureMembers"),
         value: memberRows.length
           ? memberRows
               .map(
@@ -479,58 +435,55 @@ export async function loadProjectSummary(
           : DASH,
         wide: true,
       },
-      { label: "ACDB", value: join([install?.acdbMake, install?.acdbSizeType], " · ") },
-      { label: "ACDB SPD / MCB", value: join([install?.acdbSpd, install?.acdbMcb], " / ") },
-      { label: "DCDB", value: join([install?.dcdbMake, install?.dcdbSizeType], " · ") },
-      { label: "DCDB SPD / MCB", value: join([install?.dcdbSpd, install?.dcdbMcb], " / ") },
-      { label: "Pipes used", value: txt(install?.pipesUsed) },
-      { label: "Module serials scanned", value: serialRows.length ? String(serialRows.length) : DASH },
+      { label: t("rows.acdb"), value: join([install?.acdbMake, install?.acdbSizeType], " · ") },
+      { label: t("rows.acdbSpdMcb"), value: join([install?.acdbSpd, install?.acdbMcb], " / ") },
+      { label: t("rows.dcdb"), value: join([install?.dcdbMake, install?.dcdbSizeType], " · ") },
+      { label: t("rows.dcdbSpdMcb"), value: join([install?.dcdbSpd, install?.dcdbMcb], " / ") },
+      { label: t("rows.pipesUsed"), value: txt(install?.pipesUsed) },
+      { label: t("rows.moduleSerialsScanned"), value: serialRows.length ? String(serialRows.length) : DASH },
     ]),
   );
 
   if (install?.isHybrid || battery) {
     sections.push(
-      section("battery", "Battery bank", "Only on a hybrid system.", [
-        { label: "Manufacturer", value: txt(battery?.manufacturer) },
-        { label: "Battery type", value: txt(battery?.batteryType) },
-        { label: "Cell capacity", value: txt(battery?.cellCapacity) },
-        { label: "In series", value: txt(battery?.seriesCount) },
-        { label: "In parallel", value: txt(battery?.parallelCount) },
-        { label: "Total capacity", value: txt(battery?.totalCapacity) },
-        { label: "Total voltage", value: txt(battery?.totalVoltage) },
+      section(t, "battery", [
+        { label: t("rows.manufacturer"), value: txt(battery?.manufacturer) },
+        { label: t("rows.batteryType"), value: txt(battery?.batteryType) },
+        { label: t("rows.cellCapacity"), value: txt(battery?.cellCapacity) },
+        { label: t("rows.inSeries"), value: txt(battery?.seriesCount) },
+        { label: t("rows.inParallel"), value: txt(battery?.parallelCount) },
+        { label: t("rows.totalCapacity"), value: txt(battery?.totalCapacity) },
+        { label: t("rows.totalVoltage"), value: txt(battery?.totalVoltage) },
       ]),
     );
   }
 
   sections.push(
-    section(
-      "dcr",
-      "DCR",
-      "The undertaking states that these specific cells were made in India, so it cannot be signed without the purchase order and the cell manufacturer behind it.",
+    section(t, "dcr",
       [
-        { label: "Going with DCR", value: application ? yesNo(application.isDcr) : DASH },
-        { label: "DCR number", value: txt(refs?.dcrNumber), mono: true },
-        { label: "DCR issued on", value: day(refs?.dcrIssuedOn) },
-        { label: "Purchase order no.", value: txt(install?.purchaseOrderNo), mono: true },
-        { label: "Purchase order date", value: day(install?.purchaseOrderDate) },
-        { label: "Cell manufacturer", value: txt(install?.cellManufacturer) },
-        { label: "Cell GST invoice no.", value: txt(install?.cellGstInvoiceNo), mono: true },
+        { label: t("rows.goingWithDcr"), value: application ? yesNo(application.isDcr) : DASH },
+        { label: t("rows.dcrNumber"), value: txt(refs?.dcrNumber), mono: true },
+        { label: t("rows.dcrIssuedOn"), value: day(refs?.dcrIssuedOn) },
+        { label: t("rows.purchaseOrderNo"), value: txt(install?.purchaseOrderNo), mono: true },
+        { label: t("rows.purchaseOrderDate"), value: day(install?.purchaseOrderDate) },
+        { label: t("rows.cellManufacturer"), value: txt(install?.cellManufacturer) },
+        { label: t("rows.cellGstInvoiceNo"), value: txt(install?.cellGstInvoiceNo), mono: true },
       ],
     ),
   );
 
   sections.push(
-    section("portal", "Meter, portal and commissioning", "The references that came back.", [
-      { label: "Meter payment reference", value: txt(refs?.meterPaymentRef), mono: true },
-      { label: "Meter paid on", value: day(refs?.meterPaidOn) },
-      ...(includeMoney ? [{ label: "Meter amount", value: inr(refs?.meterAmount) }] : []),
-      { label: "Net meter serial", value: txt(refs?.netMeterSerial), mono: true },
-      { label: "Jan Samarth application", value: txt(refs?.janSamarthApplicationId), mono: true },
-      { label: "Sanction number", value: txt(refs?.sanctionNumber), mono: true },
-      { label: "Performance check", value: day(refs?.performanceCheckDate) },
-      { label: "Joint inspection", value: day(refs?.jointInspectionDate) },
-      { label: "Commissioned on", value: day(refs?.commissioningDate) },
-      { label: "Commissioning certificate no.", value: txt(refs?.commissioningCertNo), mono: true },
+    section(t, "portal", [
+      { label: t("rows.meterPaymentReference"), value: txt(refs?.meterPaymentRef), mono: true },
+      { label: t("rows.meterPaidOn"), value: day(refs?.meterPaidOn) },
+      ...(includeMoney ? [{ label: t("rows.meterAmount"), value: inr(refs?.meterAmount) }] : []),
+      { label: t("rows.netMeterSerial"), value: txt(refs?.netMeterSerial), mono: true },
+      { label: t("rows.janSamarthApplication"), value: txt(refs?.janSamarthApplicationId), mono: true },
+      { label: t("rows.sanctionNumber"), value: txt(refs?.sanctionNumber), mono: true },
+      { label: t("rows.performanceCheck"), value: day(refs?.performanceCheckDate) },
+      { label: t("rows.jointInspection"), value: day(refs?.jointInspectionDate) },
+      { label: t("rows.commissionedOn"), value: day(refs?.commissioningDate) },
+      { label: t("rows.commissioningCertificateNo"), value: txt(refs?.commissioningCertNo), mono: true },
     ]),
   );
 
@@ -564,23 +517,23 @@ export async function loadProjectSummary(
     const totalGiven = advanceRows.reduce((s, a) => s + Number(a.amount), 0);
 
     sections.push(
-      section("money", "Money", "Admin only.", [
-        { label: "Payment mode", value: label(PAYMENT_MODE, plan?.mode) },
-        { label: "Project value", value: inr(plan?.totalValue) },
-        { label: "Cash component", value: inr(plan?.cashComponent) },
-        { label: "Finance component", value: inr(plan?.financeComponent) },
-        { label: "Received", value: receivedRows.length ? inr(totalReceived) : DASH },
-        { label: "Given to the customer", value: advanceRows.length ? inr(totalGiven) : DASH },
+      section(t, "money", [
+        { label: t("rows.paymentMode"), value: label("payMode", plan?.mode) },
+        { label: t("rows.projectValue"), value: inr(plan?.totalValue) },
+        { label: t("rows.cashComponent"), value: inr(plan?.cashComponent) },
+        { label: t("rows.financeComponent"), value: inr(plan?.financeComponent) },
+        { label: t("rows.received"), value: receivedRows.length ? inr(totalReceived) : DASH },
+        { label: t("rows.givenToTheCustomer"), value: advanceRows.length ? inr(totalGiven) : DASH },
         {
-          label: "Outstanding",
+          label: t("rows.outstanding"),
           value: plan ? inr(Math.max(totalValue + totalGiven - totalReceived, 0)) : DASH,
         },
-        { label: "Loan bank", value: txt(finance?.bankName) },
-        { label: "Loan amount", value: inr(finance?.loanAmount) },
-        { label: "Loan status", value: finance ? label(FINANCE_STATUS, finance.status) : DASH },
-        { label: "Subsidy status", value: subsidy ? label(SUBSIDY_STATUS, subsidy.status) : DASH },
-        { label: "Subsidy expected", value: inr(subsidy?.expectedAmount) },
-        { label: "Subsidy received", value: inr(subsidy?.receivedAmount) },
+        { label: t("rows.loanBank"), value: txt(finance?.bankName) },
+        { label: t("rows.loanAmount"), value: inr(finance?.loanAmount) },
+        { label: t("rows.loanStatus"), value: finance ? label("financeStatus", finance.status) : DASH },
+        { label: t("rows.subsidyStatus"), value: subsidy ? label("subsidyStatus", subsidy.status) : DASH },
+        { label: t("rows.subsidyExpected"), value: inr(subsidy?.expectedAmount) },
+        { label: t("rows.subsidyReceived"), value: inr(subsidy?.receivedAmount) },
       ]),
     );
   }

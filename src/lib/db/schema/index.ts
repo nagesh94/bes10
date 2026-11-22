@@ -11,3 +11,4 @@ export * from "./agreements";
 export * from "./installation";
 export * from "./expenses";
 export * from "./estimates";
+export * from "./dcr";

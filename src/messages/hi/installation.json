@@ -1,0 +1,177 @@
+{
+  "form": {
+    "blocks": {
+      "panels": {
+        "title": "पैनल",
+        "note": "छत पर वास्तव में लगे मॉड्यूल।"
+      },
+      "inverter": {
+        "title": "इन्वर्टर",
+        "note": "यूनिट पर छपा सीरियल और मॉडल — निर्माता और ब्रांड एक ही हैं, इसलिए उसके लिए एक ही फ़ील्ड है।"
+      },
+      "boxes": {
+        "title": "ACDB और DCDB",
+        "note": "इन्वर्टर के दोनों ओर के डिस्ट्रीब्यूशन बॉक्स।"
+      }
+    },
+    "fields": {
+      "panelCompany": "पैनल कंपनी",
+      "panelModelNo": "पैनल मॉडल नंबर",
+      "panelWattPeak": "प्रति पैनल वॉट पीक",
+      "totalPanels": "कुल पैनल",
+      "totalCapacityKw": "कुल क्षमता (kW)",
+      "inverterManufacturer": "निर्माता",
+      "inverterModelNo": "मॉडल नंबर",
+      "inverterSerial": "सीरियल नंबर",
+      "inverterCapacityKw": "AC क्षमता (kW)",
+      "inverterCount": "इन्वर्टर की संख्या",
+      "acdbMake": "ACDB ब्रांड",
+      "acdbSizeType": "ACDB आकार और प्रकार",
+      "acdbSpd": "AC सर्ज सुरक्षा",
+      "acdbMcb": "MCB / आइसोलेटर",
+      "dcdbMake": "DCDB ब्रांड",
+      "dcdbSizeType": "DCDB आकार और प्रकार",
+      "dcdbSpd": "DC सर्ज सुरक्षा",
+      "dcdbMcb": "MCB / आइसोलेटर"
+    },
+    "installationDate": "स्थापना तिथि",
+    "phase": "फ़ेज़",
+    "single": "सिंगल फ़ेज़",
+    "three": "थ्री फ़ेज़",
+    "hybrid": "हाइब्रिड सिस्टम?",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "batteryBelow": "बैटरी का विवरण नीचे माँगा गया है।",
+    "saving": "सहेजा जा रहा है…",
+    "saved": "सहेजा गया",
+    "save": "स्थापना सहेजें"
+  },
+  "structure": {
+    "title": "स्ट्रक्चर",
+    "totals": "{pieces} पीस · {length} फ़ुट",
+    "intro": "हर पुर्ज़े का आकार और लंबाई।",
+    "company": "स्ट्रक्चर कंपनी",
+    "legs": "लेग की संख्या",
+    "groups": {
+      "COLUMN": {
+        "label": "कॉलम",
+        "add": "कॉलम जोड़ें"
+      },
+      "RAFTER": {
+        "label": "राफ़्टर",
+        "add": "राफ़्टर जोड़ें"
+      },
+      "PURLIN": {
+        "label": "पर्लिन",
+        "add": "पर्लिन जोड़ें"
+      }
+    },
+    "groupTotals": "{pieces} पीस · {length} फ़ुट",
+    "size": "आकार",
+    "length": "लंबाई (फ़ुट)",
+    "qty": "मात्रा",
+    "noRuns": "अभी कोई {label} नहीं।",
+    "sizeAria": "{label} {n} आकार",
+    "lengthAria": "{label} {n} लंबाई फ़ुट में",
+    "qtyAria": "{label} {n} मात्रा",
+    "removeAria": "{label} {n} हटाएँ",
+    "saving": "सहेजा जा रहा है…",
+    "saved": "सहेजा गया",
+    "save": "स्ट्रक्चर सहेजें"
+  },
+  "common": {
+    "saving": "सहेजा जा रहा है…",
+    "saved": "सहेजा गया",
+    "yes": "हाँ",
+    "no": "नहीं"
+  },
+  "serials": {
+    "removeTitle": "पैनल {n} हटाएँ?",
+    "removeBody": "सीरियल <ref>{serial}</ref> इस सूची से हट जाएगा। पक्का करने के लिए बाद में सूची सहेजें।",
+    "remove": "हटाएँ",
+    "title": "पैनल सीरियल नंबर",
+    "ofExpected": "{expected} में से {filled}",
+    "pasteHint": "पूरा कॉलम चिपकाएँ, अपने आप पंक्तियों में बँट जाएगा।",
+    "serialAria": "पैनल {n} सीरियल",
+    "removeAria": "पैनल {n} हटाएँ",
+    "duplicate": "एक ही सीरियल एक से ज़्यादा बार है।",
+    "add": "+ पैनल जोड़ें",
+    "save": "सीरियल सहेजें"
+  },
+  "battery": {
+    "fields": {
+      "manufacturer": "निर्माता",
+      "batteryType": "बैटरी प्रकार",
+      "cellCapacity": "हर सेल की क्षमता",
+      "seriesCount": "सीरीज़ में सेल",
+      "parallelCount": "पैरेलल में स्ट्रिंग",
+      "totalVoltage": "कुल वोल्टेज",
+      "totalCapacity": "कुल क्षमता"
+    },
+    "title": "बैटरी बैंक",
+    "shownBecause": "सिस्टम हाइब्रिड है इसलिए दिखाया गया",
+    "cellSerials": "सेल सीरियल नंबर",
+    "save": "बैटरी बैंक सहेजें"
+  },
+  "material": {
+    "categories": {
+      "AC": "AC तार",
+      "DC": "DC तार",
+      "LA": "लाइटनिंग अरेस्टर",
+      "EARTHING": "अर्थिंग तार"
+    },
+    "core": {
+      "single core": "सिंगल कोर",
+      "multi core": "मल्टी कोर"
+    },
+    "conductor": {
+      "copper": "तांबा",
+      "aluminium": "एल्युमिनियम"
+    },
+    "title": "इस्तेमाल हुई सामग्री",
+    "intro": "असली लंबाई, अनुमान नहीं।",
+    "categoryAria": "रन {n} श्रेणी",
+    "removeAria": "रन {n} हटाएँ",
+    "make": "ब्रांड",
+    "length": "लंबाई (मी)",
+    "size": "आकार (sqmm)",
+    "coreLabel": "कोर",
+    "conductorLabel": "कंडक्टर",
+    "add": "+ {what} जोड़ें",
+    "pipesUsed": "इस्तेमाल हुए पाइप",
+    "onSurvey": "सर्वे में {count}",
+    "save": "सामग्री सहेजें"
+  },
+  "earthing": {
+    "toggles": {
+      "twoSeparatePoints": "दो अलग अर्थिंग पॉइंट",
+      "cautionSignage": "चेतावनी बोर्ड लगा",
+      "omManualProvided": "ग्राहक को O&M मैनुअल दिया"
+    },
+    "title": "अर्थिंग",
+    "intro": "साइट पर मापा गया। डिस्कॉम की सीमा 2 ओम से कम है।",
+    "resistance": "मापा गया रेज़िस्टेंस",
+    "passes": "2 Ω से कम — पास",
+    "fails": "2 Ω या अधिक — डिस्कॉम इसे पास नहीं करेगा",
+    "wireSize": "अर्थ तार का आकार (sqmm)",
+    "wireType": "तार का प्रकार",
+    "save": "अर्थिंग सहेजें"
+  },
+  "refs": {
+    "serialsTitle": "पैनल सीरियल नंबर",
+    "onePerLine": "हर पंक्ति में एक।",
+    "copied": "कॉपी हुआ",
+    "copyAll": "सब कॉपी करें",
+    "certTitle": "प्रमाणपत्र विवरण",
+    "copyFromCert": "प्रमाणपत्र से कॉपी करें।",
+    "dcrNumber": "डीसीआर प्रमाणपत्र नंबर",
+    "issuedOn": "जारी तिथि",
+    "saveCert": "प्रमाणपत्र विवरण सहेजें",
+    "paymentRef": "भुगतान संदर्भ",
+    "amountPaid": "भुगतान राशि (₹)",
+    "paymentTitle": "भुगतान विवरण",
+    "fromReceipt": "पोर्टल रसीद से।",
+    "paidOn": "भुगतान तिथि",
+    "savePayment": "भुगतान विवरण सहेजें"
+  }
+}

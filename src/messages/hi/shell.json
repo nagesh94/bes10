@@ -1,0 +1,23 @@
+{
+  "closeMenu": "मेनू बंद करें",
+  "primaryNav": "मुख्य",
+  "expandMenu": "मेनू फैलाएँ",
+  "collapseMenu": "मेनू समेटें",
+  "show": "दिखाएँ",
+  "rowsPerPage": "प्रति पेज पंक्तियाँ",
+  "search": "खोजें",
+  "none": "कोई {noun} नहीं",
+  "showing": "<b>{total}</b> में से <b>{first}–{last}</b> {noun} दिखाए जा रहे हैं",
+  "previous": "← पिछला",
+  "next": "अगला →",
+  "pageOf": "पेज {page} / {pages}",
+  "reason": "कारण",
+  "reasonOptional": "कारण (वैकल्पिक)",
+  "cancel": "रद्द करें",
+  "delete": "हटाएँ",
+  "confirm": "पुष्टि करें",
+  "installTitle": "BHIM CRM को होम स्क्रीन पर जोड़ें",
+  "installSub": "फ़ुल स्क्रीन खुलता है, ऑफ़लाइन भी चलता है",
+  "install": "इंस्टॉल करें",
+  "notNow": "अभी नहीं"
+}

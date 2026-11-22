@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { setLocale } from "@/app/actions/preferences";
 
 type Locale = "en" | "hi";
 
 export function LanguagePicker({ initial }: { initial: Locale }) {
+  const t = useTranslations("settings");
   const router = useRouter();
   const [value, setValue] = useState<Locale>(initial);
   const [pending, startTransition] = useTransition();
@@ -21,8 +23,8 @@ export function LanguagePicker({ initial }: { initial: Locale }) {
   }
 
   const options: Array<{ key: Locale; title: string; sub: string; deva?: boolean }> = [
-    { key: "en", title: "English", sub: "Default" },
-    { key: "hi", title: "हिंदी", sub: "Hindi", deva: true },
+    { key: "en", title: "English", sub: t("default") },
+    { key: "hi", title: "हिंदी", sub: t("hindi"), deva: true },
   ];
 
   return (

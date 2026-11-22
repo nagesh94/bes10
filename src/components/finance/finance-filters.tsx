@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CalendarDays, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { PER_PAGE_OPTIONS } from "@/lib/list/params";
 
 /**
@@ -86,6 +87,7 @@ export function FinanceFilters({
   /** Current rows per page; shows the "Show" control when given. */
   per?: number;
 }) {
+  const t = useTranslations("finance.filters");
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -165,13 +167,13 @@ export function FinanceFilters({
             <CalendarDays size={15} className="text-[var(--muted)]" aria-hidden />
             <select
               value={range}
-              aria-label="Date range"
+              aria-label={t("dateRange")}
               onChange={(e) => pickRange(e.target.value)}
               className={control}
             >
               {PRESETS.map((p) => (
                 <option key={p.key} value={p.key}>
-                  {p.label}
+                  {t(`presets.${p.key || "all"}`)}
                 </option>
               ))}
             </select>
@@ -180,7 +182,7 @@ export function FinanceFilters({
 
         {sort ? (
           <label className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--muted)]">
-            Sort
+            {t("sort")}
             <select
               value={params.get(sort.name) ?? sort.options[0]?.value ?? ""}
               aria-label={sort.anyLabel}
@@ -198,16 +200,16 @@ export function FinanceFilters({
 
         {per ? (
           <label className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--muted)]">
-            Show
+            {t("show")}
             <select
               value={String(per)}
-              aria-label="Rows per page"
+              aria-label={t("rowsPerPage")}
               onChange={(e) => go({ per: e.target.value })}
               className={control}
             >
               {PER_PAGE_OPTIONS.map((n) => (
                 <option key={n} value={n}>
-                  {n} rows
+                  {t("nRows", { n })}
                 </option>
               ))}
             </select>
@@ -218,20 +220,20 @@ export function FinanceFilters({
           type="submit"
           className="h-10 cursor-pointer rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-2)] px-3.5 text-[13px] font-bold text-[var(--ink)]"
         >
-          Search
+          {t("search")}
         </button>
       </form>
 
       {showDates && range === "custom" ? (
         <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[12.5px] font-semibold text-[var(--muted)]">
-          From
+          {t("from")}
           <input
             type="date"
             value={params.get("from") ?? ""}
             onChange={(e) => go({ from: e.target.value, range: "custom" })}
             className={control}
           />
-          to
+          {t("to")}
           <input
             type="date"
             value={params.get("to") ?? ""}
@@ -262,7 +264,7 @@ export function FinanceFilters({
             }}
             className="cursor-pointer text-[12.5px] font-semibold text-[var(--navy-text)] underline-offset-2 hover:underline"
           >
-            Clear filters
+            {t("clearFilters")}
           </button>
         </div>
       ) : null}
@@ -271,13 +273,14 @@ export function FinanceFilters({
 }
 
 function Chip({ label, onClear }: { label: string; onClear: () => void }) {
+  const t = useTranslations("finance.filters");
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-[var(--navy-border)] bg-[var(--navy-soft)] py-1 pr-1.5 pl-3 text-[12px] font-semibold text-[var(--navy-text)]">
       {label}
       <button
         type="button"
         onClick={onClear}
-        aria-label={`Remove ${label}`}
+        aria-label={t("remove", { label })}
         className="grid h-5 w-5 cursor-pointer place-items-center rounded-full hover:bg-[var(--navy-border)]"
       >
         <X size={12} strokeWidth={2.6} aria-hidden />

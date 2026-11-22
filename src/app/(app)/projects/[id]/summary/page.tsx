@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
@@ -7,6 +8,7 @@ import { installerIdsFor } from "@/lib/projects/crew";
 import { loadProjectSummary, type SummarySection } from "@/lib/projects/summary";
 import { can, canSeeMoney } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
+import { useTranslations } from "next-intl";
 
 /**
  * Everything known about one customer, on one page.
@@ -50,21 +52,22 @@ export default async function SummaryPage({ params }: { params: Promise<{ id: st
   });
   if (!summary) notFound();
 
-  const left = [
-    !showPersonal ? "identity and bank details" : null,
-    !showMoney ? "amounts" : null,
-  ].filter(Boolean);
+  const t = await getTranslations("summary");
+  const hiddenNote =
+    !showPersonal && !showMoney
+      ? t("hiddenBoth")
+      : !showPersonal
+        ? t("hiddenPersonal")
+        : !showMoney
+          ? t("hiddenMoney")
+          : null;
 
   return (
     <StageShell
       projectId={id}
       stageNo={null}
-      title="Summary"
-      note={
-        left.length
-          ? `Every field on file, read-only. The ${left.join(" and the ")} are not shown at your access level. Each field is edited in the stage that collects it.`
-          : "Every field on file, read-only. Each one is edited in the stage that collects it."
-      }
+      title={t("title")}
+      note={hiddenNote ?? t("noteAll")}
     >
       {/* Columns rather than a grid: the sections are wildly different
           heights — four rows for the rooftop, twenty for the installation —
@@ -76,9 +79,9 @@ export default async function SummaryPage({ params }: { params: Promise<{ id: st
 
         {summary.panelSerials.length ? (
           <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-            <h2 className="text-base font-bold">Module serials</h2>
+            <h2 className="text-base font-bold">{t("moduleSerials")}</h2>
             <p className="mt-0.5 mb-3.5 text-[12.5px] text-[var(--muted)]">
-              {summary.panelSerials.length} scanned
+              {t("scanned", { count: summary.panelSerials.length })}
             </p>
             <ul className="flex flex-wrap gap-1.5 pl-0">
               {summary.panelSerials.map((serial, i) => (
@@ -98,6 +101,7 @@ export default async function SummaryPage({ params }: { params: Promise<{ id: st
 }
 
 function Section({ section }: { section: SummarySection }) {
+  const t = useTranslations("summary");
   return (
     <section
       className={`rounded-[var(--radius)] border bg-[var(--surface)] px-6 py-5 ${
@@ -112,7 +116,7 @@ function Section({ section }: { section: SummarySection }) {
       ) : null}
 
       {section.blank ? (
-        <p className="mt-3 text-[13px] text-[var(--muted)]">Nothing recorded yet.</p>
+        <p className="mt-3 text-[13px] text-[var(--muted)]">{t("nothingYet")}</p>
       ) : (
         <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
           {section.rows.map((r) => (

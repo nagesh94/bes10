@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { UploadSlot, type ExistingDoc } from "./upload-slot";
 import { bankPackFor, estimatedPages, physicalItemsFor } from "@/lib/documents/bank-pack";
 import type { DocType } from "@/lib/documents/types";
@@ -23,8 +24,22 @@ export function BankFile({
   canDelete?: boolean;
 }) {
   // A co-applicant adds their identity set, filed before the quotation.
-  const items = bankPackFor(hasCoApplicant);
-  const physical = physicalItemsFor(hasCoApplicant);
+  const t = useTranslations("documents.bank");
+  const items = bankPackFor(hasCoApplicant).map((i) => ({
+    ...i,
+    label: t.has(`items.${i.docType}.label`) ? t(`items.${i.docType}.label`) : i.label,
+    hint: t.has(`items.${i.docType}.hint`) ? t(`items.${i.docType}.hint`) : i.hint,
+  }));
+  const physical = physicalItemsFor(hasCoApplicant).map((p) => {
+    const k = `physical.${p.label.replace(/\s+/g, "_")}`;
+    if (!t.has(`${k}.label`)) return p;
+    const coApp = hasCoApplicant && t.has(`${k}.noteCoApp`);
+    return {
+      ...p,
+      label: t(`${k}.label`),
+      ...(p.note ? { note: coApp ? t(`${k}.noteCoApp`) : t.has(`${k}.note`) ? t(`${k}.note`) : p.note } : {}),
+    };
+  });
   const held = items.filter((i) => docFor(i.docType)).length;
   const total = items.length;
   const complete = held === total;
@@ -38,7 +53,7 @@ export function BankFile({
     <section className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
       <div className="flex flex-wrap items-center gap-2.5 border-b border-[var(--line)] bg-[var(--surface-2)] px-6 py-4">
         <div className="min-w-60 flex-1">
-          <h2 className="text-[17px] font-bold">Bank file</h2>
+          <h2 className="text-[17px] font-bold">{t("title")}</h2>
         </div>
         <span
           className={`ref rounded-full px-3 py-1.5 text-[12px] font-bold ${
@@ -47,7 +62,7 @@ export function BankFile({
               : "bg-[var(--amber-soft)] text-[var(--amber-text)]"
           }`}
         >
-          {held} of {total}
+          {t("xOfY", { x: held, y: total })}
         </span>
       </div>
 
@@ -76,14 +91,14 @@ export function BankFile({
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13.5px] font-semibold">{item.label}</span>
                     <span className="ref mt-0.5 block text-[11.5px] text-[var(--muted)]">
-                      {existing ? (existing.fileName ?? "on file") : item.hint}
+                      {existing ? (existing.fileName ?? t("onFile")) : item.hint}
                     </span>
                   </span>
                   <Link
                     href={sourceHref[item.source]!}
                     className="h-9 shrink-0 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[12.5px] leading-9 font-semibold text-[var(--ink)] no-underline"
                   >
-                    {existing ? "View" : "Add it"}
+                    {existing ? t("view") : t("addIt")}
                   </Link>
                 </li>
               );
@@ -107,7 +122,7 @@ export function BankFile({
 
         <div className="mt-5 rounded-[9px] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-4 py-3.5">
           <div className="mb-2 text-[12px] font-semibold text-[var(--amber-text)]">
-            Attach by hand
+            {t("attachByHand")}
           </div>
           {physical.map((p) => (
             <div key={p.label} className="flex items-start gap-2.5 py-1.5">
@@ -125,11 +140,14 @@ export function BankFile({
               </span>
             </div>
           ))}
-          <p className="mt-2 text-[11.5px] text-[var(--amber-body)]">Not printable.</p>
+          <p className="mt-2 text-[11.5px] text-[var(--amber-body)]">{t("notPrintable")}</p>
         </div>
 
         <p className="mt-4 text-[12.5px] text-[var(--muted)]">
-          About <span className="ref">{estimatedPages(hasCoApplicant)} pages</span> once printed.
+          {t.rich("aboutPages", {
+            count: estimatedPages(hasCoApplicant),
+            ref: (chunks) => <span className="ref">{chunks}</span>,
+          })}
         </p>
       </div>
     </section>

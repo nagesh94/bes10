@@ -1,0 +1,159 @@
+{
+  "stageTitles": {
+    "onboarding": "Onboarding & documentation",
+    "agreement": "Agreement",
+    "installation": "Installation",
+    "evidence": "Site evidence",
+    "dcr": "DCR certificate",
+    "meter": "Meter payment",
+    "documents": "Documents & portal upload",
+    "commissioning": "Commissioning",
+    "settlement": "Subsidy & settlement"
+  },
+  "stageBlurbs": {
+    "onboarding": "Sections, flags, then the payment plan.",
+    "agreement": "Generated here, signed on paper, scanned back.",
+    "installation": "What went on the roof, serial by serial.",
+    "evidence": "Geotagged photos and material used.",
+    "dcr": "Raised on the DCR portal, then recorded here.",
+    "meter": "Paid on the DISCOM portal, receipt filed here.",
+    "documents": "Generate the set, then mark each uploaded.",
+    "commissioning": "DISCOM inspection and the commissioning certificate.",
+    "settlement": "Subsidy received, balance collected, project closed."
+  },
+  "gates": {
+    "prospectForm": "Prospect form complete",
+    "flagsResolved": "Flags resolved or waived",
+    "paymentPlanSaved": "Payment plan saved",
+    "quotation": "Quotation uploaded",
+    "customerSignature": "Customer signature on file",
+    "agreementGenerated": "Agreement generated",
+    "agreementSigned": "Signed scan uploaded",
+    "digitalApprovalLetter": "Digital approval letter uploaded",
+    "installationRecord": "Installation record complete",
+    "panelSerials": "Every panel serial captured",
+    "dcrSerialsMatched": "Panel serials match a DCR certificate",
+    "structureMembers": "Structure members recorded",
+    "batteryBank": "Battery bank recorded",
+    "photos": "Required photos taken",
+    "material": "Material consumption recorded",
+    "earthResistance": "Earth resistance under 2 Ω",
+    "certificate": "Certificate uploaded",
+    "number": "Number recorded",
+    "notApplicable": "Not a DCR project — nothing needed",
+    "paymentRecorded": "Meter payment recorded",
+    "receipt": "Receipt uploaded",
+    "generated": "Documents generated",
+    "portalUploaded": "Marked uploaded to the portal",
+    "performanceCheck": "Date of performance check entered",
+    "certificateGenerated": "Commissioning certificate generated",
+    "subsidyReceived": "Subsidy received",
+    "balanceCleared": "Outstanding balance cleared"
+  },
+  "flags": {
+    "NAME_MISMATCH": "Name change",
+    "LOAD_ENHANCEMENT": "Load enhancement",
+    "DCR_SERIAL_MISMATCH": "DCR serial check"
+  },
+  "roleChip": {
+    "ADMIN": "Admin",
+    "EMPLOYEE": "Executive",
+    "INSTALLER": "Installer",
+    "PARTNER": "Partner"
+  },
+  "stageN": "Stage {no}",
+  "stageNTitle": "Stage {no} · {title}",
+  "inProgress": "in progress",
+  "project": "Project",
+  "photos": {
+    "CUSTOMER_WITH_PANEL": {
+      "label": "Customer with the panels",
+      "hint": "The consumer standing with the installed modules behind them"
+    },
+    "CUSTOMER_WITH_INVERTER": {
+      "label": "Customer with the inverter",
+      "hint": "The consumer beside the mounted inverter"
+    },
+    "INVERTER_SERIAL": {
+      "label": "Inverter serial number",
+      "hint": "The rating plate, close enough to read the serial"
+    },
+    "EARTHING_AC": {
+      "label": "AC earthing",
+      "hint": "The AC side earthing connection"
+    },
+    "EARTHING_DC": {
+      "label": "DC earthing",
+      "hint": "The DC side earthing connection"
+    },
+    "EARTHING_PIT": {
+      "label": "Earthing pit",
+      "hint": "The pit, with the cover off"
+    },
+    "SITE_OVERVIEW": {
+      "label": "Whole array",
+      "hint": "The complete array from a distance, roof and structure visible"
+    }
+  },
+  "docTypes": {
+    "AADHAAR": "Aadhaar card",
+    "PAN": "PAN card",
+    "ELECTRICITY_BILL": "Electricity bill",
+    "CANCELLED_CHEQUE": "Cancelled cheque",
+    "BANK_STATEMENT": "Bank statement",
+    "PASSBOOK": "Passbook photo",
+    "COAPP_AADHAAR": "Co-applicant Aadhaar card",
+    "COAPP_PAN": "Co-applicant PAN card",
+    "COAPP_PASSBOOK": "Co-applicant bank passbook",
+    "COAPP_PHOTO": "Co-applicant photographs",
+    "PASSPORT_PHOTO": "Passport photographs",
+    "QUOTATION": "Quotation",
+    "NOC": "NOC certificate",
+    "KHASRA": "Khasra extract",
+    "APPLICANT_PHOTO": "Applicant photo",
+    "ACKNOWLEDGEMENT": "Acknowledgement",
+    "FEASIBILITY_REPORT": "Feasibility report",
+    "SITE_FEASIBILITY": "Site feasibility report",
+    "E_TOKEN": "E-token",
+    "DIGITAL_APPROVAL_LETTER": "Digital approval letter",
+    "DCR_CERTIFICATE": "DCR certificate",
+    "METER_RECEIPT": "Meter payment receipt",
+    "AGREEMENT": "Vendor agreement",
+    "WORK_COMPLETION": "Work completion report",
+    "JOINT_INSPECTION": "Joint inspection report",
+    "ALMM_DECLARATION": "ALMM declaration",
+    "DCR_UNDERTAKING": "DCR undertaking (Annexure-I)",
+    "COMMISSIONING_CERT": "Commissioning certificate (Annexure-II)",
+    "SUBMISSION_PACK": "Submission pack (merged PDF)",
+    "COMMISSIONING_CERT_SIGNED": "Commissioning certificate — signed scan",
+    "AGREEMENT_SIGNED": "Vendor agreement — signed scan",
+    "CUSTOMER_SIGNATURE": "Customer signature"
+  },
+  "docGroups": {
+    "aadhaar": "Aadhaar",
+    "pan": "PAN",
+    "bank": "Bank",
+    "electricity": "Electricity bill",
+    "coApplicant": "Co-applicant",
+    "photos": "Photographs",
+    "property": "Quotation & property",
+    "portal": "Portal",
+    "generated": "Generated",
+    "signed": "Signed scans"
+  },
+  "docCategories": {
+    "GENERAL": "General documents",
+    "BANK": "Bank",
+    "LEGAL": "Legal",
+    "DISCOM": "DISCOM"
+  },
+  "portalHints": {
+    "WORK_COMPLETION": "Generated here, printed, signed by installer and applicant, scanned",
+    "JOINT_INSPECTION": "Generated here; the DISCOM signs its column at inspection",
+    "ALMM_DECLARATION": "Generated on letterhead, signed by the proprietor",
+    "DCR_UNDERTAKING": "Generated here, signed by the proprietor",
+    "DCR_CERTIFICATE": "Raised on the NISE portal at stage 5",
+    "AGREEMENT_SIGNED": "The wet-signed copy from stage 2",
+    "METER_RECEIPT": "Paid on the DISCOM portal at stage 6"
+  }
+}

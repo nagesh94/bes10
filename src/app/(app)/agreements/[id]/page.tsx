@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { agreementMilestones, agreements, projects } from "@/lib/db/schema";
@@ -22,7 +23,7 @@ import { getActor } from "@/lib/session";
  */
 export default async function AgreementPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t] = await Promise.all([getActor(), getTranslations("agreements.detail")]);
   if (!actor || !can(actor, "agreement.read")) notFound();
 
   const [row] = await db
@@ -67,7 +68,7 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
           href="/agreements"
           className="mb-3 inline-block text-[13px] font-semibold text-[var(--link)] no-underline"
         >
-          ← Agreements
+          ← {t("back")}
         </Link>
         <div className="flex flex-wrap items-baseline gap-3">
           <h1 className="text-[26px] font-bold tracking-[-0.02em]">{consumer}</h1>
@@ -81,8 +82,8 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
           ) : null}
         </div>
         <p className="ref mt-1 text-sm text-[var(--muted)]">
-          Rs. {inr(Number(agreement.totalValue))} · executed {agreement.executionDate}
-          {agreement.docxGeneratedAt ? "" : " · no file built yet"}
+          Rs. {inr(Number(agreement.totalValue))} · {t("executed", { date: agreement.executionDate })}
+          {agreement.docxGeneratedAt ? "" : t("noFile")}
         </p>
       </div>
 
@@ -108,8 +109,8 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
             />
             <p className="min-w-60 flex-1 text-[12.5px] leading-relaxed text-[var(--muted)]">
               {agreement.isPrimary
-                ? `On file for ${row.projectCode}.`
-                : `Draft on ${row.projectCode} — not on file.`}
+                ? t("onFileFor", { code: row.projectCode ?? "" })
+                : t("draftOn", { code: row.projectCode ?? "" })}
             </p>
           </div>
         ) : null}
@@ -134,7 +135,7 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
         />
       ) : (
         <p className="text-sm text-[var(--muted)]">
-          You can open this agreement but not change it.
+          {t("readOnly")}
         </p>
       )}
     </main>

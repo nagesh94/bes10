@@ -8,6 +8,7 @@ import { EarthingForm, MaterialForm } from "@/components/installation/material-f
 import { BatteryBank, PanelSerials } from "@/components/installation/serial-list";
 import { StructureMembers } from "@/components/installation/structure-members";
 import { db } from "@/lib/db";
+import { projectIsDcr } from "@/lib/dcr/matching";
 import {
   batteryBanks,
   batterySerials,
@@ -42,6 +43,7 @@ export default async function InstallerInstallationPage({
   const job = await loadJob(id, "installation.write");
   if (!job) notFound();
 
+  const isDcr = await projectIsDcr(id);
   const [install] = await db
     .select()
     .from(installations)
@@ -153,6 +155,8 @@ export default async function InstallerInstallationPage({
             projectId={id}
             initial={serials.map((s) => s.serialNo)}
             expected={install?.totalPanels ?? 0}
+            checkDcr={isDcr}
+            wattPeak={install?.panelWattPeak ?? null}
           />
         </FieldSection>
 

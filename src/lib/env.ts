@@ -199,6 +199,20 @@ export const PORTAL_MAX_FILE_KB = Number(opt("PORTAL_MAX_FILE_KB") ?? 2048);
  */
 export const UPLOAD_MAX_KB = Number(opt("UPLOAD_MAX_KB") ?? 32768);
 
+// ── DCR certificate extraction ────────────────────────────────────────────
+
+/**
+ * Maps an uploaded DCR certificate onto its fields. Optional: without it the
+ * plain-text parser still runs, and the review form is filled from that alone.
+ */
+export const GEMINI_API_KEY = opt("GEMINI_API_KEY");
+export const GEMINI_MODEL = opt("GEMINI_MODEL") ?? "gemini-3.5-flash";
+/** Tried in turn when the main model is busy (503) or retired (404). Comma-separated. */
+export const GEMINI_FALLBACK_MODELS = (opt("GEMINI_FALLBACK_MODELS") ?? "gemini-flash-lite-latest,gemini-flash-latest")
+  .split(",")
+  .map((m) => m.trim())
+  .filter(Boolean);
+
 // ── App ───────────────────────────────────────────────────────────────────
 
 export const APP_URL = opt("NEXT_PUBLIC_APP_URL") ?? AUTH_URL;

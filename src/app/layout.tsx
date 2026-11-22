@@ -96,8 +96,10 @@ export default async function RootLayout({
       <body
         className={`${archivo.variable} ${plexMono.variable} ${notoDeva.variable} font-sans antialiased`}
       >
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-        <Pwa />
+        <NextIntlClientProvider messages={messages}>
+          {children}
+          <Pwa />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

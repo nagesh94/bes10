@@ -1,0 +1,10 @@
+{
+  "survey": {
+    "title": "Site survey",
+    "sub": "Estimated runs in metres.",
+    "photos": "Survey photographs",
+    "photosBlurb": "Keep location switched on.",
+    "roofBefore": "Roof before installation",
+    "roofBeforeHint": "Angles, shading, meter board"
+  }
+}

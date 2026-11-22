@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { convertToProspect } from "@/app/actions/leads";
 
 /**
@@ -12,6 +13,7 @@ import { convertToProspect } from "@/app/actions/leads";
  * on the same row, so the code, the history and any attached document survive.
  */
 export function ConvertPanel({ projectId }: { projectId: string }) {
+  const t = useTranslations("projects.c");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,13 +40,13 @@ export function ConvertPanel({ projectId }: { projectId: string }) {
   return (
     <section className="overflow-hidden rounded-[var(--radius)] border border-[var(--orange-border)] bg-[var(--surface)]">
       <div className="border-b border-[var(--orange-border)] bg-[var(--amber-surface)] px-5 py-4">
-        <h2 className="text-base font-bold">Convert to prospect</h2>
-        <p className="mt-0.5 text-[12.5px] text-[var(--amber-body)]">Paste the portal ID.</p>
+        <h2 className="text-base font-bold">{t("convertTitle")}</h2>
+        <p className="mt-0.5 text-[12.5px] text-[var(--amber-body)]">{t("pastePortalId")}</p>
       </div>
 
       <form onSubmit={onSubmit} noValidate className="p-5">
         <label htmlFor="npid" className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">
-          National Portal ID
+          {t("nationalPortalId")}
         </label>
         <input
           id="npid"
@@ -65,9 +67,9 @@ export function ConvertPanel({ projectId }: { projectId: string }) {
           disabled={pending}
           className="h-11 w-full cursor-pointer rounded-lg bg-[var(--orange)] text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60"
         >
-          {pending ? "Converting…" : "Convert to prospect"}
+          {pending ? t("converting") : t("convertTitle")}
         </button>
-        <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">Keeps its code and history.</p>
+        <p className="mt-2.5 text-[11.5px] text-[var(--muted)]">{t("keepsHistory")}</p>
       </form>
     </section>
   );

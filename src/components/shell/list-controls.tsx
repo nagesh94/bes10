@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * The search box, the filters and the pager that sit on a long list.
@@ -52,6 +53,7 @@ export function ListControls({
   perOptions: readonly number[];
   per: number;
 }) {
+  const t = useTranslations("shell");
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -109,10 +111,10 @@ export function ListControls({
       ))}
 
       <label className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--muted)]">
-        Show
+        {t("show")}
         <select
           value={String(per)}
-          aria-label="Rows per page"
+          aria-label={t("rowsPerPage")}
           onChange={(event) => go({ per: event.target.value })}
           className="h-10 cursor-pointer rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface)] px-2 text-[13px] font-medium text-[var(--ink)]"
         >
@@ -129,7 +131,7 @@ export function ListControls({
         type="submit"
         className="h-10 cursor-pointer rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-2)] px-3.5 text-[13px] font-bold text-[var(--ink)]"
       >
-        Search
+        {t("search")}
       </button>
     </form>
   );
@@ -153,6 +155,7 @@ export function ListPager({
   /** Plural, lowercase: "quotations". */
   noun: string;
 }) {
+  const t = useTranslations("shell");
   const params = useSearchParams();
   const pathname = usePathname();
 
@@ -170,37 +173,40 @@ export function ListPager({
     <div className="mt-3.5 flex flex-wrap items-center gap-3">
       <p className="flex-1 text-[12.5px] text-[var(--muted)]">
         {total === 0 ? (
-          `No ${noun}`
+          t("none", { noun })
         ) : (
-          <>
-            Showing <span className="ref font-semibold text-[var(--ink)]">{first}–{last}</span> of{" "}
-            <span className="ref font-semibold text-[var(--ink)]">{total}</span> {noun}
-          </>
+          t.rich("showing", {
+            first,
+            last,
+            total,
+            noun,
+            b: (chunks) => <span className="ref font-semibold text-[var(--ink)]">{chunks}</span>,
+          })
         )}
       </p>
 
       <div className="flex items-center gap-2">
         {page > 1 ? (
           <Link href={href(page - 1)} className={`${step} text-[var(--ink)]`} rel="prev">
-            ← Previous
+            {t("previous")}
           </Link>
         ) : (
           <span className={`${step} cursor-not-allowed text-[var(--muted-soft)] opacity-60`}>
-            ← Previous
+            {t("previous")}
           </span>
         )}
 
         <span className="text-[12.5px] font-semibold text-[var(--muted)]">
-          Page {page} of {pages}
+          {t("pageOf", { page, pages })}
         </span>
 
         {page < pages ? (
           <Link href={href(page + 1)} className={`${step} text-[var(--ink)]`} rel="next">
-            Next →
+            {t("next")}
           </Link>
         ) : (
           <span className={`${step} cursor-not-allowed text-[var(--muted-soft)] opacity-60`}>
-            Next →
+            {t("next")}
           </span>
         )}
       </div>

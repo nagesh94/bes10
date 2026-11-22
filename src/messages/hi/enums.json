@@ -1,0 +1,181 @@
+{
+  "lifecycle": {
+    "LEAD": "लीड",
+    "PROSPECT": "प्रॉस्पेक्ट",
+    "CUSTOMER": "ग्राहक"
+  },
+  "lifecyclePlural": {
+    "LEAD": "लीड",
+    "PROSPECT": "प्रॉस्पेक्ट",
+    "CUSTOMER": "ग्राहक"
+  },
+  "payMode": {
+    "CASH": "नकद",
+    "FINANCE": "फ़ाइनेंस",
+    "SPLIT": "नकद + फ़ाइनेंस"
+  },
+  "segment": {
+    "RESIDENTIAL": "आवासीय"
+  },
+  "leadStatus": {
+    "NEW": "नई",
+    "CONTACTED": "संपर्क हुआ",
+    "SURVEY_DONE": "सर्वे हुआ",
+    "READY_TO_CONVERT": "बदलने को तैयार",
+    "LOST": "खोई"
+  },
+  "leadSource": {
+    "WALK_IN": "सीधे आए",
+    "REFERRAL": "रेफ़रल",
+    "WEBSITE": "वेबसाइट",
+    "CAMPAIGN": "अभियान",
+    "OTHER": "अन्य"
+  },
+  "financeStatus": {
+    "NOT_APPLIED": "आवेदन नहीं",
+    "APPLIED": "जन समर्थ पर आवेदन किया",
+    "SANCTIONED": "स्वीकृत, वितरण बाकी",
+    "DISBURSED": "वितरित",
+    "REJECTED": "अस्वीकृत"
+  },
+  "subsidyStatus": {
+    "NOT_APPLIED": "आवेदन नहीं",
+    "APPLIED": "आवेदन किया",
+    "APPROVED": "स्वीकृत",
+    "RECEIVED": "प्राप्त"
+  },
+  "commissionStatus": {
+    "PENDING": "बाकी",
+    "PAID": "भुगतान हुआ",
+    "DUE": "देय",
+    "CANCELLED": "रद्द",
+    "ACCRUED": "अर्जित"
+  },
+  "commissionBasis": {
+    "PER_KW": "प्रति kW",
+    "FLAT_PER_PROJECT": "प्रति परियोजना तय राशि"
+  },
+  "flagStatus": {
+    "OPEN": "खुला",
+    "IN_PROGRESS": "प्रगति में",
+    "RESOLVED": "हल",
+    "WAIVED": "माफ़"
+  },
+  "milestoneTrigger": {
+    "UPFRONT": "अग्रिम",
+    "ON_INSTALL": "स्थापना पर",
+    "PSS1": "PSS 1",
+    "PSS2": "PSS 2",
+    "POST_SUBSIDY": "सब्सिडी के बाद",
+    "ON_LOAN_DISBURSAL": "ऋण वितरण पर"
+  },
+  "paymentModeReceived": {
+    "CASH": "नकद",
+    "UPI": "UPI",
+    "CHEQUE": "चेक",
+    "NEFT": "NEFT",
+    "LOAN_DISBURSAL": "ऋण वितरण",
+    "LOAN_DISBURSAL_PSS1": "ऋण वितरण (PSS 1)",
+    "LOAN_DISBURSAL_PSS2": "ऋण वितरण (PSS 2)"
+  },
+  "lenderKind": {
+    "PUBLIC_BANK": "सरकारी बैंक",
+    "PRIVATE_BANK": "निजी बैंक",
+    "OTHER_BANK": "ग्रामीण, सहकारी या स्मॉल फ़ाइनेंस बैंक",
+    "THIRD_PARTY": "तृतीय पक्ष फ़ाइनेंस (NBFC)"
+  },
+  "structureMember": {
+    "COLUMN": "कॉलम",
+    "RAFTER": "राफ़्टर",
+    "PURLIN": "पर्लिन"
+  },
+  "inverterPhase": {
+    "SINGLE": "सिंगल फ़ेज़",
+    "THREE": "थ्री फ़ेज़"
+  },
+  "cableCategory": {
+    "AC": "AC",
+    "DC": "DC",
+    "LA": "LA",
+    "EARTHING": "अर्थिंग"
+  },
+  "docClass": {
+    "COLLECTED": "एकत्रित",
+    "GENERATED": "बनाया गया",
+    "EXECUTED": "निष्पादित",
+    "EVIDENCE": "साक्ष्य",
+    "EXTERNAL": "बाहरी",
+    "PHYSICAL": "भौतिक"
+  },
+  "docStatus": {
+    "PENDING": "बाकी",
+    "GENERATED": "बनाया गया",
+    "PRINTED": "छापा गया",
+    "SIGNED": "हस्ताक्षरित",
+    "SCANNED": "स्कैन किया",
+    "UPLOADED_TO_PORTAL": "पोर्टल पर अपलोड",
+    "VERIFIED": "सत्यापित",
+    "REJECTED": "अस्वीकृत"
+  },
+  "quotationStatus": {
+    "DRAFT": "ड्राफ़्ट",
+    "ISSUED": "जारी",
+    "ACCEPTED": "स्वीकृत",
+    "DECLINED": "अस्वीकार",
+    "EXPIRED": "समाप्त"
+  },
+  "systemType": {
+    "ON_GRID": "ऑन-ग्रिड",
+    "OFF_GRID": "ऑफ़-ग्रिड",
+    "HYBRID": "हाइब्रिड"
+  },
+  "agreementStatus": {
+    "DRAFT": "ड्राफ़्ट",
+    "ISSUED": "जारी",
+    "SIGNED": "हस्ताक्षरित",
+    "CANCELLED": "रद्द"
+  },
+  "stageStatus": {
+    "not_started": "शुरू नहीं",
+    "in_progress": "प्रगति में",
+    "blocked": "रुका",
+    "complete": "पूरा"
+  },
+  "trigger": {
+    "UPFRONT": "अग्रिम",
+    "ON_INSTALL": "स्थापना पर",
+    "PSS1": "PSS1 — बैंक की पहली किस्त",
+    "PSS2": "PSS2 — बैंक की दूसरी किस्त",
+    "POST_SUBSIDY": "सब्सिडी के बाद",
+    "ON_LOAN_DISBURSAL": "ऋण वितरण पर"
+  },
+  "triggerShort": {
+    "UPFRONT": "अग्रिम",
+    "ON_INSTALL": "स्थापना पर",
+    "PSS1": "PSS1",
+    "PSS2": "PSS2",
+    "POST_SUBSIDY": "सब्सिडी के बाद",
+    "ON_LOAN_DISBURSAL": "ऋण वितरण पर"
+  },
+  "receivedMode": {
+    "NEFT": "NEFT",
+    "UPI": "UPI",
+    "CASH": "नकद",
+    "CHEQUE": "चेक",
+    "LOAN_DISBURSAL_PSS1": "ऋण वितरण — PSS1",
+    "LOAN_DISBURSAL_PSS2": "ऋण वितरण — PSS2",
+    "LOAN_DISBURSAL": "ऋण वितरण"
+  },
+  "lenderKindShort": {
+    "PUBLIC_BANK": "सरकारी बैंक",
+    "PRIVATE_BANK": "निजी बैंक",
+    "OTHER_BANK": "अन्य बैंक",
+    "THIRD_PARTY": "तृतीय पक्ष"
+  },
+  "costPayment": {
+    "CASH": "नकद",
+    "UPI": "UPI",
+    "NET_BANKING": "नेट बैंकिंग",
+    "OTHER": "अन्य"
+  }
+}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { companyBranches, contacts, projects, rooftopDetails } from "@/lib/db/schema";
@@ -23,7 +24,7 @@ export default async function NewQuotationPage({
 }: {
   searchParams: Promise<{ project?: string }>;
 }) {
-  const actor = await getActor();
+  const [actor, t] = await Promise.all([getActor(), getTranslations("quotations.new")]);
   if (!actor || !can(actor, "quotation.write")) notFound();
 
   const { project: projectId } = await searchParams;
@@ -87,24 +88,27 @@ export default async function NewQuotationPage({
           href={projectId ? `/projects/${projectId}` : "/quotations"}
           className="mb-3 inline-block text-[13px] font-semibold text-[var(--link)] no-underline"
         >
-          ← {projectId && projectCode ? projectCode : "Quotations"}
+          ← {projectId && projectCode ? projectCode : t("back")}
         </Link>
-        <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">New quotation</h1>
+        <h1 className="mb-1 text-[26px] font-bold tracking-[-0.02em]">{t("title")}</h1>
         <p className="text-sm text-[var(--muted)]">
-          This one will be <span className="ref font-semibold text-[var(--ink)]">{nextNumber}</span>
-          {projectCode ? ` — filled from ${projectCode}.` : " — not linked to any project."}
+          {t.rich("thisWillBe", {
+            number: nextNumber,
+            ref: (chunks) => <span className="ref font-semibold text-[var(--ink)]">{chunks}</span>,
+          })}
+          {projectCode ? t("filledFrom", { code: projectCode }) : t("notLinked")}
         </p>
       </div>
 
       {!branch ? (
         <p className="rounded-[var(--radius)] border border-[var(--red-border)] bg-[var(--red-surface)] px-4 py-3.5 text-[13.5px] font-medium text-[var(--red-text)]">
-          No company branch is set up. Add one under Admin first.
+          {t("noBranch")}
         </p>
       ) : (
         <>
           {!branch.bankName ? (
             <p className="mb-5 rounded-[var(--radius)] border border-[var(--orange-border,var(--line))] bg-[var(--orange-soft)] px-4 py-3 text-[13px] text-[var(--orange-text)]">
-              {branch.name} has no bank details — the Bank Details block will not print.
+              {t("noBank", { branch: branch.name })}
             </p>
           ) : null}
           <QuotationForm

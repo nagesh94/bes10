@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, eq, isNull } from "drizzle-orm";
 import {
   GeneratePack,
@@ -26,7 +27,7 @@ const day = (v: Date | null | undefined) => (v ? v.toISOString().slice(0, 10) : 
 
 export default async function Stage8Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t, tl] = await Promise.all([getActor(), getTranslations("stage"), getTranslations("labels")]);
   if (!actor || !can(actor, "document.generate")) notFound();
   const canDeleteDocs = can(actor, "document.delete");
 
@@ -65,8 +66,8 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
   const generated: GeneratedDoc[] = [
     {
       docType: "COMMISSIONING_CERT",
-      label: DOC_TYPES.COMMISSIONING_CERT.label,
-      note: "Needs the date of commissioning below",
+      label: tl.has("docTypes.COMMISSIONING_CERT") ? tl("docTypes.COMMISSIONING_CERT") : DOC_TYPES.COMMISSIONING_CERT.label,
+      note: t("s8.certNote"),
       documentId: certificate?.id ?? null,
       fileName: certificate?.fileName ?? null,
       generatedAt: certificate?.generatedAt ?? null,
@@ -87,8 +88,7 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
       stageNo={8}
       note={
         <>
-          The net meter is in, the system has
-          been checked, and Annexure-II says so.
+          {t("s8.note")}
         </>
       }
     >
@@ -96,17 +96,17 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
         <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
           <span className="min-w-60 flex-1">
             <strong className="block text-sm font-bold text-[var(--amber-text)]">
-              No net meter payment on file
+              {t("s8.noMeter")}
             </strong>
             <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
-              The certificate assumes the meter is in.
+              {t("s8.noMeterBody")}
             </span>
           </span>
           <Link
             href={`/projects/${id}/stage-6`}
             className="inline-flex h-11 shrink-0 items-center rounded-lg border border-[var(--orange)] bg-[var(--surface)] px-4.5 text-[13.5px] font-bold text-[var(--orange-text)] no-underline"
           >
-            Go to stage 6
+            {t("s8.goStage6")}
           </Link>
         </div>
       ) : null}
@@ -133,14 +133,14 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
       </section>
 
       <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-        <h2 className="mb-0.5 text-base font-bold">The signed certificate</h2>
-        <p className="mb-4 text-[13px] text-[var(--muted)]">Three signatures needed.</p>
+        <h2 className="mb-0.5 text-base font-bold">{t("s8.signedCert")}</h2>
+        <p className="mb-4 text-[13px] text-[var(--muted)]">{t("s8.threeSignatures")}</p>
         <div className="max-w-[420px]">
           <UploadSlot
             projectId={id}
             docType="COMMISSIONING_CERT_SIGNED"
-            label="Commissioning certificate — signed scan"
-            hint="All three signatures, photo or PDF"
+            label={t("s8.signedLabel")}
+            hint={t("s8.signedHint")}
             canDelete={canDeleteDocs}
             existing={
               signed
@@ -157,7 +157,7 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
         </div>
         {install?.installationDate ? (
           <p className="mt-4 text-[12px] text-[var(--muted-soft)]">
-            From stage 3: {install.installationDate}
+            {t("s8.fromStage3", { date: install.installationDate })}
             {install.totalCapacityKw ? ` · ${install.totalCapacityKw} kWp` : ""}
           </p>
         ) : null}
@@ -167,7 +167,7 @@ export default async function Stage8Page({ params }: { params: Promise<{ id: str
         href={`/projects/${id}`}
         className="mt-5 inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
       >
-        Back to the stage gate
+        {t("s2.backToGate")}
       </Link>
     </StageShell>
   );

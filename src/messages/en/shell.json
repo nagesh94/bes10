@@ -1,0 +1,23 @@
+{
+  "closeMenu": "Close menu",
+  "primaryNav": "Primary",
+  "expandMenu": "Expand the menu",
+  "collapseMenu": "Collapse the menu",
+  "show": "Show",
+  "rowsPerPage": "Rows per page",
+  "search": "Search",
+  "none": "No {noun}",
+  "showing": "Showing <b>{first}–{last}</b> of <b>{total}</b> {noun}",
+  "previous": "← Previous",
+  "next": "Next →",
+  "pageOf": "Page {page} of {pages}",
+  "reason": "Reason",
+  "reasonOptional": "Reason (optional)",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "confirm": "Confirm",
+  "installTitle": "Add BHIM CRM to your home screen",
+  "installSub": "Opens full screen, works offline",
+  "install": "Install",
+  "notNow": "Not now"
+}

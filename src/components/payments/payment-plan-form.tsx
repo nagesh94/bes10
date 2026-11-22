@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   recordCustomerAdvance,
   recordPayment,
@@ -61,6 +62,8 @@ export function PaymentPlanForm({
     milestones: MilestoneInput[];
   };
 }) {
+  const t = useTranslations("payments.plan");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [mode, setMode] = useState<Mode>(initial.mode);
   const [total, setTotal] = useState(initial.totalValue);
@@ -111,9 +114,9 @@ export function PaymentPlanForm({
       <div className="mb-5 flex flex-wrap gap-3">
         {(
           [
-            ["CASH", "Cash", "Paid directly, in one or more instalments."],
-            ["FINANCE", "Finance", "Entirely through a loan — bank or finance company."],
-            ["SPLIT", "Split", "Part cash, part loan. The common case."],
+            ["CASH", t("modes.CASH.label"), t("modes.CASH.blurb")],
+            ["FINANCE", t("modes.FINANCE.label"), t("modes.FINANCE.blurb")],
+            ["SPLIT", t("modes.SPLIT.label"), t("modes.SPLIT.blurb")],
           ] as const
         ).map(([value, label, blurb]) => {
           const on = mode === value;
@@ -145,7 +148,7 @@ export function PaymentPlanForm({
 
       <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">
         <div>
-          <label className={labelCls} htmlFor="quoted">Quotation amount</label>
+          <label className={labelCls} htmlFor="quoted">{t("quotationAmount")}</label>
           <input id="quoted" value={quoted} onChange={(e) => setQuoted(e.target.value)} className={`${field} ref`} placeholder="3,40,000" />
           {initial.quotationSource && quoted === initial.quotationAmount ? (
             <span className="mt-1 block text-[11.5px] text-[var(--muted)]">
@@ -154,16 +157,16 @@ export function PaymentPlanForm({
           ) : null}
         </div>
         <div>
-          <label className={labelCls} htmlFor="total">Agreed project value</label>
+          <label className={labelCls} htmlFor="total">{t("agreedValue")}</label>
           <input id="total" value={total} onChange={(e) => setTotal(e.target.value)} className={`${field} ref`} placeholder="3,10,000" />
         </div>
         <div>
-          <label className={labelCls} htmlFor="cash">Cash component</label>
+          <label className={labelCls} htmlFor="cash">{t("cashComponent")}</label>
           <input id="cash" value={cash} onChange={(e) => setCash(e.target.value)} className={`${field} ref`} />
         </div>
         {involvesFinance ? (
           <div>
-            <label className={labelCls} htmlFor="fin">Finance component</label>
+            <label className={labelCls} htmlFor="fin">{t("financeComponent")}</label>
             <input id="fin" value={finance} onChange={(e) => setFinance(e.target.value)} className={`${field} ref`} />
           </div>
         ) : null}
@@ -188,44 +191,44 @@ export function PaymentPlanForm({
           }`}
         >
           {discount > 0
-            ? `Agreed ${inr(discount)} below the quotation (${Math.round((discount / quotedNum) * 100)}% off).`
-            : `Agreed ${inr(-discount)} above the quotation.`}
+            ? t("belowQuote", { amount: inr(discount), pct: Math.round((discount / quotedNum) * 100) })
+            : t("aboveQuote", { amount: inr(-discount) })}
         </p>
       ) : null}
 
       {totalNum > 0 && Math.abs(componentSum - totalNum) > 1 ? (
         <p className="mb-4 rounded-lg border border-[var(--amber-border)] bg-[var(--amber-surface)] px-3.5 py-2.5 text-[12.5px] font-medium text-[var(--amber-text)]">
-          Cash and finance come to {inr(componentSum)} against a total of {inr(totalNum)}.
+          {t("componentsMismatch", { sum: inr(componentSum), total: inr(totalNum) })}
         </p>
       ) : null}
 
       <div className="mb-2 flex flex-wrap items-baseline gap-2">
-        <h3 className="flex-1 text-sm font-bold">Payment schedule</h3>
+        <h3 className="flex-1 text-sm font-bold">{t("schedule")}</h3>
         <span className={`ref text-[12.5px] ${scheduledSum - totalNum > 1 ? "text-[var(--amber-text)]" : "text-[var(--muted)]"}`}>
-          {inr(scheduledSum)} of {inr(totalNum)}
+          {t("xOfY", { x: inr(scheduledSum), y: inr(totalNum) })}
         </span>
       </div>
-      <p className="mb-3 text-[12.5px] text-[var(--muted)]">Optional. An amount and what makes it fall due.</p>
+      <p className="mb-3 text-[12.5px] text-[var(--muted)]">{t("scheduleHint")}</p>
 
       <div className="mb-3 space-y-2.5">
         {milestones.map((m, i) => (
           <div key={i} className="flex flex-wrap items-end gap-2.5 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-3">
             <div className="min-w-40 flex-[2_1_180px]">
-              <label className={labelCls} htmlFor={`mt-${i}`}>Trigger</label>
+              <label className={labelCls} htmlFor={`mt-${i}`}>{t("trigger")}</label>
               <select id={`mt-${i}`} value={m.trigger} onChange={(e) => setMilestone(i, { trigger: e.target.value as MilestoneInput["trigger"] })} className={field}>
                 {SCHEDULE_TRIGGERS.map((t) => (
-                  <option key={t} value={t}>{TRIGGER_LABELS[t]}</option>
+                  <option key={t} value={t}>{te.has(`trigger.${t}`) ? te(`trigger.${t}`) : TRIGGER_LABELS[t]}</option>
                 ))}
               </select>
             </div>
             <div className="min-w-32 flex-[1_1_140px]">
-              <label className={labelCls} htmlFor={`ma-${i}`}>Amount</label>
+              <label className={labelCls} htmlFor={`ma-${i}`}>{t("amount")}</label>
               <input id={`ma-${i}`} value={m.amount} onChange={(e) => setMilestone(i, { amount: e.target.value })} className={`${field} ref`} />
             </div>
             <button
               type="button"
               onClick={() => setMilestones((l) => l.filter((_, j) => j !== i))}
-              aria-label="Remove this line"
+              aria-label={t("removeLine")}
               className="h-11 w-11 shrink-0 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] text-[var(--red-text)]"
             >
               ×
@@ -247,11 +250,11 @@ export function PaymentPlanForm({
           {error}
         </p>
       ) : saved ? (
-        <p className="mb-4 text-[13px] font-semibold text-[var(--green-text)]">Saved.</p>
+        <p className="mb-4 text-[13px] font-semibold text-[var(--green-text)]">{t("saved")}</p>
       ) : null}
 
       <button type="button" disabled={pending} onClick={save} className="h-11 cursor-pointer rounded-lg bg-[var(--orange)] px-5 text-sm font-bold text-[var(--orange-ink)] disabled:opacity-60">
-        {pending ? "Saving…" : "Save plan"}
+        {pending ? t("saving") : t("savePlan")}
       </button>
     </div>
   );
@@ -270,6 +273,8 @@ export function RecordPaymentForm({
   /** Called after a save or a cancel, so a dialog around this can close. */
   onDone?: () => void;
 }) {
+  const t = useTranslations("payments.plan");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [open, setOpen] = useState(defaultOpen);
   const close = () => {
@@ -282,7 +287,7 @@ export function RecordPaymentForm({
   if (!open) {
     return (
       <button type="button" onClick={() => setOpen(true)} className="h-11 w-full cursor-pointer rounded-lg bg-[var(--orange)] text-sm font-bold text-[var(--orange-ink)]">
-        Record a payment
+        {t("recordPayment")}
       </button>
     );
   }
@@ -311,30 +316,30 @@ export function RecordPaymentForm({
     >
       <div className="mb-3 grid grid-cols-2 gap-2.5">
         <div>
-          <label className={labelCls} htmlFor="amount">Amount</label>
+          <label className={labelCls} htmlFor="amount">{t("amount")}</label>
           <input id="amount" name="amount" required className={`${field} ref`} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="receivedOn">Received on</label>
+          <label className={labelCls} htmlFor="receivedOn">{t("receivedOn")}</label>
           <input id="receivedOn" name="receivedOn" type="date" required defaultValue={today()} className={field} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="mode">Mode</label>
+          <label className={labelCls} htmlFor="mode">{t("mode")}</label>
           <select id="mode" name="mode" className={field}>
             {RECEIVED_MODES.map((m) => (
-              <option key={m} value={m}>{RECEIVED_MODE_LABELS[m]}</option>
+              <option key={m} value={m}>{te.has(`receivedMode.${m}`) ? te(`receivedMode.${m}`) : RECEIVED_MODE_LABELS[m]}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className={labelCls} htmlFor="referenceNo">Reference</label>
+          <label className={labelCls} htmlFor="referenceNo">{t("reference")}</label>
           <input id="referenceNo" name="referenceNo" className={`${field} ref`} />
         </div>
         {milestones.length ? (
           <div className="col-span-2">
-            <label className={labelCls} htmlFor="milestoneId">Against schedule line</label>
+            <label className={labelCls} htmlFor="milestoneId">{t("againstLine")}</label>
             <select id="milestoneId" name="milestoneId" className={field}>
-              <option value="">Not assigned</option>
+              <option value="">{t("notAssigned")}</option>
               {milestones.map((m) => (
                 <option key={m.id} value={m.id}>{m.label}</option>
               ))}
@@ -345,10 +350,10 @@ export function RecordPaymentForm({
       {error ? <p role="alert" className="mb-2.5 text-[12.5px] font-medium text-[var(--red-text)]">{error}</p> : null}
       <div className="flex gap-2">
         <button type="submit" disabled={pending} className="h-10 cursor-pointer rounded-lg bg-[var(--orange)] px-4 text-[13px] font-bold text-[var(--orange-ink)] disabled:opacity-60">
-          {pending ? "Saving…" : "Record"}
+          {pending ? t("saving") : t("record")}
         </button>
         <button type="button" onClick={close} className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-semibold">
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -362,6 +367,8 @@ export function RecordPaymentForm({
  * and the one thing that must never be confused with it.
  */
 export function GiveMoneyForm({ projectId }: { projectId: string }) {
+  const t = useTranslations("payments.plan");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -370,7 +377,7 @@ export function GiveMoneyForm({ projectId }: { projectId: string }) {
   if (!open) {
     return (
       <button type="button" onClick={() => setOpen(true)} className="h-11 w-full cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] text-sm font-bold text-[var(--navy-text)]">
-        Give money to the customer
+        {t("giveMoney")}
       </button>
     );
   }
@@ -398,37 +405,37 @@ export function GiveMoneyForm({ projectId }: { projectId: string }) {
     >
       <div className="mb-3 grid grid-cols-2 gap-2.5">
         <div>
-          <label className={labelCls} htmlFor="advAmount">Amount given</label>
+          <label className={labelCls} htmlFor="advAmount">{t("amountGiven")}</label>
           <input id="advAmount" name="amount" required className={`${field} ref`} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="paidOn">Given on</label>
+          <label className={labelCls} htmlFor="paidOn">{t("givenOn")}</label>
           <input id="paidOn" name="paidOn" type="date" required className={field} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="advMode">Mode</label>
+          <label className={labelCls} htmlFor="advMode">{t("mode")}</label>
           <select id="advMode" name="mode" className={field}>
             {PAID_OUT_MODES.map((m) => (
-              <option key={m} value={m}>{RECEIVED_MODE_LABELS[m]}</option>
+              <option key={m} value={m}>{te.has(`receivedMode.${m}`) ? te(`receivedMode.${m}`) : RECEIVED_MODE_LABELS[m]}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className={labelCls} htmlFor="advRef">Reference</label>
+          <label className={labelCls} htmlFor="advRef">{t("reference")}</label>
           <input id="advRef" name="referenceNo" className={`${field} ref`} />
         </div>
         <div className="col-span-2">
-          <label className={labelCls} htmlFor="advNote">What it was for</label>
-          <input id="advNote" name="note" placeholder="Meter fee paid on their behalf" className={field} />
+          <label className={labelCls} htmlFor="advNote">{t("whatFor")}</label>
+          <input id="advNote" name="note" placeholder={t("whatForPlaceholder")} className={field} />
         </div>
       </div>
       {error ? <p role="alert" className="mb-2.5 text-[12.5px] font-medium text-[var(--red-text)]">{error}</p> : null}
       <div className="flex gap-2">
         <button type="submit" disabled={pending} className="h-10 cursor-pointer rounded-lg bg-[var(--orange)] px-4 text-[13px] font-bold text-[var(--orange-ink)] disabled:opacity-60">
-          {pending ? "Saving…" : "Record"}
+          {pending ? t("saving") : t("record")}
         </button>
         <button type="button" onClick={() => setOpen(false)} className="h-10 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 text-[13px] font-semibold">
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -462,41 +469,43 @@ function LenderPicker({
   onChoice: (value: string) => void;
   onTyped: (value: string) => void;
 }) {
+  const t = useTranslations("payments.plan");
+  const te = useTranslations("enums");
   const picked = lenders.find((l) => String(l.id) === choice);
   return (
     <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
       <div>
-        <label className={labelCls} htmlFor="lenderId">Lender</label>
+        <label className={labelCls} htmlFor="lenderId">{t("lender")}</label>
         <select id="lenderId" value={choice} onChange={(e) => onChoice(e.target.value)} className={field}>
-          <option value="">Not decided yet</option>
+          <option value="">{t("notDecided")}</option>
           {LENDER_KINDS.map((kind) => {
             const of = lenders.filter((l) => l.kind === kind);
             if (!of.length) return null;
             return (
-              <optgroup key={kind} label={LENDER_KIND_LABEL[kind]}>
+              <optgroup key={kind} label={te(`lenderKind.${kind}`)}>
                 {of.map((l) => (
                   <option key={l.id} value={l.id}>{l.name}</option>
                 ))}
               </optgroup>
             );
           })}
-          <option value={OTHER}>Other — type the name</option>
+          <option value={OTHER}>{t("otherType")}</option>
         </select>
         {picked ? (
           <span className="mt-1 block text-[11.5px] text-[var(--muted)]">
-            {LENDER_KIND_LABEL[picked.kind]} ·{" "}
-            {viaJanSamarth(picked.kind) ? "applied through Jan Samarth" : "applied directly with the lender"}
+            {te(`lenderKind.${picked.kind}`)} ·{" "}
+            {viaJanSamarth(picked.kind) ? t("viaJanSamarth") : t("direct")}
           </span>
         ) : null}
       </div>
       {choice === OTHER ? (
         <div>
-          <label className={labelCls} htmlFor="lenderName">Lender name</label>
+          <label className={labelCls} htmlFor="lenderName">{t("lenderName")}</label>
           <input
             id="lenderName"
             value={typed}
             onChange={(e) => onTyped(e.target.value)}
-            placeholder="Not in the list? Type it here"
+            placeholder={t("lenderNamePlaceholder")}
             className={field}
           />
         </div>
@@ -540,6 +549,8 @@ export function FinanceForm({
   /** Called after a save, so a dialog around this can close. */
   onDone?: () => void;
 }) {
+  const t = useTranslations("payments.plan");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -565,29 +576,29 @@ export function FinanceForm({
       }}
     >
       <div className="mb-3.5 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3.5 py-2.5 text-[13px]">
-        <span className="text-[var(--muted)]">Lender: </span>
-        <span className="font-semibold">{lenderLabel ?? "not chosen yet"}</span>
-        <span className="block text-[11.5px] text-[var(--muted)]">Chosen in the payment plan.</span>
+        <span className="text-[var(--muted)]">{t("lenderColon")}</span>
+        <span className="font-semibold">{lenderLabel ?? t("notChosen")}</span>
+        <span className="block text-[11.5px] text-[var(--muted)]">{t("chosenInPlan")}</span>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
         <div>
-          <label className={labelCls} htmlFor="loanAmount">Loan amount</label>
+          <label className={labelCls} htmlFor="loanAmount">{t("loanAmount")}</label>
           <input id="loanAmount" name="loanAmount" defaultValue={initial.loanAmount} className={`${field} ref`} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="status">Status</label>
+          <label className={labelCls} htmlFor="status">{t("status")}</label>
           <select id="status" name="status" defaultValue={initial.status} className={field}>
-            <option value="NOT_APPLIED">Not applied</option>
-            <option value="APPLIED">Applied</option>
-            <option value="SANCTIONED">Sanctioned, awaiting disbursal</option>
-            <option value="DISBURSED">Disbursed</option>
-            <option value="REJECTED">Rejected</option>
+            <option value="NOT_APPLIED">{te("financeStatus.NOT_APPLIED")}</option>
+            <option value="APPLIED">{te("financeStatus.APPLIED")}</option>
+            <option value="SANCTIONED">{te("financeStatus.SANCTIONED")}</option>
+            <option value="DISBURSED">{te("financeStatus.DISBURSED")}</option>
+            <option value="REJECTED">{te("financeStatus.REJECTED")}</option>
           </select>
         </div>
       </div>
       {error ? <p role="alert" className="mt-2.5 text-[12.5px] font-medium text-[var(--red-text)]">{error}</p> : null}
       <button type="submit" disabled={pending} className="mt-3.5 h-11 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--surface)] px-5 text-sm font-semibold disabled:opacity-60">
-        {pending ? "Saving…" : saved ? "Saved" : "Save finance"}
+        {pending ? t("saving") : saved ? t("savedShort") : t("saveFinance")}
       </button>
     </form>
   );

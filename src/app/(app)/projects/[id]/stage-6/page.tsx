@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { UploadSlot } from "@/components/documents/upload-slot";
 import { PortalLink } from "@/components/flags/portal-link";
@@ -22,7 +23,7 @@ const day = (v: Date | null | undefined) => (v ? v.toISOString().slice(0, 10) : 
 
 export default async function Stage6Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t] = await Promise.all([getActor(), getTranslations("stage")]);
   if (!actor || !can(actor, "portal.meter")) notFound();
   const canDeleteDocs = can(actor, "document.delete");
 
@@ -67,8 +68,7 @@ export default async function Stage6Page({ params }: { params: Promise<{ id: str
       width="narrow"
       note={
         <>
-          The net meter fee is paid on the
-          DISCOM portal, and the receipt is what the meter replacement application is built from.
+          {t("s6.note")}
         </>
       }
     >
@@ -76,14 +76,14 @@ export default async function Stage6Page({ params }: { params: Promise<{ id: str
         <div className="mb-4.5 flex flex-wrap gap-x-8 gap-y-3 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface-2)] px-5 py-4">
           <div>
             <span className="mb-0.5 block text-[12px] font-semibold text-[var(--muted)]">
-              Consumer number
+              {t("s6.consumerNumber")}
             </span>
             <span className="ref text-[14px] font-semibold">{connection.consumerNumber}</span>
           </div>
           {connection.nameOnBill ? (
             <div>
               <span className="mb-0.5 block text-[12px] font-semibold text-[var(--muted)]">
-                Name on the bill
+                {t("s6.nameOnBill")}
               </span>
               <span className="text-[14px] font-semibold">{connection.nameOnBill}</span>
             </div>
@@ -99,8 +99,8 @@ export default async function Stage6Page({ params }: { params: Promise<{ id: str
       */}
       <PortalLink
         href={discom?.meterPortalUrl ?? null}
-        title="Pay the net meter fee on the DISCOM rooftop portal"
-        note="vendor login · sign in as BHIM"
+        title={t("s6.portalTitle")}
+        note={t("s6.portalNote")}
       />
 
       <section className="mb-4.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
@@ -115,16 +115,16 @@ export default async function Stage6Page({ params }: { params: Promise<{ id: str
       </section>
 
       <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
-        <h2 className="mb-0.5 text-base font-bold">The receipt</h2>
+        <h2 className="mb-0.5 text-base font-bold">{t("s6.receipt")}</h2>
         <p className="mb-4 text-[13px] text-[var(--muted)]">
-          The paid receipt <em>is</em> the application.
+          {t.rich("s6.receiptBody", { em: (chunks) => <em>{chunks}</em> })}
         </p>
         <div className="max-w-[420px]">
           <UploadSlot
             projectId={id}
             docType="METER_RECEIPT"
-            label="Meter payment receipt"
-            hint="The portal's own receipt — photo or PDF"
+            label={t("s6.receiptLabel")}
+            hint={t("s6.receiptHint")}
             canDelete={canDeleteDocs}
             existing={
               receipt
@@ -145,7 +145,7 @@ export default async function Stage6Page({ params }: { params: Promise<{ id: str
         href={`/projects/${id}`}
         className="mt-5 inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
       >
-        Back to the stage gate
+        {t("s2.backToGate")}
       </Link>
     </StageShell>
   );

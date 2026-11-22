@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { quotations } from "@/lib/db/schema";
@@ -53,29 +54,28 @@ export async function ProjectQuotations({
   // Everything listed here is attached to this project, so deleting one is
   // the admin-only decision rather than the counter-mistake one.
   const canDelete = can(await getActor(), "quotation.delete.filed");
+  const [t, te] = await Promise.all([getTranslations("quotations.c"), getTranslations("enums")]);
 
   return (
     <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
       <div className="mb-3 flex flex-wrap items-baseline gap-2">
         <h2 className="flex-1 text-[15px] font-bold">
-          Quotations
+          {t("title")}
         </h2>
         {canWrite ? (
           <Link
             href={`/quotations/new?project=${projectId}`}
             className="text-[12.5px] font-bold text-[var(--link)] no-underline"
           >
-            New
+            {t("new")}
           </Link>
         ) : null}
       </div>
 
       {rows.length === 0 ? (
         <p className="text-[13px] leading-relaxed text-[var(--muted)]">
-          None yet.{" "}
-          {canWrite
-            ? "Raising one here fills the consumer details from this project and files the PDF into its documents."
-            : ""}
+          {t("noneYet")}{" "}
+          {canWrite ? t("raiseHint") : ""}
         </p>
       ) : (
         <ul className="m-0 list-none space-y-2.5 p-0">
@@ -91,13 +91,13 @@ export async function ProjectQuotations({
                 {Number(row.capacityKwp)} kWp · {inr(Number(row.totalAmount))}
               </span>
               <span className="rounded-full bg-[var(--chip-soft)] px-2 py-0.5 text-[10.5px] font-bold text-[var(--chip-text)]">
-                {STATUS_LABEL[row.status] ?? row.status}
+                {te.has(`quotationStatus.${row.status}`) ? te(`quotationStatus.${row.status}`) : (STATUS_LABEL[row.status] ?? row.status)}
               </span>
               {canWrite ? (
                 <ChooseQuotation id={row.id} chosen={row.isChosen} attached />
               ) : row.isChosen ? (
                 <span className="rounded-full bg-[var(--green-soft)] px-2 py-0.5 text-[10.5px] font-bold text-[var(--green-text)]">
-                  Chosen
+                  {t("chosen")}
                 </span>
               ) : null}
               <QuotationRowActions id={row.id} hasPdf={Boolean(row.s3Key)} canDelete={canDelete} />

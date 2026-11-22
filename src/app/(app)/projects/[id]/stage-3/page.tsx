@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { projectIsDcr } from "@/lib/dcr/matching";
 import {
   batteryBanks,
   batterySerials,
@@ -25,7 +27,7 @@ const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
 
 export default async function Stage3Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const actor = await getActor();
+  const [actor, t] = await Promise.all([getActor(), getTranslations("stage")]);
   if (!actor) notFound();
 
   const [row] = await db
@@ -47,6 +49,7 @@ export default async function Stage3Page({ params }: { params: Promise<{ id: str
   }
 
   const [install] = await db.select().from(installations).where(eq(installations.projectId, id)).limit(1);
+  const isDcr = await projectIsDcr(id);
   const comboOptions = await loadInstallationComboOptions();
   const serials = await db
     .select()
@@ -77,8 +80,7 @@ export default async function Stage3Page({ params }: { params: Promise<{ id: str
       stageNo={3}
       note={
         <>
-          Everything here prints into the work
-          completion report, so it is recorded as the DISCOM wants to read it.
+          {t("s3.note")}
         </>
       }
     >
@@ -86,17 +88,17 @@ export default async function Stage3Page({ params }: { params: Promise<{ id: str
         <div className="mb-4.5 flex flex-wrap items-center gap-3.5 rounded-[var(--radius)] border border-[var(--amber-border)] bg-[var(--amber-surface)] px-5 py-4">
           <span className="min-w-60 flex-1">
             <strong className="block text-sm font-bold text-[var(--amber-text)]">
-              No signed agreement on file
+              {t("s3.noSigned")}
             </strong>
             <span className="mt-0.5 block text-[13px] text-[var(--amber-body)]">
-              Needed before this project can close.
+              {t("s3.noSignedBody")}
             </span>
           </span>
           <Link
             href={`/projects/${id}/stage-2`}
             className="inline-flex h-11 shrink-0 items-center rounded-lg border border-[var(--orange)] bg-[var(--surface)] px-4.5 text-[13.5px] font-bold text-[var(--orange-text)] no-underline"
           >
-            Go to stage 2
+            {t("s3.goStage2")}
           </Link>
         </div>
       ) : null}
@@ -151,6 +153,8 @@ export default async function Stage3Page({ params }: { params: Promise<{ id: str
             projectId={id}
             initial={serials.map((s) => s.serialNo)}
             expected={install?.totalPanels ?? 0}
+            checkDcr={isDcr}
+            wattPeak={install?.panelWattPeak ?? null}
           />
         </section>
 
@@ -175,7 +179,7 @@ export default async function Stage3Page({ params }: { params: Promise<{ id: str
         href={`/projects/${id}`}
         className="mt-5 inline-flex h-11 items-center rounded-lg bg-[var(--orange)] px-4.5 text-sm font-bold text-[var(--orange-ink)] no-underline"
       >
-        Back to the stage gate
+        {t("s2.backToGate")}
       </Link>
     </StageShell>
   );
