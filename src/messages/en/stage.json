@@ -82,16 +82,19 @@
     "goStage3": "Go to stage 3"
   },
   "s8": {
-    "certNote": "Needs the date of commissioning below",
-    "note": "The net meter is in, the system has been checked, and Annexure-II says so.",
+    "note": "Mark commissioning done, then mark export started. Subsidy comes next.",
     "noMeter": "No net meter payment on file",
-    "noMeterBody": "The certificate assumes the meter is in.",
+    "noMeterBody": "Commissioning assumes the meter is in.",
     "goStage6": "Go to stage 6",
-    "signedCert": "The signed certificate",
-    "threeSignatures": "Three signatures needed.",
-    "signedLabel": "Commissioning certificate — signed scan",
-    "signedHint": "All three signatures, photo or PDF",
-    "fromStage3": "From stage 3: {date}"
+    "progress": "Progress",
+    "progressHint": "Two separate steps — tick each one as it happens.",
+    "commissioningCompleted": "Commissioning completed",
+    "commissioningHint": "The DISCOM has commissioned the system.",
+    "exportStarted": "Export started",
+    "exportHint": "The net meter is exporting to the grid.",
+    "exportNeedsCommissioning": "Mark commissioning first.",
+    "doneOn": "on {date}",
+    "next": "Next: subsidy status"
   },
   "s9": {
     "projectValue": "Project value",

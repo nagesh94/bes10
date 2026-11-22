@@ -126,7 +126,7 @@ export function StageGate({
               htmlFor="override-reason"
               className="mb-1.5 block text-xs font-semibold text-[var(--muted)]"
             >
-              {t("why")}
+              {t("whyOptional")}
             </label>
             <textarea
               id="override-reason"
@@ -139,8 +139,8 @@ export function StageGate({
             <div className="flex gap-2">
               <button
                 type="button"
-                disabled={pending || reason.trim().length < 10}
-                onClick={() => go(reason)}
+                disabled={pending}
+                onClick={() => go(reason.trim() || undefined)}
                 className="h-10 cursor-pointer rounded-lg bg-[var(--orange)] px-4 text-[13px] font-bold text-[var(--orange-ink)] disabled:opacity-60"
               >
                 {pending ? t("recording") : t("continueRecord")}

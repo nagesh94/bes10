@@ -54,7 +54,18 @@
     "noDivisionYetPlain": "अभी डिवीज़न नहीं",
     "notSet": "तय नहीं",
     "kwInterest": "~{kw} kW रुचि",
-    "noun": "परियोजनाएँ"
+    "noun": "परियोजनाएँ",
+    "loanAria": "लोन आवेदन",
+    "anyLoan": "कोई भी लोन",
+    "loanAppliedOpt": "लोन आवेदन हुआ ({count})",
+    "loanPendingOpt": "लोन आवेदन नहीं हुआ ({count})",
+    "loanAppliedLower": "लोन आवेदन हुआ",
+    "loanPendingLower": "लोन आवेदन नहीं हुआ",
+    "bankNotSet": "बैंक नहीं चुना",
+    "loanAppliedLetter": "आवेदन हुआ · पत्र अपलोड",
+    "loanApplied": "लोन आवेदन हुआ",
+    "markLoanApplied": "लोन आवेदन हुआ चिह्नित करें",
+    "loanTickHelp": "अगर जन समर्थ पर लोन आवेदन हो गया है पर डिजिटल अनुमोदन पत्र अपलोड नहीं किया है, तो टिक करें।"
   },
   "c": {
     "convertTitle": "प्रॉस्पेक्ट में बदलें",
@@ -110,6 +121,12 @@
     "openStage": "चरण {no} खोलें",
     "flagsOpen": "{count} फ़्लैग खुले",
     "stage1Blocked": "जब तक ये हल या माफ़ नहीं होते, चरण 1 बंद नहीं हो सकता।",
-    "resolveFlags": "फ़्लैग हल करें"
+    "resolveFlags": "फ़्लैग हल करें",
+    "lifecycleLabel": "प्रॉस्पेक्ट या ग्राहक",
+    "markStageDone": "चरण पूरा चिह्नित करें",
+    "whyOptional": "क्यों? (वैकल्पिक)",
+    "stageDone": "चरण पूरा",
+    "markAnyway": "पूरा चिह्नित करें और दर्ज करें",
+    "reopenConfirm": "चरण {no} का टिक हटाएँ? यह फिर से खुला दिखेगा।"
   }
 }

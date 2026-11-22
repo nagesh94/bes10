@@ -8,6 +8,7 @@ import {
   earthingRecords,
   electricityConnections,
   externalRefs,
+  financeApplications,
   flags,
   identityAadhaar,
   identityPan,
@@ -203,6 +204,16 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
 
   const paymentMode: PaymentMode | null = planRow?.mode ?? null;
 
+  // The loan's status only — never its amount — so this stays ungated too.
+  const [loanRow] = await db
+    .select({ status: financeApplications.status })
+    .from(financeApplications)
+    .where(eq(financeApplications.projectId, projectId))
+    .limit(1);
+  const loanApplied = Boolean(
+    loanRow && loanRow.status !== "NOT_APPLIED" && loanRow.status !== "REJECTED",
+  );
+
   const [subsidyRow] = await db
     .select({ status: subsidies.status })
     .from(subsidies)
@@ -241,6 +252,7 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
     agreementGenerated: has("AGREEMENT"),
     agreementSignedScanUploaded: has("AGREEMENT_SIGNED"),
     digitalApprovalLetterUploaded: has("DIGITAL_APPROVAL_LETTER"),
+    loanApplied,
 
     installationRecorded,
     panelSerialsCaptured: serialCount[0]?.n ?? 0,
@@ -265,9 +277,8 @@ export async function buildSnapshot(projectId: string): Promise<ProjectSnapshot>
     portalDocumentsUploaded: uploadedToPortal,
     portalDocumentsTotal: portalPackFor(a?.isDcr ?? true).length,
 
-    performanceCheckDate: ex?.performanceCheckDate ?? null,
-    commissioningCertificateGenerated: has("COMMISSIONING_CERT"),
-    commissioningCertificateUploaded: has("COMMISSIONING_CERT_SIGNED"),
+    commissioningCompleted: Boolean(ex?.commissioningCompletedAt),
+    exportStarted: Boolean(ex?.exportStartedAt),
 
     wantsSubsidy: a?.wantsSubsidy ?? true,
     subsidyReceived: subsidyRow?.status === "RECEIVED",

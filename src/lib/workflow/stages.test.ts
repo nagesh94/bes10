@@ -19,6 +19,7 @@ const complete: ProjectSnapshot = {
   agreementGenerated: true,
   agreementSignedScanUploaded: true,
   digitalApprovalLetterUploaded: true,
+  loanApplied: false,
 
   installationRecorded: true,
   panelSerialsCaptured: 9,
@@ -44,9 +45,8 @@ const complete: ProjectSnapshot = {
   portalDocumentsUploaded: 7,
   portalDocumentsTotal: 7,
 
-  performanceCheckDate: new Date("2026-09-20"),
-  commissioningCertificateGenerated: true,
-  commissioningCertificateUploaded: true,
+  commissioningCompleted: true,
+  exportStarted: true,
 
   wantsSubsidy: true,
   subsidyReceived: true,
@@ -78,6 +78,14 @@ describe("stage 1 — onboarding", () => {
 });
 
 describe("stage 2 — finance is conditional", () => {
+  it("accepts a loan marked applied in place of the letter", () => {
+    const r = evaluateGate(
+      2,
+      spoil({ paymentMode: "FINANCE", digitalApprovalLetterUploaded: false, loanApplied: true }),
+    );
+    expect(r.outstanding.map((i) => i.id)).not.toContain("digitalApprovalLetter");
+  });
+
   it("requires the digital approval letter on a split project", () => {
     const r = evaluateGate(2, spoil({ paymentMode: "SPLIT", digitalApprovalLetterUploaded: false }));
     expect(r.passed).toBe(false);
@@ -163,23 +171,16 @@ describe("stage 7 — portal upload", () => {
 });
 
 describe("stage 8 — commissioning", () => {
-  it("opens when the date, the generated certificate and the signed scan are all in", () => {
+  it("opens when commissioning is done and export has started", () => {
     expect(evaluateGate(8, complete).passed).toBe(true);
   });
 
-  it("will not certify a performance check that has no date", () => {
-    expect(evaluateGate(8, spoil({ performanceCheckDate: null })).passed).toBe(false);
-  });
+  it("treats commissioning and export as separate ticks", () => {
+    const notCommissioned = evaluateGate(8, spoil({ commissioningCompleted: false }));
+    expect(notCommissioned.outstanding.map((i) => i.id)).toEqual(["commissioningCompleted"]);
 
-  it("distinguishes the certificate we generate from the one that comes back signed", () => {
-    // Generated but not yet signed and scanned: the gate stays shut, and it
-    // is the signed scan that is missing, not the generation.
-    const unsigned = evaluateGate(8, spoil({ commissioningCertificateUploaded: false }));
-    expect(unsigned.passed).toBe(false);
-    expect(unsigned.outstanding.map((i) => i.id)).toEqual(["certificate"]);
-
-    const ungenerated = evaluateGate(8, spoil({ commissioningCertificateGenerated: false }));
-    expect(ungenerated.outstanding.map((i) => i.id)).toEqual(["certificateGenerated"]);
+    const notExporting = evaluateGate(8, spoil({ exportStarted: false }));
+    expect(notExporting.outstanding.map((i) => i.id)).toEqual(["exportStarted"]);
   });
 });
 

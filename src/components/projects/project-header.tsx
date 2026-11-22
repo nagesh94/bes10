@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Calculator, ClipboardList, FileStack, IndianRupee } from "lucide-react";
 import type { ProjectHeaderData } from "@/lib/projects/header";
 import { FlagsChip } from "@/components/projects/flags-chip";
+import { LifecycleSelect } from "@/components/projects/lifecycle-select";
 import { useTranslations } from "next-intl";
 
 /* PROSPECT reads with --link rather than --navy: on a dark ground the navy
@@ -30,10 +31,13 @@ export function ProjectHeader({
   data,
   canSeeMoney,
   canSeeDocuments,
+  canChangeLifecycle = false,
 }: {
   data: ProjectHeaderData;
   canSeeMoney: boolean;
   canSeeDocuments: boolean;
+  /** Shows the prospect / customer chip as a dropdown. */
+  canChangeLifecycle?: boolean;
 }) {
   const t = useTranslations("projects.c");
   const te = useTranslations("enums");
@@ -55,13 +59,22 @@ export function ProjectHeader({
         <div className="min-w-60 flex-1">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
             <span className="ref text-[12.5px] font-medium text-[var(--muted)]">{data.code}</span>
-            <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-bold tracking-[0.08em] uppercase ${
-                LIFECYCLE_CHIP[data.lifecycleStage] ?? ""
-              }`}
-            >
-              {te(`lifecycle.${data.lifecycleStage}`)}
-            </span>
+            {canChangeLifecycle &&
+            (data.lifecycleStage === "PROSPECT" || data.lifecycleStage === "CUSTOMER") ? (
+              <LifecycleSelect
+                projectId={data.id}
+                value={data.lifecycleStage}
+                className={LIFECYCLE_CHIP[data.lifecycleStage] ?? ""}
+              />
+            ) : (
+              <span
+                className={`rounded px-1.5 py-0.5 text-[10px] font-bold tracking-[0.08em] uppercase ${
+                  LIFECYCLE_CHIP[data.lifecycleStage] ?? ""
+                }`}
+              >
+                {te(`lifecycle.${data.lifecycleStage}`)}
+              </span>
+            )}
             {data.isDcr ? (
               <span className="rounded bg-[var(--green-soft)] px-1.5 py-0.5 text-[10px] font-bold tracking-[0.08em] text-[var(--green-text)] uppercase">
                 DCR

@@ -18,7 +18,7 @@
     "dcr": "Raised on the DCR portal, then recorded here.",
     "meter": "Paid on the DISCOM portal, receipt filed here.",
     "documents": "Generate the set, then mark each uploaded.",
-    "commissioning": "DISCOM inspection and the commissioning certificate.",
+    "commissioning": "DISCOM inspection, commissioning, then export.",
     "settlement": "Subsidy received, balance collected, project closed."
   },
   "gates": {
@@ -45,10 +45,10 @@
     "receipt": "Receipt uploaded",
     "generated": "Documents generated",
     "portalUploaded": "Marked uploaded to the portal",
-    "performanceCheck": "Date of performance check entered",
-    "certificateGenerated": "Commissioning certificate generated",
     "subsidyReceived": "Subsidy received",
-    "balanceCleared": "Outstanding balance cleared"
+    "balanceCleared": "Outstanding balance cleared",
+    "commissioningCompleted": "Commissioning completed",
+    "exportStarted": "Export started"
   },
   "flags": {
     "NAME_MISMATCH": "Name change",

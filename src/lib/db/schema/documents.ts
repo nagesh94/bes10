@@ -122,4 +122,8 @@ export const externalRefs = pgTable("external_refs", {
   performanceCheckDate: timestamp("performance_check_date"),
   commissioningDate: timestamp("commissioning_date"),
   jointInspectionDate: timestamp("joint_inspection_date"),
+  /** Stage 8: ticked by hand once the DISCOM has commissioned the system. */
+  commissioningCompletedAt: timestamp("commissioning_completed_at"),
+  /** Stage 8: ticked by hand once the net meter shows export to the grid. */
+  exportStartedAt: timestamp("export_started_at"),
 });

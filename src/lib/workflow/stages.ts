@@ -47,6 +47,11 @@ export interface ProjectSnapshot {
   agreementSignedScanUploaded: boolean;
   /** The Jan Samarth paper. Only meaningful when the plan involves finance. */
   digitalApprovalLetterUploaded: boolean;
+  /**
+   * The loan is marked applied on Jan Samarth (or further along) without the
+   * letter — the office ticked it by hand. Either one answers the gate.
+   */
+  loanApplied: boolean;
 
   // Stage 3
   installationRecorded: boolean;
@@ -78,11 +83,10 @@ export interface ProjectSnapshot {
   portalDocumentsUploaded: number;
   portalDocumentsTotal: number;
 
-  // Stage 8
-  performanceCheckDate: Date | null;
-  commissioningCertificateGenerated: boolean;
-  /** The wet-signed scan, not the copy we produced. */
-  commissioningCertificateUploaded: boolean;
+  // Stage 8 — two ticks, no paperwork. Commissioning and export are
+  // separate events: the DISCOM commissions, then the meter starts exporting.
+  commissioningCompleted: boolean;
+  exportStarted: boolean;
 
   // Stage 9
   wantsSubsidy: boolean;
@@ -147,7 +151,11 @@ export const STAGES: StageDefinition[] = [
       ];
       // Conditional: cash projects never see these.
       if (involvesFinance(p.paymentMode)) {
-        items.push(ok("digitalApprovalLetter", p.digitalApprovalLetterUploaded));
+        items.push(
+          p.digitalApprovalLetterUploaded || !p.loanApplied
+            ? ok("digitalApprovalLetter", p.digitalApprovalLetterUploaded)
+            : ok("digitalApprovalLetter", true, "Loan marked applied"),
+        );
       }
       return items;
     },
@@ -226,11 +234,8 @@ export const STAGES: StageDefinition[] = [
     no: 8,
     key: "commissioning",
     gate: (p) => [
-      // The certificate certifies that a performance check happened, so the
-      // date comes first: without it there is nothing to certify.
-      ok("performanceCheck", p.performanceCheckDate !== null),
-      ok("certificateGenerated", p.commissioningCertificateGenerated),
-      ok("certificate", p.commissioningCertificateUploaded),
+      ok("commissioningCompleted", p.commissioningCompleted),
+      ok("exportStarted", p.exportStarted),
     ],
   },
   {

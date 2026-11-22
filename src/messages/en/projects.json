@@ -54,7 +54,18 @@
     "noDivisionYetPlain": "No division yet",
     "notSet": "not set",
     "kwInterest": "~{kw} kW interest",
-    "noun": "projects"
+    "noun": "projects",
+    "loanAria": "Loan applied",
+    "anyLoan": "Any loan",
+    "loanAppliedOpt": "Loan applied ({count})",
+    "loanPendingOpt": "Loan not applied ({count})",
+    "loanAppliedLower": "loan applied",
+    "loanPendingLower": "loan not applied",
+    "bankNotSet": "Bank not chosen",
+    "loanAppliedLetter": "Applied · letter uploaded",
+    "loanApplied": "Loan applied",
+    "markLoanApplied": "Mark loan applied",
+    "loanTickHelp": "Tick if the loan is applied on Jan Samarth but the digital approval letter is not uploaded."
   },
   "c": {
     "convertTitle": "Convert to prospect",
@@ -110,6 +121,12 @@
     "openStage": "Open stage {no}",
     "flagsOpen": "{count, plural, one {# flag} other {# flags}} open",
     "stage1Blocked": "Stage 1 cannot close until they are resolved or waived.",
-    "resolveFlags": "Resolve flags"
+    "resolveFlags": "Resolve flags",
+    "lifecycleLabel": "Prospect or customer",
+    "markStageDone": "Mark stage complete",
+    "whyOptional": "Why? (optional)",
+    "stageDone": "Stage complete",
+    "markAnyway": "Mark complete and record",
+    "reopenConfirm": "Untick stage {no}? It will show as open again."
   }
 }

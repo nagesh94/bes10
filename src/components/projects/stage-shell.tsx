@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { STAGE_KEYS } from "@/lib/workflow/stages";
+import { STAGE_KEYS, evaluateGate, stageByNo } from "@/lib/workflow/stages";
+import { buildSnapshot } from "@/lib/workflow/snapshot";
 import { loadProjectHeader } from "@/lib/projects/header";
-import { can, canSeeMoney } from "@/lib/rbac/permissions";
+import { can, canSeeMoney, hasRole } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { ProjectHeader } from "./project-header";
+import { StageCompleteToggle } from "./stage-complete-toggle";
 import { StageArrows, StagePager } from "./stage-pager";
 import { StageStepper } from "./stage-stepper";
 
@@ -54,6 +56,16 @@ export async function StageShell({
   ]);
   if (!actor || !data) notFound();
 
+  // The tick on a stage page. Stage 9 is money, so only an admin sees it there.
+  const stageDef = stageNo ? stageByNo(stageNo) : undefined;
+  const showTick =
+    stageDef !== undefined &&
+    data.lifecycleStage !== "LEAD" &&
+    can(actor, "stage.advance") &&
+    (!stageDef.adminOnly || hasRole(actor, "ADMIN"));
+  const gate =
+    showTick && stageDef ? evaluateGate(stageDef.no, await buildSnapshot(projectId)) : null;
+
   const key = stageNo ? STAGE_KEYS[stageNo - 1] : undefined;
   const heading = title ?? (key ? tl(`stageTitles.${key}`) : tl("project"));
   const blurb = note ?? (key ? tl(`stageBlurbs.${key}`) : null);
@@ -79,6 +91,7 @@ export async function StageShell({
         data={data}
         canSeeMoney={canSeeMoney(actor.roles)}
         canSeeDocuments={can(actor, "document.read")}
+        canChangeLifecycle={can(actor, "project.write")}
       />
 
       <section className="mt-3.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-3 pt-3 pb-2 sm:px-5">
@@ -116,6 +129,17 @@ export async function StageShell({
         </div>
         {badge ?? null}
         {actions ?? null}
+        {stageDef && gate ? (
+          <StageCompleteToggle
+            projectId={projectId}
+            stageNo={stageDef.no}
+            complete={data.completed.has(stageDef.no)}
+            gatePassed={gate.passed}
+            outstanding={gate.outstanding.map((i) =>
+              tl.has(`gates.${i.id}`) ? tl(`gates.${i.id}`) : i.id,
+            )}
+          />
+        ) : null}
         {stageNo ? <StageArrows projectId={projectId} stageNo={stageNo} /> : null}
       </div>
 

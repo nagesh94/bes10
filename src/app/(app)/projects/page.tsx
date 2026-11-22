@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   applicationDetails,
   channelPartners,
   contacts,
+  documents,
   electricityConnections,
+  financeApplications,
   flags as flagsTable,
   paymentPlans,
   projects,
@@ -15,6 +17,7 @@ import {
 import { can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
 import { FlagsChip } from "@/components/projects/flags-chip";
+import { LoanAppliedToggle } from "@/components/projects/loan-applied-toggle";
 import { ListPager } from "@/components/shell/list-controls";
 import { DEFAULT_PER_PAGE, PER_PAGE_OPTIONS } from "@/lib/list/params";
 import { NewLeadDialog } from "@/components/leads/new-lead-dialog";
@@ -55,6 +58,7 @@ type Filters = {
   kw?: string;
   place?: string;
   pay?: string;
+  loan?: string;
   page?: string;
   per?: string;
 };
@@ -102,6 +106,7 @@ export default async function ProjectsPage({
   // or `…:none` for the projects that have neither on file yet.
   const place = /^(div|pin):.{1,80}$/s.test(raw.place ?? "") ? (raw.place as string) : "";
   const pay = raw.pay === "none" || (raw.pay && raw.pay in PAY_LABELS) ? (raw.pay as string) : "";
+  const loan = raw.loan === "applied" || raw.loan === "pending" ? raw.loan : "";
 
   // Same two keys, the same options and the same default as the quotations
   // and agreements lists, so a pager link means the same thing everywhere.
@@ -125,6 +130,10 @@ export default async function ProjectsPage({
       // Only ever set on a prospect — a lead has no application row yet, so
       // it lands under "no division" until stage 1 fills it in.
       division: applicationDetails.divisionName,
+      // The lender's name and how far the loan has got — never the loan
+      // amount, for the same reason as the payment mode above.
+      loanBank: financeApplications.bankName,
+      loanStatus: financeApplications.status,
     })
     .from(projects)
     .innerJoin(contacts, eq(projects.contactId, contacts.id))
@@ -132,6 +141,7 @@ export default async function ProjectsPage({
     .leftJoin(electricityConnections, eq(electricityConnections.projectId, projects.id))
     .leftJoin(paymentPlans, eq(paymentPlans.projectId, projects.id))
     .leftJoin(applicationDetails, eq(applicationDetails.projectId, projects.id))
+    .leftJoin(financeApplications, eq(financeApplications.projectId, projects.id))
     .orderBy(desc(projects.updatedAt))
     .limit(500);
 
@@ -159,6 +169,16 @@ export default async function ProjectsPage({
     else flagsByProject.set(f.projectId, [f]);
   }
 
+  /**
+   * Which projects have the Jan Samarth digital approval letter on file.
+   * An uploaded letter is proof enough that the loan was applied for.
+   */
+  const letterRows = await db
+    .selectDistinct({ projectId: documents.projectId })
+    .from(documents)
+    .where(and(eq(documents.docType, "DIGITAL_APPROVAL_LETTER"), isNull(documents.deletedAt)));
+  const hasLetter = new Set(letterRows.map((d) => d.projectId));
+
   // Carried by the add-project dialog, which holds the lead form.
   const partners = await db
     .select({ id: channelPartners.id, name: channelPartners.name, phone: channelPartners.phone })
@@ -185,6 +205,16 @@ export default async function ProjectsPage({
   };
 
   const needle = q.trim().toLowerCase();
+
+  const isFinanced = (r: Row) => r.payMode === "FINANCE" || r.payMode === "SPLIT";
+  /**
+   * Whether the loan counts as applied: the approval letter is uploaded, or
+   * the status says applied or further (sanctioned, disbursed) — which is
+   * also what the "loan applied" tick sets. A rejected loan is not.
+   */
+  const loanApplied = (r: Row) =>
+    hasLetter.has(r.project.id) ||
+    (r.loanStatus != null && r.loanStatus !== "NOT_APPLIED" && r.loanStatus !== "REJECTED");
 
   const matchesText = (r: Row) => {
     if (!needle) return true;
@@ -224,6 +254,12 @@ export default async function ProjectsPage({
     return r.payMode === pay;
   };
 
+  const matchesLoan = (r: Row) => {
+    if (!loan) return true;
+    if (!isFinanced(r)) return false;
+    return loan === "applied" ? loanApplied(r) : !loanApplied(r);
+  };
+
   const matchesLifecycle = (r: Row) => !lifecycle || r.project.lifecycleStage === lifecycle;
   const matchesStage = (r: Row) => !stage || String(r.project.pipelineStage) === stage;
 
@@ -233,7 +269,13 @@ export default async function ProjectsPage({
    * table. Only the stage itself is left out, since that is what they pick.
    */
   const inScope = rows.filter(
-    (r) => matchesLifecycle(r) && matchesText(r) && matchesKw(r) && matchesPlace(r) && matchesPay(r),
+    (r) =>
+      matchesLifecycle(r) &&
+      matchesText(r) &&
+      matchesKw(r) &&
+      matchesPlace(r) &&
+      matchesPay(r) &&
+      matchesLoan(r),
   );
   const filtered = inScope.filter(matchesStage);
 
@@ -271,7 +313,14 @@ export default async function ProjectsPage({
   let noPay = 0;
   const kwCounts = new Map<string, number>();
   let noKw = 0;
+  let loanAppliedCount = 0;
+  let loanPendingCount = 0;
   for (const r of rows) {
+    if (isFinanced(r)) {
+      if (loanApplied(r)) loanAppliedCount += 1;
+      else loanPendingCount += 1;
+    }
+
     const pin = r.contact.pinCode?.trim();
     if (pin) pinCounts.set(pin, (pinCounts.get(pin) ?? 0) + 1);
     else noPin += 1;
@@ -309,7 +358,7 @@ export default async function ProjectsPage({
     );
   }
 
-  const filtersOn = Boolean(q || stage || lifecycle || kw || place || pay);
+  const filtersOn = Boolean(q || stage || lifecycle || kw || place || pay || loan);
 
   /* One set of cell classes so every column is padded and baselined the
      same. The header says what each column is — without it the numbers and
@@ -414,6 +463,12 @@ export default async function ProjectsPage({
           <option value="none">{t("noPlanYet", { count: noPay })}</option>
         </select>
 
+        <select name="loan" defaultValue={loan} aria-label={t("loanAria")} className={selectClass}>
+          <option value="">{t("anyLoan")}</option>
+          <option value="applied">{t("loanAppliedOpt", { count: loanAppliedCount })}</option>
+          <option value="pending">{t("loanPendingOpt", { count: loanPendingCount })}</option>
+        </select>
+
         <select
           name="lifecycle"
           defaultValue={lifecycle}
@@ -466,6 +521,7 @@ export default async function ProjectsPage({
           {kw ? ` · ${KW_BANDS.some((b) => b.key === kw) ? bandLabel(kw) : t("sizeNotSetLower")}` : ""}
           {place ? ` · ${placeLabel(place)}` : ""}
           {pay ? ` · ${pay === "none" ? t("noPlanYetLower") : payLabel(pay)}` : ""}
+          {loan ? ` · ${loan === "applied" ? t("loanAppliedLower") : t("loanPendingLower")}` : ""}
           {lifecycle ? ` · ${lifecycleLabel(lifecycle)}` : ""}
         </p>
       ) : null}
@@ -505,7 +561,7 @@ export default async function ProjectsPage({
                 <th scope="col" className={`${th} w-32`}>
                   {t("colPlant")}
                 </th>
-                <th scope="col" className={`${th} w-36`}>
+                <th scope="col" className={`${th} w-52`}>
                   {t("colFinance")}
                 </th>
                 {canSeeFlags ? (
@@ -581,8 +637,51 @@ export default async function ProjectsPage({
                       )}
                     </td>
 
-                    <td className={`${td} text-[12.5px] whitespace-nowrap text-[var(--muted)]`}>
-                      {r.payMode ? payLabel(r.payMode) : <span className={blank}>—</span>}
+                    {/* Above the row overlay too, for the tick. Finance and
+                        split rows say which bank and whether the loan has
+                        been applied for; a cash row is just its mode. */}
+                    <td className={`${td} relative z-10 text-[12.5px] text-[var(--muted)]`}>
+                      {r.payMode ? (
+                        <span className="block whitespace-nowrap">{payLabel(r.payMode)}</span>
+                      ) : (
+                        <span className={blank}>—</span>
+                      )}
+                      {isFinanced(r) ? (
+                        <>
+                          <span
+                            className={`mt-0.5 block max-w-52 truncate text-[12px] ${
+                              r.loanBank ? "font-semibold text-[var(--ink)]" : blank
+                            }`}
+                            title={r.loanBank ?? undefined}
+                          >
+                            {r.loanBank ?? t("bankNotSet")}
+                          </span>
+                          <span className="mt-1 block">
+                            {hasLetter.has(r.project.id) ? (
+                              <span className="inline-block rounded-full bg-[var(--green-soft)] px-2 py-0.5 text-[10.5px] font-bold text-[var(--green-text)]">
+                                {t("loanAppliedLetter")}
+                              </span>
+                            ) : r.loanStatus === "SANCTIONED" ||
+                              r.loanStatus === "DISBURSED" ||
+                              r.loanStatus === "REJECTED" ? (
+                              <span
+                                className={`inline-block rounded-full px-2 py-0.5 text-[10.5px] font-bold ${
+                                  r.loanStatus === "REJECTED"
+                                    ? "bg-[var(--chip-soft)] text-[var(--red-text)]"
+                                    : "bg-[var(--green-soft)] text-[var(--green-text)]"
+                                }`}
+                              >
+                                {te(`financeStatus.${r.loanStatus}`)}
+                              </span>
+                            ) : (
+                              <LoanAppliedToggle
+                                projectId={r.project.id}
+                                applied={r.loanStatus === "APPLIED"}
+                              />
+                            )}
+                          </span>
+                        </>
+                      ) : null}
                     </td>
 
                     {/* Above the row overlay, so the chip takes the click and

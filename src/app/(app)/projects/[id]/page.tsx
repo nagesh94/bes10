@@ -84,6 +84,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         data={data}
         canSeeMoney={canSeeMoney(actor.roles)}
         canSeeDocuments={can(actor, "document.read")}
+        canChangeLifecycle={can(actor, "project.write")}
       />
 
       {/* Quotation and crew, side by side and at the top: the two things

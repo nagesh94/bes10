@@ -143,10 +143,33 @@ export async function saveInstallation(
       projectId,
       after: set,
     });
+
+    // Once the system is on the roof the prospect is a customer. Only a
+    // prospect moves: a lead is never promoted from here, and a customer
+    // stays one.
+    if (set.installationDate) {
+      const promoted = await tx
+        .update(projects)
+        .set({ lifecycleStage: "CUSTOMER", updatedAt: new Date() })
+        .where(and(eq(projects.id, projectId), eq(projects.lifecycleStage, "PROSPECT")))
+        .returning({ id: projects.id });
+      if (promoted.length > 0) {
+        await tx.insert(auditLog).values({
+          actorId: actor.id,
+          action: "project.lifecycle",
+          entityType: "project",
+          entityId: projectId,
+          projectId,
+          before: { lifecycleStage: "PROSPECT" },
+          after: { lifecycleStage: "CUSTOMER" },
+          reason: "Installation recorded",
+        });
+      }
+    }
   });
 
-  revalidatePath(`/projects/${projectId}/stage-3`);
-  revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}`, "layout");
+  revalidatePath("/projects");
   return { ok: true };
 }
 
