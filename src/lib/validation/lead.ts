@@ -10,10 +10,19 @@ import { z } from "zod";
  * Office staff sometimes paste it with spaces, a leading +91 or a 0 — those
  * are stripped before the length check, so "+91 98765 43210" still passes.
  */
+export function normalizePhone(raw: string): string {
+  const digits = raw.replace(/[\s()+-]/g, "");
+  // Only treat a leading 91 / 0 as a prefix when it is in front of a full
+  // 10-digit number — "9123456789" is itself a valid mobile number.
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  return digits;
+}
+
 export const phoneSchema = z
   .string()
   .trim()
-  .transform((v) => v.replace(/^(\+?91[\s-]?)|^0/, "").replace(/[\s()-]/g, ""))
+  .transform(normalizePhone)
   .refine((v) => /^[6-9][0-9]{9}$/.test(v), {
     message: "Enter a 10-digit mobile number",
   });

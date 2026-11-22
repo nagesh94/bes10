@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { asc, eq } from "drizzle-orm";
 import { AddMaster, RemoveZoneButton, RetireButton } from "@/components/admin/add-master";
+import { AddSizedRate, RateCardRow } from "@/components/admin/rate-card";
 import { DiscomLinksForm } from "@/components/admin/discom-links-form";
 import { TemplateList } from "@/components/admin/template-list";
 import { MASTER_CATEGORIES, masterCategory, type MasterCategory } from "@/lib/admin/catalog";
@@ -15,13 +16,17 @@ import {
   discomDivisions,
   discomRegions,
   discomZones,
+  costRates,
+  expenseCategories,
   inverterModels,
+  lenders,
   panelCompanies,
   panelModels,
   panelTypes,
   plantSizes,
   structureCompanies,
 } from "@/lib/db/schema";
+import { LENDER_KINDS, LENDER_KIND_LABEL, type LenderKind } from "@/lib/finance/lender-kinds";
 
 function kwLabel(raw: string): string {
   const n = Number(raw);
@@ -48,6 +53,9 @@ export default async function MasterPage({
     structures,
     cableMakeRows,
     bankRows,
+    lenderRows,
+    expenseCategoryRows,
+    rates,
     sizes,
     discoms,
     regions,
@@ -75,6 +83,9 @@ export default async function MasterPage({
     db.select().from(structureCompanies).orderBy(asc(structureCompanies.name)),
     db.select().from(cableMakes).orderBy(asc(cableMakes.name)),
     db.select().from(banks).orderBy(asc(banks.name)),
+    db.select().from(lenders).orderBy(asc(lenders.name)),
+    db.select().from(expenseCategories).orderBy(asc(expenseCategories.sortOrder), asc(expenseCategories.name)),
+    db.select().from(costRates).orderBy(asc(costRates.sortOrder)),
     db.select().from(plantSizes).orderBy(asc(plantSizes.kw)),
     db.select().from(discomCompanies).orderBy(asc(discomCompanies.name)),
     db.select().from(discomRegions),
@@ -106,6 +117,9 @@ export default async function MasterPage({
     structures: structures.length,
     "cable-makes": cableMakeRows.length,
     banks: bankRows.length,
+    lenders: lenderRows.length,
+    "expense-categories": expenseCategoryRows.length,
+    "rate-card": rates.length,
     discom: discoms.length + regions.length + circles.length + divisions.length + zones.length,
     "plant-sizes": sizes.length,
   };
@@ -153,14 +167,29 @@ export default async function MasterPage({
         <section className="min-w-80 flex-[1_1_420px] overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)]">
           <div className="flex flex-wrap items-center gap-3 border-b border-[var(--line)] px-5 py-4">
             <h2 className="m-0 flex-1 text-base font-bold">{current.label}</h2>
-            <AddMaster
-              key={cat}
-              category={cat}
-              addLabel={current.addLabel}
-              companies={companies.filter((c) => c.active).map((c) => ({ id: c.id, name: c.name }))}
-              divisions={divisionOptions}
-            />
+            {cat === "rate-card" ? null : (
+              <AddMaster
+                key={cat}
+                category={cat}
+                addLabel={current.addLabel}
+                companies={companies.filter((c) => c.active).map((c) => ({ id: c.id, name: c.name }))}
+                divisions={divisionOptions}
+              />
+            )}
           </div>
+          {cat === "rate-card" ? (
+            <div>
+              <p className="border-b border-[var(--line-soft)] bg-[var(--surface-2)] px-5 py-3 text-[12.5px] text-[var(--muted)]">
+                What each cost calculator proposes per unit. Inverter and structure are priced by
+                size; a job with no price for its size starts at the &ldquo;other sizes&rdquo; line.
+                Changing a rate affects sheets not yet saved; a saved sheet keeps its own rates.
+              </p>
+              <AddSizedRate />
+              {rates.map((r) => (
+                <RateCardRow key={r.id} id={r.id} label={r.label} unit={r.unit} rate={r.rate} />
+              ))}
+            </div>
+          ) : null}
           <Catalog
             cat={cat}
             companies={sortActive(companies, (row) => row.name)}
@@ -170,6 +199,8 @@ export default async function MasterPage({
             structures={sortActive(structures, (row) => row.name)}
             cableMakes={sortActive(cableMakeRows, (row) => row.name)}
             banks={sortActive(bankRows, (row) => row.name)}
+            lenders={sortActive(lenderRows, (row) => row.name)}
+            expenseCategories={[...expenseCategoryRows].sort((a, b) => Number(b.active) - Number(a.active))}
             sizes={sortActive(sizes, (row) => row.label)}
             discoms={discoms}
             zones={zones}
@@ -191,6 +222,8 @@ function Catalog({
   structures,
   cableMakes,
   banks: bankRows,
+  lenders: lenderRows,
+  expenseCategories: expenseCategoryRows,
   sizes,
   discoms,
   zones,
@@ -203,6 +236,16 @@ function Catalog({
   structures: { id: number; name: string; active: boolean }[];
   cableMakes: { id: number; name: string; active: boolean }[];
   banks: { id: number; name: string; active: boolean }[];
+  lenders: { id: number; name: string; kind: LenderKind; active: boolean }[];
+  expenseCategories: {
+    id: number;
+    name: string;
+    hint: string | null;
+    needsPerson: boolean;
+    needsDetail: boolean;
+    perSite: boolean;
+    active: boolean;
+  }[];
   sizes: { id: number; label: string; kw: string; active: boolean }[];
   discoms: {
     id: number;
@@ -263,6 +306,63 @@ function Catalog({
             <div className="min-w-0 flex-1 text-sm font-semibold">{row.name}</div>
             {!row.active ? <Retired /> : null}
             <RetireButton category={cat} id={row.id} active={row.active} />
+          </Row>
+        ))}
+      </List>
+    );
+  }
+
+  if (cat === "lenders") {
+    // Grouped by type, so a bank and a third-party lender are never mistaken
+    // for one another when a loan is filed.
+    return (
+      <List empty="No lenders yet.">
+        {LENDER_KINDS.flatMap((kind) => {
+          const of = lenderRows.filter((row) => row.kind === kind);
+          if (!of.length) return [];
+          return [
+            <div
+              key={`h-${kind}`}
+              className="border-b border-[var(--line-soft)] bg-[var(--surface-2)] px-5 py-2 text-[11.5px] font-bold tracking-[0.04em] text-[var(--muted)] uppercase"
+            >
+              {LENDER_KIND_LABEL[kind]} · {of.length}
+            </div>,
+            ...of.map((row) => (
+              <Row key={row.id} muted={!row.active}>
+                <div className="min-w-0 flex-1 text-sm font-semibold">{row.name}</div>
+                {!row.active ? <Retired /> : null}
+                <RetireButton category="lenders" id={row.id} active={row.active} />
+              </Row>
+            )),
+          ];
+        })}
+      </List>
+    );
+  }
+
+  // Drawn above the catalog, where its rows can be edited in place.
+  if (cat === "rate-card") return null;
+
+  if (cat === "expense-categories") {
+    const flag = (on: boolean, text: string) =>
+      on ? (
+        <span className="inline-block rounded-full bg-[var(--navy-soft)] px-[9px] py-[3px] text-[10.5px] font-bold text-[var(--navy-text)]">
+          {text}
+        </span>
+      ) : null;
+    return (
+      <List empty="No expense categories yet.">
+        {expenseCategoryRows.map((row) => (
+          <Row key={row.id} muted={!row.active}>
+            <div className="min-w-0 flex-[1_1_200px]">
+              <div className="text-sm font-semibold">{row.name}</div>
+              {row.hint ? <div className="mt-0.5 text-xs text-[var(--muted)]">{row.hint}</div> : null}
+            </div>
+            {flag(row.perSite, "Per site")}
+            {flag(row.needsPerson, "Asks whom")}
+            {flag(row.needsDetail, "Needs details")}
+            {!row.active ? <Retired /> : null}
+            <RetireButton category="expense-categories" id={row.id} active={row.active} />
           </Row>
         ))}
       </List>

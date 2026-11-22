@@ -1,4 +1,5 @@
 import {
+  Calculator,
   FileSignature,
   FileStack,
   FileText,
@@ -23,6 +24,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   quotations: FileText,
   agreements: FileSignature,
   finance: Wallet,
+  estimates: Calculator,
   partners: Handshake,
   documents: FileStack,
   admin: ShieldCheck,

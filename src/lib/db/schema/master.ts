@@ -8,6 +8,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { lenderKindEnum } from "./enums";
 
 /**
  * Master data. Admin-editable without a deploy — add a panel model and it is
@@ -64,6 +65,21 @@ export const cableMakes = pgTable("cable_makes", {
 export const banks = pgTable("banks", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  active: boolean("active").notNull().default(true),
+});
+
+/**
+ * Who can finance a job: every bank on Jan Samarth, and the third-party
+ * finance companies that lend for rooftop solar outside it.
+ *
+ * Kept apart from `banks`, which is the list a customer's *own* account is
+ * picked from for the subsidy credit — Bajaj Finserv lends, but nobody keeps
+ * a savings account there, and the two lists drift independently.
+ */
+export const lenders = pgTable("lenders", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  kind: lenderKindEnum("kind").notNull().default("PUBLIC_BANK"),
   active: boolean("active").notNull().default(true),
 });
 

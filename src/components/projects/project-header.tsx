@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList, FileStack, IndianRupee } from "lucide-react";
+import { Calculator, ClipboardList, FileStack, IndianRupee } from "lucide-react";
 import type { ProjectHeaderData } from "@/lib/projects/header";
 import { FlagsChip } from "@/components/projects/flags-chip";
 
@@ -83,6 +83,12 @@ export function ProjectHeader({
             <Link href={`/projects/${data.id}/payments`} className={chip}>
               <IndianRupee size={15} strokeWidth={2} aria-hidden />
               Payment plan
+            </Link>
+          ) : null}
+          {canSeeMoney ? (
+            <Link href={`/projects/${data.id}/costs`} className={chip}>
+              <Calculator size={15} strokeWidth={2} aria-hidden />
+              Cost calculator
             </Link>
           ) : null}
           {/* Next to the payment plan on purpose: the two questions asked

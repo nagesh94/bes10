@@ -10,7 +10,9 @@ import {
   discomCompanies,
   discomDivisions,
   discomZones,
+  expenseCategories,
   inverterModels,
+  lenders,
   panelCompanies,
   panelModels,
   panelTypes,
@@ -43,6 +45,7 @@ function fieldErrors(error: { flatten: () => { fieldErrors: Record<string, strin
 
 function refresh() {
   revalidatePath("/admin/master");
+  revalidatePath("/finance", "layout");
   revalidatePath("/admin/audit");
 }
 
@@ -100,6 +103,63 @@ export async function addMaster(raw: unknown): Promise<MasterActionResult> {
       entityType: input.category,
       entityId: String(created?.id ?? ""),
       after: { name: input.name },
+    });
+    refresh();
+    return { ok: true };
+  }
+
+  if (input.category === "lenders") {
+    const [dup] = await db
+      .select({ id: lenders.id })
+      .from(lenders)
+      .where(sql`lower(${lenders.name}) = ${input.name.toLowerCase()}`)
+      .limit(1);
+    if (dup) {
+      return { ok: false, error: "That lender is already in the list.", fieldErrors: { name: ["Already in the list"] } };
+    }
+    const [created] = await db
+      .insert(lenders)
+      .values({ name: input.name, kind: input.kind })
+      .returning({ id: lenders.id });
+    await writeAudit({
+      actorId: actor.id,
+      action: "master.add",
+      entityType: "lenders",
+      entityId: String(created?.id ?? ""),
+      after: { name: input.name, kind: input.kind },
+    });
+    refresh();
+    return { ok: true };
+  }
+
+  if (input.category === "expense-categories") {
+    const [dup] = await db
+      .select({ id: expenseCategories.id })
+      .from(expenseCategories)
+      .where(sql`lower(${expenseCategories.name}) = ${input.name.toLowerCase()}`)
+      .limit(1);
+    if (dup) {
+      return { ok: false, error: "That category is already in the list.", fieldErrors: { name: ["Already in the list"] } };
+    }
+    const values = {
+      name: input.name,
+      hint: input.hint?.trim() || null,
+      needsPerson: input.needsPerson,
+      needsDetail: input.needsDetail,
+      perSite: input.perSite,
+      // After the starting list, before "Other" (999).
+      sortOrder: 500,
+    };
+    const [created] = await db
+      .insert(expenseCategories)
+      .values(values)
+      .returning({ id: expenseCategories.id });
+    await writeAudit({
+      actorId: actor.id,
+      action: "master.add",
+      entityType: "expense-categories",
+      entityId: String(created?.id ?? ""),
+      after: values,
     });
     refresh();
     return { ok: true };
@@ -210,6 +270,8 @@ const ACTIVE_TABLE = {
   structures: structureCompanies,
   "cable-makes": cableMakes,
   banks,
+  lenders,
+  "expense-categories": expenseCategories,
   "plant-sizes": plantSizes,
 } as const;
 

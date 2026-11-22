@@ -5,7 +5,10 @@ export const MASTER_CATEGORIES = [
   { key: "inverters", label: "Inverter models", addLabel: "Add inverter" },
   { key: "structures", label: "Structure companies", addLabel: "Add company" },
   { key: "cable-makes", label: "Cable makes", addLabel: "Add make" },
-  { key: "banks", label: "Banks", addLabel: "Add bank" },
+  { key: "banks", label: "Banks (customer accounts)", addLabel: "Add bank" },
+  { key: "lenders", label: "Lenders (loans)", addLabel: "Add lender" },
+  { key: "expense-categories", label: "Expense categories", addLabel: "Add category" },
+  { key: "rate-card", label: "Rate card (costs)", addLabel: "" },
   { key: "discom", label: "DISCOM hierarchy", addLabel: "Add zone" },
   { key: "plant-sizes", label: "Plant sizes", addLabel: "Add size" },
 ] as const;

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { addMaster, removeDiscomZone, setMasterActive } from "@/app/actions/admin-master";
 import type { MasterCategory } from "@/lib/admin/catalog";
+import { LENDER_KINDS, LENDER_KIND_LABEL } from "@/lib/finance/lender-kinds";
 
 const field =
   "h-10 w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--orange)]";
@@ -41,7 +42,18 @@ export function AddMaster({
       category === "cable-makes" ||
       category === "banks"
         ? { category, name: text("name") }
-        : category === "panel-models"
+        : category === "lenders"
+          ? { category, name: text("name"), kind: text("kind") }
+          : category === "expense-categories"
+            ? {
+                category,
+                name: text("name"),
+                hint: text("hint"),
+                needsPerson: data.get("needsPerson") === "on",
+                needsDetail: data.get("needsDetail") === "on",
+                perSite: data.get("perSite") === "on",
+              }
+          : category === "panel-models"
           ? {
               category,
               companyId: text("companyId"),
@@ -100,6 +112,54 @@ export function AddMaster({
                 <input id="master-name" name="name" required className={field} />
                 <FieldError name="name" errors={fieldErrors} />
               </div>
+            ) : null}
+
+            {category === "lenders" ? (
+              <>
+                <div>
+                  <label className={label} htmlFor="master-lender">Lender name</label>
+                  <input id="master-lender" name="name" required placeholder="Bajaj Finserv" className={field} />
+                  <FieldError name="name" errors={fieldErrors} />
+                </div>
+                <div>
+                  <label className={label} htmlFor="master-kind">Type</label>
+                  <select id="master-kind" name="kind" required className={field} defaultValue="">
+                    <option value="" disabled>Choose</option>
+                    {LENDER_KINDS.map((k) => (
+                      <option key={k} value={k}>{LENDER_KIND_LABEL[k]}</option>
+                    ))}
+                  </select>
+                  <FieldError name="kind" errors={fieldErrors} />
+                </div>
+              </>
+            ) : null}
+
+            {category === "expense-categories" ? (
+              <>
+                <div>
+                  <label className={label} htmlFor="master-ecat">Category name</label>
+                  <input id="master-ecat" name="name" required placeholder="Insurance" className={field} />
+                  <FieldError name="name" errors={fieldErrors} />
+                </div>
+                <div>
+                  <label className={label} htmlFor="master-ehint">Examples (shown in the dropdown)</label>
+                  <input id="master-ehint" name="hint" placeholder="Transit insurance, site insurance" className={field} />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  {(
+                    [
+                      ["perSite", "Usually spent on a site — ask which project"],
+                      ["needsPerson", "Ask whom it was for (salary, personal use)"],
+                      ["needsDetail", "Insist on a description of what it was for"],
+                    ] as const
+                  ).map(([name, text]) => (
+                    <label key={name} className="flex items-center gap-2 text-sm font-medium">
+                      <input type="checkbox" name={name} className="h-4 w-4 accent-[var(--orange)]" />
+                      {text}
+                    </label>
+                  ))}
+                </div>
+              </>
             ) : null}
 
             {category === "panel-models" ? (
@@ -236,6 +296,8 @@ export function RetireButton({
     | "structures"
     | "cable-makes"
     | "banks"
+    | "lenders"
+    | "expense-categories"
     | "plant-sizes";
   id: number;
   active: boolean;

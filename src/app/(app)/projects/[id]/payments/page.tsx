@@ -10,6 +10,12 @@ import {
 } from "@/components/payments/payment-plan-form";
 import { UploadSlot } from "@/components/documents/upload-slot";
 import { getMoneyView } from "@/app/actions/payments";
+import { loadLenderOptions } from "@/lib/finance/lender-options";
+import { loadExpenseFormOptions, loadExpenses } from "@/lib/finance/expenses";
+import { loadCostSheet } from "@/lib/finance/cost-sheet";
+import { AddExpenseDialog } from "@/components/finance/expense-form";
+import Link from "next/link";
+import { LENDER_KIND_LABEL } from "@/lib/finance/lender-kinds";
 import { RECEIVED_MODE_LABELS, TRIGGER_SHORT, type ReceivedMode } from "@/lib/payments/schedule";
 import { can, canSeeMoney } from "@/lib/rbac/permissions";
 import { StageShell } from "@/components/projects/stage-shell";
@@ -71,14 +77,49 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
       : null;
   };
 
-  const view = await getMoneyView(id);
-  const { plan, milestones, received, advances, finance, subsidy, totalReceived, totalGiven, outstanding } =
-    view;
+  const [view, lenderOptions, allExpenses, expenseOptions, sheet] = await Promise.all([
+    getMoneyView(id),
+    loadLenderOptions(),
+    loadExpenses(),
+    loadExpenseFormOptions(),
+    loadCostSheet(id),
+  ]);
+  const siteExpenses = allExpenses.filter((e) => e.projectId === id);
+  const siteSpent = siteExpenses.reduce((s, e) => s + e.amount, 0);
+  // Only a saved sheet counts: a proposal nobody has checked is not a cost.
+  const sheetTotal = sheet.saved ? sheet.lines.reduce((s, l) => s + l.amount, 0) : 0;
+  const siteCost = siteSpent + sheetTotal;
+  const {
+    plan,
+    milestones,
+    received,
+    advances,
+    finance,
+    subsidy,
+    chosenQuotation,
+    totalReceived,
+    totalGiven,
+    outstanding,
+  } = view;
 
   const totalValue = plan?.totalValue ? Number(plan.totalValue) : 0;
+  const quotedValue = Number(plan?.quotationAmount ?? chosenQuotation?.totalAmount ?? 0) || 0;
+  const discount = quotedValue > 0 && totalValue > 0 ? quotedValue - totalValue : 0;
+  const margin = totalValue - siteCost;
   const collectible = totalValue + totalGiven;
   const pct = collectible > 0 ? Math.min(Math.round((totalReceived / collectible) * 100), 100) : 0;
   const showFinance = involvesFinance(plan?.mode ?? null);
+  // The lender is chosen in the plan above; its type decides whether the
+  // Jan Samarth door is shown at all.
+  const lenderKind = finance?.lenderId
+    ? (lenderOptions.find((l) => l.id === finance.lenderId)?.kind ?? null)
+    : null;
+  const thirdParty = lenderKind === "THIRD_PARTY";
+  const lenderLabel = finance?.bankName
+    ? lenderKind
+      ? `${finance.bankName} · ${LENDER_KIND_LABEL[lenderKind]}`
+      : finance.bankName
+    : null;
   const subsidyExpected = subsidy?.expectedAmount ? Number(subsidy.expectedAmount) : 0;
 
   return (
@@ -96,9 +137,14 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
             <h2 className="mb-4 text-base font-bold">How is the customer paying?</h2>
             <PaymentPlanForm
               projectId={id}
+              lenders={lenderOptions}
               initial={{
+                lenderId: finance?.lenderId ?? null,
+                lenderName: finance?.bankName ?? "",
                 mode: (plan?.mode ?? "CASH") as "CASH" | "FINANCE" | "SPLIT",
                 totalValue: plan?.totalValue ?? "",
+                quotationAmount: plan?.quotationAmount ?? chosenQuotation?.totalAmount ?? "",
+                quotationSource: plan?.quotationAmount ? null : (chosenQuotation?.number ?? null),
                 cashComponent: plan?.cashComponent ?? "",
                 financeComponent: plan?.financeComponent ?? "",
                 milestones: milestones.map((m) => ({
@@ -112,11 +158,14 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
           {showFinance ? (
             <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-6 py-5">
               <div className="mb-1 flex flex-wrap items-baseline gap-2">
-                <h2 className="flex-1 text-base font-bold">Finance — Jan Samarth</h2>
+                <h2 className="flex-1 text-base font-bold">Finance</h2>
               </div>
               <p className="mb-4 text-[13px] text-[var(--muted)]">
-                Applied for on Jan Samarth, released as PSS1 and PSS2.
+                {thirdParty
+                  ? "A third-party lender is applied to directly, on its own paperwork."
+                  : "Bank loans are applied for on Jan Samarth and released as PSS1 and PSS2."}
               </p>
+              {thirdParty ? null : (
               <a
                 href="https://www.jansamarth.in/"
                 target="_blank"
@@ -135,10 +184,11 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
                   <path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5" />
                 </svg>
               </a>
+              )}
               <FinanceForm
                 projectId={id}
+                lenderLabel={lenderLabel}
                 initial={{
-                  bankName: finance?.bankName ?? "",
                   loanAmount: finance?.loanAmount ?? "",
                   status: finance?.status ?? "NOT_APPLIED",
                 }}
@@ -211,7 +261,9 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
               Where the money is
             </h2>
             {[
-              ["Project value", inr(totalValue)],
+              ...(quotedValue ? [["Quotation amount", inr(quotedValue)]] : []),
+              ...(discount > 0 ? [["Discount on quote", `− ${inr(discount)}`]] : []),
+              ["Agreed project value", inr(totalValue)],
               ...(totalGiven ? [["Given to the customer", `+ ${inr(totalGiven)}`]] : []),
               ["Received", inr(totalReceived)],
               ...(subsidyExpected ? [["Subsidy expected", `− ${inr(subsidyExpected)}`]] : []),
@@ -247,6 +299,63 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
             <h2 className="mb-1 text-sm font-bold">Money the other way</h2>
             <p className="mb-3.5 text-[12.5px] text-[var(--muted)]">Recoverable, not a discount.</p>
             <GiveMoneyForm projectId={id} />
+          </section>
+
+          <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-5 py-4.5">
+            <div className="mb-1 flex items-baseline gap-2">
+              <h2 className="flex-1 text-sm font-bold">Cost of this site</h2>
+              <span className="num text-[15px] font-bold">{inr(siteCost)}</span>
+            </div>
+            <p className="mb-2 text-[12px] text-[var(--muted)]">
+              {sheet.saved ? `Material ${inr(sheetTotal)}` : "Material not costed yet"} · expenses{" "}
+              {inr(siteSpent)}
+            </p>
+            {totalValue ? (
+              <p className={`mb-3 text-[12.5px] ${margin < 0 ? "font-semibold text-[var(--red-text)]" : "text-[var(--muted)]"}`}>
+                Margin {margin < 0 ? "−" : ""}
+                {inr(Math.abs(margin))} on {inr(totalValue)}
+                {totalValue > 0 ? ` (${Math.round((margin / totalValue) * 100)}%)` : ""}
+              </p>
+            ) : (
+              <p className="mb-3 text-[12.5px] text-[var(--muted)]">Set the project value to see the margin.</p>
+            )}
+            {siteExpenses.length ? (
+              <ul className="mb-3.5 space-y-1.5">
+                {siteExpenses.slice(0, 5).map((e) => (
+                  <li key={e.id} className="flex items-baseline gap-2 text-[12.5px]">
+                    <span className="min-w-0 flex-1 truncate">
+                      <span className="font-semibold">{e.category}</span>
+                      {e.details ? <span className="text-[var(--muted)]"> · {e.details}</span> : null}
+                    </span>
+                    <span className="num font-semibold">{inr(e.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Link
+                href={`/projects/${id}/costs`}
+                className="inline-flex h-9 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[12.5px] font-bold text-[var(--navy-text)] no-underline hover:bg-[var(--surface-2)]"
+              >
+                Cost calculator
+              </Link>
+              <Link
+                href={`/estimates/new?project=${id}`}
+                title="Pre-installation estimate, for pricing a quote"
+                className="inline-flex h-9 items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[12.5px] font-bold text-[var(--navy-text)] no-underline hover:bg-[var(--surface-2)]"
+              >
+                Estimate
+              </Link>
+              <AddExpenseDialog options={expenseOptions} defaultProjectId={id} label="Add expense" compact />
+              {siteExpenses.length ? (
+                <Link
+                  href={`/finance/expenses?project=${id}`}
+                  className="text-[12.5px] font-semibold text-[var(--navy-text)]"
+                >
+                  All {siteExpenses.length} →
+                </Link>
+              ) : null}
+            </div>
           </section>
         </aside>
       </div>

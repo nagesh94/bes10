@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ROLES } from "@/lib/rbac/permissions";
+import { LENDER_KINDS } from "@/lib/finance/lender-kinds";
 
 /**
  * One schema per admin form, shared by the screen and the server action.
@@ -122,6 +123,19 @@ export const addMasterSchema = z.discriminatedUnion("category", [
   z.object({ category: z.literal("cable-makes"), name: nameField }),
   z.object({ category: z.literal("banks"), name: nameField }),
   z.object({
+    category: z.literal("lenders"),
+    name: nameField,
+    kind: z.enum(LENDER_KINDS, { errorMap: () => ({ message: "Choose a lender type" }) }),
+  }),
+  z.object({
+    category: z.literal("expense-categories"),
+    name: nameField,
+    hint: z.string().trim().max(160).optional().or(z.literal("")),
+    needsPerson: z.boolean(),
+    needsDetail: z.boolean(),
+    perSite: z.boolean(),
+  }),
+  z.object({
     category: z.literal("plant-sizes"),
     kw: z.coerce.number().positive("Size is required").max(100),
     label: z.string().trim().max(40).optional().or(z.literal("")),
@@ -144,6 +158,8 @@ export const setMasterActiveSchema = z.object({
     "structures",
     "cable-makes",
     "banks",
+    "lenders",
+    "expense-categories",
     "plant-sizes",
   ]),
   id: z.coerce.number().int().positive(),

@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { projects } from "./core";
+import { lenders } from "./master";
 import {
   financeStatusEnum,
   milestoneTriggerEnum,
@@ -34,6 +35,15 @@ export const paymentPlans = pgTable("payment_plans", {
     .references(() => projects.id, { onDelete: "cascade" }),
   mode: paymentModeEnum("mode").notNull().default("CASH"),
   totalValue: numeric("total_value", { precision: 14, scale: 2 }),
+  /**
+   * What the customer was quoted, kept beside what was actually agreed.
+   *
+   * The two often differ — a quote of ₹3,40,000 closes at ₹3,10,000 — and
+   * the gap is a real number the business wants to see, not a typo to fix.
+   * Prefilled from the project's chosen quotation; editable because the
+   * paper quote and the spoken one are not always the same figure.
+   */
+  quotationAmount: numeric("quotation_amount", { precision: 14, scale: 2 }),
   cashComponent: numeric("cash_component", { precision: 14, scale: 2 }),
   financeComponent: numeric("finance_component", { precision: 14, scale: 2 }),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -122,6 +132,13 @@ export const financeApplications = pgTable("finance_applications", {
   projectId: text("project_id")
     .primaryKey()
     .references(() => projects.id, { onDelete: "cascade" }),
+  /** The lender from master data. Null for a name typed in by hand. */
+  lenderId: integer("lender_id").references(() => lenders.id),
+  /**
+   * The lender's name as saved — copied from `lenders` when one is picked,
+   * typed when it is not in the list. Kept as text so a retired or renamed
+   * lender never blanks an old loan.
+   */
   bankName: text("bank_name"),
   loanAmount: numeric("loan_amount", { precision: 14, scale: 2 }),
   status: financeStatusEnum("status").notNull().default("NOT_APPLIED"),

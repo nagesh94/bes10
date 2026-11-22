@@ -74,6 +74,21 @@ export const subsidyStatusEnum = pgEnum("subsidy_status", [
   "RECEIVED",
 ]);
 
+/**
+ * Who lends the money for a financed job.
+ *
+ * Banks are reached through Jan Samarth under PM Surya Ghar; a third-party
+ * finance company (Bajaj Finserv, Tata Capital, …) is applied to directly,
+ * on its own paperwork. The split matters to the office because the two are
+ * chased in completely different places.
+ */
+export const lenderKindEnum = pgEnum("lender_kind", [
+  "PUBLIC_BANK",
+  "PRIVATE_BANK",
+  "OTHER_BANK",
+  "THIRD_PARTY",
+]);
+
 export const financeStatusEnum = pgEnum("finance_status", [
   "NOT_APPLIED",
   "APPLIED",

@@ -1,16 +1,18 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
   auditLog,
   customerAdvances,
   financeApplications,
+  lenders,
   paymentMilestones,
   paymentPlans,
   paymentsReceived,
   projects,
+  quotations,
   subsidies,
 } from "@/lib/db/schema";
 import {
@@ -58,6 +60,10 @@ export async function savePaymentPlan(
   input: {
     mode: PaymentMode;
     totalValue: string;
+    /** What was quoted. Optional; blank clears it. */
+    quotationAmount?: string;
+    /** Who is lending, for a financed or split plan. */
+    lender?: { lenderId: number | null; lenderName: string };
     cashComponent: string;
     financeComponent: string;
     milestones: MilestoneInput[];
@@ -68,6 +74,13 @@ export async function savePaymentPlan(
 
   const total = money(input.totalValue);
   if (total === null || total <= 0) return { ok: false, error: "Enter the project value." };
+
+  // Optional: a blank quote is simply not known, which is different from zero.
+  const quotedRaw = String(input.quotationAmount ?? "").trim();
+  const quoted = quotedRaw ? money(quotedRaw) : null;
+  if (quotedRaw && (quoted === null || quoted <= 0)) {
+    return { ok: false, error: "The quotation amount must be a number above zero." };
+  }
 
   const cash = money(input.cashComponent) ?? 0;
   const finance = money(input.financeComponent) ?? 0;
@@ -100,6 +113,23 @@ export async function savePaymentPlan(
     parsed.push({ amount, trigger: m.trigger, ...(m.dueDate ? { dueDate: m.dueDate } : {}) });
   }
 
+  // A picked lender's own name is what gets stored, never whatever the
+  // browser sent alongside it, so the two cannot disagree.
+  let lender: { lenderId: number | null; bankName: string | null } | null = null;
+  if (involvesFinance(input.mode) && input.lender) {
+    if (input.lender.lenderId) {
+      const [row] = await db
+        .select({ id: lenders.id, name: lenders.name })
+        .from(lenders)
+        .where(eq(lenders.id, input.lender.lenderId))
+        .limit(1);
+      if (!row) return { ok: false, error: "That lender is no longer in the list. Pick another." };
+      lender = { lenderId: row.id, bankName: row.name };
+    } else {
+      lender = { lenderId: null, bankName: input.lender.lenderName.trim().slice(0, 120) || null };
+    }
+  }
+
   // The schedule may fall short of the total — a plan that bills the balance
   // once the subsidy lands is left open on purpose, and a bank's split of its
   // own tranches is not ours to make add up. It may never exceed the total;
@@ -116,6 +146,7 @@ export async function savePaymentPlan(
     const set = {
       mode: input.mode,
       totalValue: String(total),
+      quotationAmount: quoted === null ? null : String(quoted),
       cashComponent: String(cash),
       financeComponent: String(finance),
       updatedAt: new Date(),
@@ -148,6 +179,17 @@ export async function savePaymentPlan(
     // A cash project has no loan, so any stale finance row goes.
     if (!involvesFinance(input.mode)) {
       await tx.delete(financeApplications).where(eq(financeApplications.projectId, projectId));
+    } else if (lender) {
+      // The loan record starts here, with the lender and — until the bank
+      // says otherwise — the finance component as the amount. Its status and
+      // amount are moved on later from the Finance section, untouched here.
+      await tx
+        .insert(financeApplications)
+        .values({ projectId, ...lender, loanAmount: finance > 0 ? String(finance) : null })
+        .onConflictDoUpdate({
+          target: financeApplications.projectId,
+          set: { ...lender, updatedAt: new Date() },
+        });
     }
 
     await tx.insert(auditLog).values({
@@ -156,13 +198,13 @@ export async function savePaymentPlan(
       entityType: "payment_plan",
       entityId: projectId,
       projectId,
-      after: { ...set, scheduledLines: parsed.length },
+      after: { ...set, scheduledLines: parsed.length, lender: lender?.bankName ?? null },
     });
   });
 
   revalidatePath(`/projects/${projectId}/payments`);
   revalidatePath(`/projects/${projectId}`);
-  revalidatePath("/finance");
+  revalidatePath("/finance", "layout");
   return { ok: true };
 }
 
@@ -204,7 +246,7 @@ export async function recordPayment(
   });
 
   revalidatePath(`/projects/${projectId}/payments`);
-  revalidatePath("/finance");
+  revalidatePath("/finance", "layout");
   return { ok: true };
 }
 
@@ -253,20 +295,23 @@ export async function recordCustomerAdvance(
   });
 
   revalidatePath(`/projects/${projectId}/payments`);
-  revalidatePath("/finance");
+  revalidatePath("/finance", "layout");
   return { ok: true };
 }
 
+/**
+ * The lender is chosen in the payment plan; this records how the loan is
+ * progressing — its amount and status — and leaves the lender as it is.
+ */
 export async function saveFinance(
   projectId: string,
-  input: { bankName: string; loanAmount: string; status: string },
+  input: { loanAmount: string; status: string },
 ): Promise<MoneyResult> {
   const actor = await getActor();
   assertCan(actor, "finance.write");
 
   const amount = money(input.loanAmount);
   const set = {
-    bankName: input.bankName.trim() || null,
     loanAmount: amount === null ? null : String(amount),
     status: input.status as "NOT_APPLIED" | "APPLIED" | "SANCTIONED" | "DISBURSED" | "REJECTED",
     updatedAt: new Date(),
@@ -278,7 +323,7 @@ export async function saveFinance(
     .onConflictDoUpdate({ target: financeApplications.projectId, set });
 
   revalidatePath(`/projects/${projectId}/payments`);
-  revalidatePath("/finance");
+  revalidatePath("/finance", "layout");
   return { ok: true };
 }
 
@@ -316,7 +361,7 @@ export async function saveSubsidy(
   });
 
   revalidatePath(`/projects/${projectId}/payments`);
-  revalidatePath("/finance");
+  revalidatePath("/finance", "layout");
   return { ok: true };
 }
 
@@ -355,6 +400,18 @@ export async function getMoneyView(projectId: string) {
     .where(eq(subsidies.projectId, projectId))
     .limit(1);
   const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+  // The live offer, so the plan can default its quotation amount to it.
+  const [chosenQuotation] = await db
+    .select({ number: quotations.number, totalAmount: quotations.totalAmount })
+    .from(quotations)
+    .where(
+      and(
+        eq(quotations.projectId, projectId),
+        eq(quotations.isChosen, true),
+        isNull(quotations.deletedAt),
+      ),
+    )
+    .limit(1);
 
   const totalReceived = received.reduce((s, r) => s + Number(r.amount), 0);
   const totalGiven = advances.reduce((s, a) => s + Number(a.amount), 0);
@@ -368,6 +425,7 @@ export async function getMoneyView(projectId: string) {
     advances,
     finance: finance ?? null,
     subsidy: subsidy ?? null,
+    chosenQuotation: chosenQuotation ?? null,
     totalReceived,
     totalGiven,
     // Money handed to the customer is recoverable, so the project owes it

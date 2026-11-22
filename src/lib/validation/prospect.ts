@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { isValidIfsc, isValidPan } from "@/lib/crypto/field";
-import { dateNotFuture, pinCodeSchema, phoneSchema } from "./lead";
+import { dateNotFuture, normalizePhone, pinCodeSchema, phoneSchema } from "./lead";
 
 /**
  * The eight sections of the stage 1 prospect form.
@@ -146,7 +146,7 @@ export const coApplicantSectionSchema = z.object({
     .trim()
     .optional()
     .or(z.literal(""))
-    .transform((v) => (v ?? "").replace(/^(\+?91[\s-]?)|^0/, "").replace(/[\s()-]/g, ""))
+    .transform((v) => normalizePhone(v ?? ""))
     .refine((v) => !v || /^[6-9][0-9]{9}$/.test(v), {
       message: "Enter a 10-digit mobile number",
     }),
