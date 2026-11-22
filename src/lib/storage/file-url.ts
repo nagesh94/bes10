@@ -18,13 +18,13 @@
  * fetched again under a freshly signed URL.
  */
 
-export type FileKind = "document" | "photo" | "quotation" | "agreement" | "dcr";
+export type FileKind = "document" | "photo" | "quotation" | "agreement" | "dcr" | "expense" | "gst";
 export type FileVariant = "original" | "portal" | "thumb";
 
 /** The two things a browser may send up. Quotations and agreements are generated. */
 export type UploadKind = "document" | "photo";
 
-const KINDS: readonly FileKind[] = ["document", "photo", "quotation", "agreement", "dcr"];
+const KINDS: readonly FileKind[] = ["document", "photo", "quotation", "agreement", "dcr", "expense", "gst"];
 const VARIANTS: readonly FileVariant[] = ["original", "portal", "thumb"];
 const UPLOAD_KINDS: readonly UploadKind[] = ["document", "photo"];
 

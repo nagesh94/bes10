@@ -9,6 +9,7 @@ import { PAID_OUT_MODES, type PaidOutMode } from "@/lib/payments/schedule";
 import { newId } from "@/lib/projects/code";
 import { assertCan } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
+import { deleteDocumentObject, putDocument } from "@/lib/storage/operations";
 
 /**
  * Recording money going out.
@@ -37,6 +38,25 @@ export interface ExpenseInput {
   details?: string;
 }
 
+/** Bills come as a phone photo or a PDF; nothing that could script inline. */
+const DOC_TYPES: Record<string, string> = {
+  pdf: "application/pdf",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
+const DOC_MAX_BYTES = 10 * 1024 * 1024;
+
+function readDocument(form: FormData): File | null | string {
+  const file = form.get("file");
+  if (!(file instanceof File) || file.size === 0) return null;
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!DOC_TYPES[ext]) return "The document must be a PDF, JPG, PNG or WEBP.";
+  if (file.size > DOC_MAX_BYTES) return "That document is over 10 MB.";
+  return file;
+}
+
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 const clean = (v: string | undefined | null, max = 300) => (v ?? "").trim().slice(0, max) || null;
 
@@ -45,9 +65,22 @@ function refresh(projectId: string | null) {
   if (projectId) revalidatePath(`/projects/${projectId}/payments`);
 }
 
-export async function recordExpense(input: ExpenseInput): Promise<ExpenseResult> {
+/**
+ * Takes a FormData so a bill can ride along: `data` is the JSON
+ * ExpenseInput, `file` the optional document.
+ */
+export async function recordExpense(form: FormData): Promise<ExpenseResult> {
   const actor = await getActor();
   assertCan(actor, "money.write");
+
+  let input: ExpenseInput;
+  try {
+    input = JSON.parse(String(form.get("data") ?? "")) as ExpenseInput;
+  } catch {
+    return { ok: false, error: "The form data could not be read." };
+  }
+  const doc = readDocument(form);
+  if (typeof doc === "string") return { ok: false, error: doc, field: "file" };
 
   const amount = Number(String(input.amount).replace(/[,\s₹]/g, ""));
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -107,6 +140,17 @@ export async function recordExpense(input: ExpenseInput): Promise<ExpenseResult>
   }
 
   const id = newId("exp");
+
+  let docFields: { fileName: string; s3Key: string; contentType: string; sizeBytes: number } | null = null;
+  if (doc) {
+    const ext = doc.name.split(".").pop()!.toLowerCase();
+    const contentType = DOC_TYPES[ext]!;
+    const safeName = doc.name.replace(/[^A-Za-z0-9._-]+/g, "_").slice(-80) || `bill.${ext}`;
+    const s3Key = `expenses/${id}/${Date.now()}-${safeName}`;
+    await putDocument(s3Key, Buffer.from(await doc.arrayBuffer()), contentType);
+    docFields = { fileName: doc.name.slice(0, 200), s3Key, contentType, sizeBytes: doc.size };
+  }
+
   const row = {
     id,
     spentOn: input.spentOn,
@@ -119,9 +163,15 @@ export async function recordExpense(input: ExpenseInput): Promise<ExpenseResult>
     personUserId,
     personName,
     details,
+    ...docFields,
     recordedBy: actor.id,
   };
-  await db.insert(expenses).values(row);
+  try {
+    await db.insert(expenses).values(row);
+  } catch (err) {
+    if (docFields) await deleteDocumentObject(docFields.s3Key);
+    throw err;
+  }
 
   await writeAudit({
     actorId: actor.id,

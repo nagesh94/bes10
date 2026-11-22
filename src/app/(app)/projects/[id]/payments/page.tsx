@@ -22,6 +22,8 @@ import { RECEIVED_MODE_LABELS, TRIGGER_SHORT, type ReceivedMode } from "@/lib/pa
 import { can, canSeeMoney } from "@/lib/rbac/permissions";
 import { StageShell } from "@/components/projects/stage-shell";
 import { getActor } from "@/lib/session";
+import { fileHref } from "@/lib/storage/file-url";
+import { Paperclip } from "lucide-react";
 import { involvesFinance } from "@/lib/workflow/stages";
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -333,6 +335,18 @@ export default async function PaymentsPage({ params }: { params: Promise<{ id: s
                       <span className="font-semibold">{e.category}</span>
                       {e.details ? <span className="text-[var(--muted)]"> · {e.details}</span> : null}
                     </span>
+                    {e.hasFile ? (
+                      <a
+                        href={fileHref("expense", e.id)}
+                        target="_blank"
+                        rel="noopener"
+                        aria-label={e.fileName ?? "Document"}
+                        title={e.fileName ?? "Document"}
+                        className="shrink-0 self-center text-[var(--navy-text)]"
+                      >
+                        <Paperclip size={12} aria-hidden />
+                      </a>
+                    ) : null}
                     <span className="num font-semibold">{inr(e.amount)}</span>
                   </li>
                 ))}

@@ -119,6 +119,11 @@ export const expenses = pgTable(
     personName: text("person_name"),
     /** What it was, and where the money was used. */
     details: text("details"),
+    /** A bill, receipt or invoice for the spend — optional. */
+    fileName: text("file_name"),
+    s3Key: text("s3_key"),
+    contentType: text("content_type"),
+    sizeBytes: integer("size_bytes"),
     recordedBy: text("recorded_by").references(() => user.id),
     recordedAt: timestamp("recorded_at").notNull().defaultNow(),
     /** Removed rows are kept for the audit trail, never counted. */

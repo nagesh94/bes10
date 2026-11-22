@@ -23,7 +23,26 @@ const STEPS = [
 /** Gemini's share of the wait; the bar eases toward 92% while it runs. */
 const EXPECTED_SECONDS = 9;
 
-export function ReadingProgress({ fileName, sizeBytes, done }: { fileName: string; sizeBytes: number; done: boolean }) {
+/** Wording for a document other than a DCR certificate. */
+export interface ReadingWords {
+  reading: string;
+  read: string;
+  parse: string;
+  llm: string;
+  match: string;
+}
+
+export function ReadingProgress({
+  fileName,
+  sizeBytes,
+  done,
+  words,
+}: {
+  fileName: string;
+  sizeBytes: number;
+  done: boolean;
+  words?: ReadingWords;
+}) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -48,7 +67,7 @@ export function ReadingProgress({ fileName, sizeBytes, done }: { fileName: strin
 
         <div className="w-full min-w-0 flex-1">
           <div className="dcr-rise mb-1 text-[17px] font-bold">
-            {done ? "Certificate read" : "Reading the certificate…"}
+            {done ? (words?.read ?? "Certificate read") : (words?.reading ?? "Reading the certificate…")}
           </div>
           <div className="dcr-rise mb-5 truncate text-[12.5px] text-[var(--muted)]" style={{ animationDelay: "60ms" }}>
             <span className="ref">{fileName}</span> · {kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${Math.round(kb)} KB`}
@@ -74,7 +93,7 @@ export function ReadingProgress({ fileName, sizeBytes, done }: { fileName: strin
                           : "text-[var(--muted)]"
                     }
                   >
-                    {s.label}
+                    {(words && s.key !== "upload" && s.key !== "text" ? words[s.key] : null) ?? s.label}
                   </span>
                   {state === "active" && s.key === "llm" && elapsed > 14 ? (
                     <span className="text-[12px] text-[var(--muted)]">— Gemini is busy, trying again</span>

@@ -2,6 +2,7 @@
   "tabs": {
     "dashboard": "Dashboard",
     "expenses": "Expenses",
+    "gst": "GST bills",
     "loans": "Loans"
   },
   "dialogs": {
@@ -69,7 +70,14 @@
     "removeTitle": "Remove this expense?",
     "removeBody": "{summary}. It stops counting everywhere; the audit log keeps a record.",
     "why": "Why?",
-    "whyPlaceholder": "Entered twice, wrong amount…"
+    "whyPlaceholder": "Entered twice, wrong amount…",
+    "document": "Document — optional",
+    "documentPick": "Attach bill, receipt or invoice",
+    "documentHint": "PDF or photo (JPG, PNG, WEBP), up to 10 MB.",
+    "documentRemove": "Remove document",
+    "documentTooLarge": "That document is over 10 MB.",
+    "documentView": "View document",
+    "saveFailed": "Could not save. Check the connection and try again."
   },
   "sheet": {
     "saved": "Saved.",

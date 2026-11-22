@@ -1,6 +1,6 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { agreements, dcrCertificates, documents, photos, projects, quotations } from "@/lib/db/schema";
+import { agreements, dcrCertificates, documents, expenses, gstBills, photos, projects, quotations } from "@/lib/db/schema";
 import { installerIdsFor } from "@/lib/projects/crew";
 import { can } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
@@ -143,10 +143,46 @@ async function resolveDcr(id: string): Promise<Resolved> {
   return { ok: true, key: row.s3Key, fileName: row.fileName ?? nameFromKey(row.s3Key) };
 }
 
+/** An expense's bill is money data, so it sits behind `money.read`. */
+async function resolveExpense(id: string): Promise<Resolved> {
+  const actor = await getActor();
+  if (!can(actor, "money.read")) return NOT_ALLOWED;
+
+  const [row] = await db
+    .select({ s3Key: expenses.s3Key, fileName: expenses.fileName })
+    .from(expenses)
+    .where(and(eq(expenses.id, id), isNull(expenses.deletedAt)))
+    .limit(1);
+
+  if (!row?.s3Key) return NOT_FOUND;
+  return { ok: true, key: row.s3Key, fileName: row.fileName ?? nameFromKey(row.s3Key) };
+}
+
+/** A GST bill is money data too. */
+async function resolveGst(id: string): Promise<Resolved> {
+  const actor = await getActor();
+  if (!can(actor, "money.read")) return NOT_ALLOWED;
+  const n = Number(id);
+  if (!Number.isInteger(n)) return NOT_FOUND;
+
+  const [row] = await db
+    .select({ s3Key: gstBills.s3Key, fileName: gstBills.fileName })
+    .from(gstBills)
+    .where(and(eq(gstBills.id, n), isNull(gstBills.deletedAt)))
+    .limit(1);
+
+  if (!row?.s3Key) return NOT_FOUND;
+  return { ok: true, key: row.s3Key, fileName: row.fileName ?? nameFromKey(row.s3Key) };
+}
+
 function resolve(kind: FileKind, id: string, variant: FileVariant): Promise<Resolved> {
   switch (kind) {
     case "dcr":
       return resolveDcr(id);
+    case "expense":
+      return resolveExpense(id);
+    case "gst":
+      return resolveGst(id);
     case "document":
       return resolveDocument(id, variant);
     case "photo":

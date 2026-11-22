@@ -1,0 +1,135 @@
+Tax Invoice
+IRN : c90e37009fd9196f895cce7f73755f0397ca6dad3a539-
+cfc6624302f7387d74d
+Ack No. : 162626609091776
+Ack Date : 6-Nov-26
+e-Invoice
+SHRI BALAJI INDUSTRIES - 2026-2027 -
+119/1, Sector -H, Industrial Area
+Govindpura, Bhopal
+GSTIN/UIN: 23ACGFS5752F1Z5
+State Name : Madhya Pradesh, Code : 23
+E-Mail : sunilgupta98933@gmail.com
+Consignee (Ship to)
+Bhim Energy Solutions
+52
+Gurusahab Colony
+Athner Road
+Betul, Delivery Courier Service
+Betul
+GSTIN/UIN : 23CCYPS1427F1ZC
+State Name : Madhya Pradesh, Code : 23
+Buyer (Bill to)
+Bhim Energy Solutions
+52
+Gurusahab Colony
+Athner Road
+Betul, Delivery Courier Service
+Betul
+GSTIN/UIN : 23CCYPS1427F1ZC
+State Name : Madhya Pradesh, Code : 23
+Invoice No.
+1868
+Delivery Note
+Reference No. & Date.
+Buyer’s Order No.
+Dispatch Doc No.
+Dispatched through
+Bill of Lading/LR-RR No.
+Dated
+6-Nov-26
+Mode/Terms of Payment
+Other References
+Dated
+Delivery Note Date
+Destination
+Motor Vehicle No.
+Self
+Terms of Delivery
+Sl Description of Goods AmountperRateQuantityHSN/SAC
+No.
+1 1cx4.00sqmm Lsoh Atc Cross Bsen
+-50618 BLACK Polycab
+27,500.00mtr55.00500.0000 mtr85446090
+2 4.0sqm x 1c Cu Wire(Frlsh) Ploycab
+200m Black
+12,200.00mtr61.00200.0000 mtr85446090
+3 4.0sqm x 1c Cu Wire(Frlsh) Ploycab
+200m Red
+12,200.00mtr61.00200.0000 mtr85446090
+4 2.5sqm x 1c Cu Wire(Frlsh) Ploycab
+300m Green
+12,000.00mtr40.00300.0000 mtr85446090
+5 16 Sq mm Green Earthing Wire Alu. 1,800.00mtr18.00100.0000 mtr85446090
+6 SS BOLT 10x25 6,250.00Nos.12.50500.00 Nos.73181500
+7 ACDB-DCDB SET 1 TO 6KW COMBO (
+HAVELLS +SIGHTER )
+1,700.00Nos.1,700.001.00 Nos.85371000
+73,650.00
+CGST 6,628.50
+continued to page number 2
+This is a Computer Generated Invoice
+Tax Invoice(Page 2)
+SHRI BALAJI INDUSTRIES - 2026-2027 -
+119/1, Sector -H, Industrial Area
+Govindpura, Bhopal
+GSTIN/UIN: 23ACGFS5752F1Z5
+State Name : Madhya Pradesh, Code : 23
+E-Mail : sunilgupta98933@gmail.com
+Consignee (Ship to)
+Bhim Energy Solutions
+52
+Gurusahab Colony
+Athner Road
+Betul, Delivery Courier Service
+Betul
+GSTIN/UIN : 23CCYPS1427F1ZC
+State Name : Madhya Pradesh, Code : 23
+Buyer (Bill to)
+Bhim Energy Solutions
+52
+Gurusahab Colony
+Athner Road
+Betul, Delivery Courier Service
+Betul
+GSTIN/UIN : 23CCYPS1427F1ZC
+State Name : Madhya Pradesh, Code : 23
+Invoice No.
+1868
+Delivery Note
+Reference No. & Date.
+Buyer’s Order No.
+Dispatch Doc No.
+Dispatched through
+Bill of Lading/LR-RR No.
+Dated
+6-Nov-26
+Mode/Terms of Payment
+Other References
+Dated
+Delivery Note Date
+Destination
+Motor Vehicle No.
+Self
+Terms of Delivery
+Sl Description of Goods AmountperRateQuantityHSN/SAC
+No.
+SGST 6,628.50
+Total ī86,907.00
+Amount Chargeable (in words) E. & O.E
+INR Eighty Six Thousand Nine Hundred Seven Only
+HSN/SAC TotalSGST/UTGSTCGSTTaxable
+Tax AmountAmountRateAmountRateValue
+85446090 11,826.005,913.009%5,913.009%65,700.00
+73181500 1,125.00562.509%562.509%6,250.00
+85371000 306.00153.009%153.009%1,700.00
+Total 13,257.006,628.506,628.5073,650.00
+Tax Amount (in words) : INR Thirteen Thousand Two Hundred Fifty Seven Only
+Company’s PAN : ACGFS5752F
+Declaration
+We declare that this invoice shows the actual price of
+the goods described and that all particulars are true
+and correct.
+for SHRI BALAJI INDUSTRIES - 2026-2027 -
+Authorised Signatory
+This is a Computer Generated Invoice

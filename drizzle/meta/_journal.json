@@ -239,6 +239,20 @@
       "when": 1795348845461,
       "tag": "0033_dcr_certificates",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1795353825235,
+      "tag": "0034_expense_document",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1795355908095,
+      "tag": "0035_gst_bills",
+      "breakpoints": true
     }
   ]
 }

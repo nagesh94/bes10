@@ -1,19 +1,17 @@
-import { GEMINI_API_KEY, GEMINI_FALLBACK_MODELS, GEMINI_MODEL } from "@/lib/env";
+import { callGeminiJson, type GeminiPart } from "@/lib/gemini/call";
 import { EMPTY_FIELDS, SCALAR_KEYS, normaliseSerial, type DcrFields } from "./fields";
 
 /**
  * Maps a DCR certificate onto `DcrFields` with Gemini.
  *
- * Called over plain REST rather than through an SDK — one endpoint, one JSON
- * body, and no dependency to keep current. `responseSchema` pins the shape, so
- * what comes back is always the same keys; whether the *values* are right is
- * what `mergeExtraction` checks against the certificate's own text.
+ * `responseSchema` pins the shape, so what comes back is always the same keys;
+ * whether the *values* are right is what `mergeExtraction` checks against the
+ * certificate's own text. The REST call and its model fallbacks live in
+ * `callGeminiJson`, shared with GST bills.
  *
  * Two inputs: the extracted text when the PDF has a text layer (cheap, and
  * the usual case for NISE certificates), or the PDF itself when it is a scan.
  */
-
-const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 
 const STRING = { type: "STRING" } as const;
 
@@ -55,16 +53,12 @@ Return JSON matching the schema. Rules:
 
 export type GeminiResult = { ok: true; fields: DcrFields } | { ok: false; error: string };
 
-export function geminiConfigured(): boolean {
-  return Boolean(GEMINI_API_KEY);
-}
+export { geminiConfigured } from "@/lib/gemini/call";
 
 export async function extractWithGemini(
   input: { text: string } | { pdf: Buffer },
 ): Promise<GeminiResult> {
-  if (!GEMINI_API_KEY) return { ok: false, error: "GEMINI_API_KEY is not set." };
-
-  const parts =
+  const parts: GeminiPart[] =
     "text" in input
       ? [{ text: `${INSTRUCTIONS}\n\nCertificate text:\n"""\n${input.text}\n"""` }]
       : [
@@ -72,64 +66,9 @@ export async function extractWithGemini(
           { inlineData: { mimeType: "application/pdf", data: input.pdf.toString("base64") } },
         ];
 
-  const body = JSON.stringify({
-    contents: [{ role: "user", parts }],
-    generationConfig: {
-      temperature: 0,
-      responseMimeType: "application/json",
-      responseSchema: RESPONSE_SCHEMA,
-    },
-  });
-
-  // 429 and 503 are Gemini saying "busy". A model under load can stay busy for
-  // minutes, so after one retry the next model in the list is tried instead of
-  // waiting on the same one. Every model listed returned the same fields for
-  // the sample certificate.
-  const models = [...new Set([GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS])];
-  let res: Response | null = null;
-  let lastError = "Could not reach Gemini.";
-  outer: for (const model of models) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      if (attempt > 0) await new Promise((r) => setTimeout(r, 1500));
-      try {
-        res = await fetch(`${ENDPOINT}/${encodeURIComponent(model)}:generateContent`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-          body,
-          signal: AbortSignal.timeout(30_000),
-        });
-      } catch (err) {
-        res = null;
-        lastError = `Could not reach Gemini: ${(err as Error).message}`;
-        continue;
-      }
-      if (res.ok) break outer;
-      // A retired or unknown model will not come back on retry; move on.
-      if (res.status === 404) continue outer;
-      if (res.status !== 429 && res.status !== 503) break outer;
-    }
-  }
-  if (!res) return { ok: false, error: lastError };
-
-  if (!res.ok) {
-    // The body names the problem (bad key, quota, unknown model) and never echoes the key.
-    const errText = await res.text().catch(() => "");
-    const message = /"message"\s*:\s*"([^"]+)"/.exec(errText)?.[1] ?? res.statusText;
-    return { ok: false, error: `Gemini answered ${res.status}: ${message}` };
-  }
-
-  const json = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-  };
-  const raw = json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
-
-  let parsed: Partial<DcrFields>;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return { ok: false, error: "Gemini returned something that is not JSON." };
-  }
-
+  const r = await callGeminiJson(parts, RESPONSE_SCHEMA);
+  if (!r.ok) return r;
+  const parsed = (r.json ?? {}) as Partial<DcrFields>;
   return { ok: true, fields: coerce(parsed) };
 }
 

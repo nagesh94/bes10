@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Paperclip, Plus, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { deleteExpense, recordExpense } from "@/app/actions/expenses";
 import { Combobox } from "@/components/finance/combobox";
@@ -125,6 +125,8 @@ function ExpenseForm({
   const [personTyped, setPersonTyped] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<{ message: string; field?: string } | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const category = options.categories.find((c) => String(c.id) === categoryId);
 
@@ -137,7 +139,7 @@ function ExpenseForm({
         setPending(true);
         const data = new FormData(e.currentTarget);
         const text = (k: string) => String(data.get(k) ?? "");
-        const result = await recordExpense({
+        const payload = {
           spentOn: text("spentOn"),
           amount: text("amount"),
           categoryId: category.id,
@@ -148,7 +150,16 @@ function ExpenseForm({
           personUserId: person && person !== SOMEONE_ELSE ? person : null,
           personName: person === SOMEONE_ELSE ? personTyped : "",
           details: text("details"),
-        });
+        };
+        const body = new FormData();
+        body.set("data", JSON.stringify(payload));
+        if (file) body.set("file", file);
+        let result: Awaited<ReturnType<typeof recordExpense>>;
+        try {
+          result = await recordExpense(body);
+        } catch {
+          result = { ok: false, error: t("saveFailed") };
+        }
         setPending(false);
         if (!result.ok) return setError({ message: result.error, field: result.field });
         onDone();
@@ -265,6 +276,60 @@ function ExpenseForm({
               error?.field === "details" ? "border-[var(--red-border)]" : "border-[var(--line)]"
             }`}
           />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className={labelCls} htmlFor="exp-file">{t("document")}</label>
+          <input
+            ref={fileRef}
+            id="exp-file"
+            type="file"
+            accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp"
+            className="sr-only"
+            onChange={(e) => {
+              const picked = e.target.files?.[0] ?? null;
+              if (picked && picked.size > 10 * 1024 * 1024) {
+                setError({ message: t("documentTooLarge"), field: "file" });
+                e.target.value = "";
+                return;
+              }
+              if (error?.field === "file") setError(null);
+              setFile(picked);
+            }}
+          />
+          {file ? (
+            <div className={`flex h-11 items-center gap-2 rounded-lg border bg-[var(--surface-2)] px-3 text-[14px] ${
+              error?.field === "file" ? "border-[var(--red-border)]" : "border-[var(--line)]"
+            }`}>
+              <Paperclip size={15} className="shrink-0 text-[var(--muted)]" aria-hidden />
+              <span className="min-w-0 flex-1 truncate">{file.name}</span>
+              <span className="shrink-0 text-[12px] text-[var(--muted)]">{Math.max(1, Math.round(file.size / 1024))} KB</span>
+              <button
+                type="button"
+                aria-label={t("documentRemove")}
+                title={t("documentRemove")}
+                onClick={() => {
+                  setFile(null);
+                  if (fileRef.current) fileRef.current.value = "";
+                }}
+                className="grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-md text-[var(--muted)] hover:bg-[var(--red-soft)] hover:text-[var(--red-text)]"
+              >
+                <X size={14} aria-hidden />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className={`flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed bg-[var(--surface)] px-3 text-[13.5px] font-semibold text-[var(--navy-text)] hover:bg-[var(--surface-2)] ${
+                error?.field === "file" ? "border-[var(--red-border)]" : "border-[var(--line)]"
+              }`}
+            >
+              <Paperclip size={15} aria-hidden />
+              {t("documentPick")}
+            </button>
+          )}
+          <span className="mt-1 block text-[11.5px] text-[var(--muted)]">{t("documentHint")}</span>
         </div>
       </div>
 

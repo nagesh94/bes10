@@ -27,6 +27,9 @@ export interface ExpenseRow {
   referenceNo: string | null;
   personName: string | null;
   details: string | null;
+  /** The attached bill's name, when there is one. */
+  fileName: string | null;
+  hasFile: boolean;
 }
 
 export async function loadExpenses(): Promise<ExpenseRow[]> {
@@ -50,6 +53,8 @@ export async function loadExpenses(): Promise<ExpenseRow[]> {
       referenceNo: expenses.referenceNo,
       personName: expenses.personName,
       details: expenses.details,
+      fileName: expenses.fileName,
+      s3Key: expenses.s3Key,
     })
     .from(expenses)
     .innerJoin(expenseCategories, eq(expenseCategories.id, expenses.categoryId))
@@ -58,8 +63,9 @@ export async function loadExpenses(): Promise<ExpenseRow[]> {
     .where(isNull(expenses.deletedAt))
     .orderBy(desc(expenses.spentOn), desc(expenses.recordedAt));
 
-  return rows.map(({ firstName, lastName, amount, ...r }) => ({
+  return rows.map(({ firstName, lastName, amount, s3Key, ...r }) => ({
     ...r,
+    hasFile: Boolean(s3Key),
     amount: Number(amount) || 0,
     customer: r.projectId ? [firstName, lastName].filter(Boolean).join(" ") || null : null,
   }));

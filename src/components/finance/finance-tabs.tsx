@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 const TABS = [
   { href: "/finance", label: "dashboard", exact: true },
   { href: "/finance/expenses", label: "expenses", exact: false },
+  { href: "/finance/gst", label: "gst", exact: false },
   { href: "/finance/loans", label: "loans", exact: false },
 ] as const;
 

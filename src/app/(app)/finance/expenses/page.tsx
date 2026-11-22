@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Building2, HardHat, Receipt, TrendingUp, Wallet } from "lucide-react";
+import { Building2, HardHat, Paperclip, Receipt, TrendingUp, Wallet } from "lucide-react";
 import { Panel } from "@/components/dashboard/fleet";
 import { MonthlyBars, type Series } from "@/components/finance/charts";
 import { AddExpenseDialog, DeleteExpenseButton } from "@/components/finance/expense-form";
@@ -12,6 +12,7 @@ import { compact, inRange, inr, loadLedger, paginate, readPaging } from "@/lib/f
 import { PAID_OUT_MODES, RECEIVED_MODE_LABELS, type ReceivedMode } from "@/lib/payments/schedule";
 import { can, canSeeMoney } from "@/lib/rbac/permissions";
 import { getActor } from "@/lib/session";
+import { fileHref } from "@/lib/storage/file-url";
 
 /**
  * Where the money goes.
@@ -293,6 +294,18 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                     <td className="px-3 py-3">
                       <div className="text-[13.5px] font-semibold">{e.category}</div>
                       {e.details ? <div className="max-w-64 text-[12px] text-[var(--muted)]">{e.details}</div> : null}
+                      {e.hasFile ? (
+                        <a
+                          href={fileHref("expense", e.id)}
+                          target="_blank"
+                          rel="noopener"
+                          title={e.fileName ?? undefined}
+                          className="mt-1 inline-flex max-w-64 items-center gap-1 text-[12px] font-semibold text-[var(--navy-text)] no-underline hover:underline"
+                        >
+                          <Paperclip size={12} className="shrink-0" aria-hidden />
+                          <span className="truncate">{e.fileName ?? "Document"}</span>
+                        </a>
+                      ) : null}
                     </td>
                     <td className="px-3 py-3">
                       {e.projectId ? (
